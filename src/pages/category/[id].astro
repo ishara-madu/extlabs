@@ -1,0 +1,389 @@
+---
+// src/pages/category/[id].astro
+import "../../styles/global.css";
+import Navbar from "../../components/Navbar.astro";
+import ExtensionCard from "../../components/ExtensionCard.astro";
+import Footer from "../../components/Footer.astro";
+import { EXTENSIONS, CATEGORIES, type CategoryInfo } from "../../data/extensions";
+import { Home, BadgeCheck, Star, Search, ArrowRight } from '@lucide/astro';
+
+export function getStaticPaths() {
+  return CATEGORIES.map((cat) => ({
+    params: { id: cat.id },
+    props: { category: cat },
+  }));
+}
+
+interface Props {
+  category: CategoryInfo;
+}
+
+const { category } = Astro.props;
+
+// Filter extensions belonging to this category
+const categoryExtensions = EXTENSIONS.filter(ext => ext.category === category.id);
+const topFeatured = categoryExtensions.find(ext => ext.featured) || categoryExtensions[0];
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{category.label} Extensions — ExtLabs Store</title>
+    <meta name="description" content={category.description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Navigation -->
+    <Navbar />
+
+    <!-- Category Pill Strip (Clean DaisyUI / HyperUI Style) -->
+    <div class="border-b border-slate-200/80 bg-white/70 backdrop-blur-xs sticky top-16 z-30">
+      <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-3">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+            <a
+              href="/"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+            >
+              <Home class="w-3.5 h-3.5" />
+              <span>Home</span>
+            </a>
+
+            {CATEGORIES.map((cat) => (
+              <a
+                href={`/category/${cat.id}`}
+                class={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap border transition-colors ${
+                  cat.id === category.id
+                    ? 'bg-slate-800 text-white border-slate-800 shadow-2xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <span>{cat.label}</span>
+                <span class={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                  cat.id === category.id ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {cat.count}
+                </span>
+              </a>
+            ))}
+          </div>
+
+          <div class="hidden lg:flex items-center gap-2 shrink-0">
+            <span class="inline-flex items-center gap-1.5 text-xs text-slate-500 font-normal">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Manifest V3 Verified Directory
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area with generous breathing room -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-16">
+      
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-slate-600">
+        <a href="/" class="hover:text-slate-800 transition-colors">Home</a>
+        <span class="text-slate-300">/</span>
+        <a href="/categories" class="hover:text-slate-800 transition-colors">Categories</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-800 font-medium">{category.label}</span>
+      </nav>
+
+      <!-- Category Hero Showcase Section (Rich Visual Artwork Banner) -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-10 shadow-2xs overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <!-- Left Content Info -->
+          <div class="lg:col-span-6 space-y-5">
+            <div class="inline-flex items-center gap-2">
+              <span class={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${category.colorAccent}`}>
+                Verified Category
+              </span>
+              <span class="text-xs text-slate-500 font-medium">
+                {categoryExtensions.length} Curated Extension{categoryExtensions.length === 1 ? '' : 's'}
+              </span>
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight leading-tight">
+              {category.label}
+            </h1>
+
+            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-lg">
+              {category.description}
+            </p>
+
+            <div class="pt-1">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">Popular Subtopics:</span>
+              <div class="flex flex-wrap gap-1.5">
+                {category.tags.map((tag) => (
+                  <button
+                    type="button"
+                    data-tag-filter={tag.toLowerCase()}
+                    class="sub-tag-btn text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg cursor-pointer transition-colors"
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Visual Graphic Banner -->
+          <div class="lg:col-span-6 w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-2xs border border-slate-200/70 bg-slate-900">
+            <Fragment set:html={category.heroIllustrationSvg} />
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Top Spotlight Extension in Category (if available) -->
+      {topFeatured && (
+        <section class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold text-slate-800 tracking-tight flex items-center gap-2">
+              <span>Category Spotlight</span>
+              <span class="text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                Editor's Top Pick
+              </span>
+            </h2>
+          </div>
+
+          <a
+            href={`/extension/${topFeatured.id}`}
+            class="extension-item group block rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-xs p-6 cursor-pointer select-none transition-all text-inherit no-underline"
+            data-id={topFeatured.id}
+            data-category={topFeatured.category}
+            data-name={topFeatured.name.toLowerCase()}
+            data-description={topFeatured.description.toLowerCase()}
+            data-tags={topFeatured.tags.join(' ').toLowerCase()}
+          >
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <!-- Banner Left -->
+              <div class="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-slate-100 shadow-2xs">
+                <Fragment set:html={topFeatured.bannerSvg} />
+              </div>
+
+              <!-- Content Right -->
+              <div class="md:col-span-7 space-y-3">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base font-bold text-slate-800 group-hover:text-slate-900 flex items-center gap-1.5">
+                    <span>{topFeatured.name}</span>
+                    {topFeatured.isVerified && (
+                      <BadgeCheck class="w-4 h-4 text-blue-600 shrink-0 inline" />
+                    )}
+                  </h3>
+                  <span class="text-[11px] text-slate-400">by {topFeatured.developer}</span>
+                </div>
+
+                <p class="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                  {topFeatured.description}
+                </p>
+
+                <div class="flex items-center justify-between pt-2">
+                  <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <div class="flex items-center gap-1 font-semibold text-slate-800">
+                      <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      <span>{topFeatured.rating.toFixed(1)}</span>
+                      <span class="text-slate-400 font-normal">({topFeatured.reviewCount.toLocaleString()})</span>
+                    </div>
+                    <span class="text-slate-300">•</span>
+                    <span>{topFeatured.userCount} users</span>
+                  </div>
+
+                  <span class="px-3.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-2xs group-hover:bg-slate-900 transition-colors flex items-center gap-1">
+                    <span>Explore Spotlight</span>
+                    <ArrowRight class="w-3 h-3" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </section>
+      )}
+
+      <!-- Filter & Sort Strip -->
+      <section class="space-y-6 pt-4 border-t border-slate-200/60">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <!-- In-category search -->
+          <div class="w-full sm:max-w-xs relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Search class="w-3.5 h-3.5" />
+            </div>
+            <input
+              id="category-search-input"
+              type="text"
+              placeholder={`Search ${category.label.toLowerCase()}...`}
+              class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-800 rounded-lg border border-slate-200 focus:border-slate-400 focus:outline-none placeholder-slate-400"
+            />
+          </div>
+
+          <!-- Sort Select -->
+          <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end text-xs text-slate-500">
+            <span class="text-xs font-medium text-slate-600">Sort by:</span>
+            <select
+              id="category-sort-select"
+              class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 cursor-pointer"
+            >
+              <option value="popular">Most Popular</option>
+              <option value="rating">Highest Rated</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="recent">Recently Updated</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Extension Grid -->
+        <div id="category-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categoryExtensions.map((ext) => (
+            <ExtensionCard extension={ext} />
+          ))}
+        </div>
+
+        <!-- Empty State within Category -->
+        <div id="category-empty-state" class="hidden py-16 text-center border border-dashed border-slate-200 rounded-2xl p-8 bg-white">
+          <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 mx-auto flex items-center justify-center mb-3">
+            <Search class="w-5 h-5" />
+          </div>
+          <h3 class="text-sm font-semibold text-slate-800 mb-1">No extensions found in this category</h3>
+          <p class="text-xs text-slate-500 max-w-xs mx-auto mb-4">
+            Try adjusting your search query or sub-tag selection.
+          </p>
+          <button
+            type="button"
+            id="category-reset-filter-btn"
+            class="px-4 py-2 bg-slate-800 text-white text-xs font-medium rounded-lg hover:bg-slate-900 cursor-pointer"
+          >
+            Clear Filter
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Client-side Filtering & Sorting Logic (Vanilla JS) -->
+    <script define:vars={{ EXTENSIONS }}>
+      window.__EXTENSIONS_MAP__ = {};
+      EXTENSIONS.forEach(ext => {
+        window.__EXTENSIONS_MAP__[ext.id] = ext;
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('category-search-input');
+        const sortSelect = document.getElementById('category-sort-select');
+        const tagButtons = document.querySelectorAll('.sub-tag-btn');
+        const grid = document.getElementById('category-grid');
+        const emptyState = document.getElementById('category-empty-state');
+        const resetBtn = document.getElementById('category-reset-filter-btn');
+        const extensionCards = Array.from(document.querySelectorAll('.extension-item'));
+
+        let activeTag = '';
+        let query = '';
+
+        function filterAndSort() {
+          let visibleCards = [];
+
+          extensionCards.forEach(card => {
+            const name = card.getAttribute('data-name') || '';
+            const desc = card.getAttribute('data-description') || '';
+            const tags = card.getAttribute('data-tags') || '';
+
+            const matchesQuery = !query || name.includes(query) || desc.includes(query) || tags.includes(query);
+            const matchesTag = !activeTag || tags.includes(activeTag) || name.toLowerCase().includes(activeTag) || desc.toLowerCase().includes(activeTag);
+
+            if (matchesQuery && matchesTag) {
+              card.classList.remove('hidden');
+              visibleCards.push(card);
+            } else {
+              card.classList.add('hidden');
+            }
+          });
+
+          // Sorting
+          const sortVal = sortSelect ? sortSelect.value : 'popular';
+          visibleCards.sort((a, b) => {
+            const idA = a.getAttribute('data-id');
+            const idB = b.getAttribute('data-id');
+            const extA = window.__EXTENSIONS_MAP__[idA];
+            const extB = window.__EXTENSIONS_MAP__[idB];
+
+            if (!extA || !extB) return 0;
+
+            if (sortVal === 'rating') {
+              return extB.rating - extA.rating;
+            } else if (sortVal === 'name') {
+              return extA.name.localeCompare(extB.name);
+            } else if (sortVal === 'recent') {
+              return extB.version.localeCompare(extA.version);
+            } else {
+              return extB.reviewCount - extA.reviewCount;
+            }
+          });
+
+          visibleCards.forEach(card => grid.appendChild(card));
+
+          if (visibleCards.length === 0) {
+            if (emptyState) emptyState.classList.remove('hidden');
+            if (grid) grid.classList.add('hidden');
+          } else {
+            if (emptyState) emptyState.classList.add('hidden');
+            if (grid) grid.classList.remove('hidden');
+          }
+        }
+
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            query = e.target.value.trim().toLowerCase();
+            filterAndSort();
+          });
+        }
+
+        if (sortSelect) {
+          sortSelect.addEventListener('change', () => {
+            filterAndSort();
+          });
+        }
+
+        tagButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const tag = btn.getAttribute('data-tag-filter') || '';
+            if (activeTag === tag) {
+              activeTag = '';
+              btn.className = 'sub-tag-btn text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg cursor-pointer transition-colors';
+            } else {
+              activeTag = tag;
+              tagButtons.forEach(b => {
+                b.className = 'sub-tag-btn text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg cursor-pointer transition-colors';
+              });
+              btn.className = 'sub-tag-btn text-xs font-semibold text-white bg-slate-800 border border-slate-800 px-3 py-1 rounded-lg cursor-pointer transition-colors';
+            }
+            filterAndSort();
+          });
+        });
+
+        if (resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            activeTag = '';
+            query = '';
+            if (searchInput) searchInput.value = '';
+            tagButtons.forEach(b => {
+              b.className = 'sub-tag-btn text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg cursor-pointer transition-colors';
+            });
+            filterAndSort();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

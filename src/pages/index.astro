@@ -1,0 +1,369 @@
+---
+// index.astro
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+import CategoryBar from "../components/CategoryBar.astro";
+import FeaturedCard from "../components/FeaturedCard.astro";
+import ExtensionCard from "../components/ExtensionCard.astro";
+import Footer from "../components/Footer.astro";
+import { EXTENSIONS, CATEGORIES } from "../data/extensions";
+import { Search, ArrowRight, Check } from '@lucide/astro';
+
+const featuredExtensions = EXTENSIONS.filter(ext => ext.featured);
+const devExtensions = EXTENSIONS.filter(ext => ext.category === 'dev');
+const aiAndProdExtensions = EXTENSIONS.filter(ext => ext.category === 'ai' || ext.category === 'productivity');
+const privacyAndUtilExtensions = EXTENSIONS.filter(ext => ext.category === 'privacy' || ext.category === 'utilities');
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>ExtLabs — Extensions Store</title>
+    <meta name="description" content="Discover verified browser extensions, AI utilities, and developer tools." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Navigation -->
+    <Navbar />
+
+    <!-- Category Pill Strip -->
+    <CategoryBar />
+
+    <!-- Main Content Area with generous breathing room -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-16">
+      
+      <!-- Search & Filter Live Status Alert -->
+      <div id="search-status-bar" class="hidden p-3.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs shadow-2xs">
+        <div class="flex items-center gap-2 text-slate-700">
+          <span class="font-medium">Active filter:</span>
+          <span id="search-query-text" class="text-slate-500"></span>
+          <span id="results-counter" class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-mono"></span>
+        </div>
+        <button
+          type="button"
+          id="clear-filter-btn"
+          class="text-slate-600 hover:text-slate-900 font-medium underline cursor-pointer text-xs"
+        >
+          Reset
+        </button>
+      </div>
+
+      <!-- No Results State -->
+      <div id="no-results-state" class="hidden py-16 text-center border border-dashed border-slate-200 rounded-2xl p-8 bg-white">
+        <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 mx-auto flex items-center justify-center mb-3">
+          <Search class="w-5 h-5" />
+        </div>
+        <h3 class="text-sm font-semibold text-slate-800 mb-1">No extensions found</h3>
+        <p class="text-xs text-slate-500 max-w-xs mx-auto mb-4">
+          Try searching with another keyword or reset the category filter.
+        </p>
+        <button
+          type="button"
+          id="no-results-reset-btn"
+          class="px-4 py-2 bg-slate-800 text-white text-xs font-medium rounded-lg hover:bg-slate-900 cursor-pointer"
+        >
+          Back to Discover
+        </button>
+      </div>
+
+      <!-- Section 1: Featured Spotlight -->
+      <section id="featured" class="shelf-section space-y-6">
+        <div>
+          <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+            Featured & Editors' Picks
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Top-rated extensions verified for performance and privacy.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {featuredExtensions.map((ext) => (
+            <FeaturedCard extension={ext} />
+          ))}
+        </div>
+      </section>
+
+      <!-- Section 2: Developer Tools -->
+      <section id="dev-tools" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+              Developer Tools
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Inspectors, API testers, and code utilities.</p>
+          </div>
+          <a
+            href="/category/dev"
+            class="text-xs font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"
+          >
+            <span>See all ({devExtensions.length})</span>
+            <ArrowRight class="w-3 h-3" />
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {devExtensions.map((ext) => (
+            <ExtensionCard extension={ext} />
+          ))}
+        </div>
+      </section>
+
+      <!-- Section 3: AI & Productivity -->
+      <section id="ai-productivity" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+              AI & Productivity
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Smart page summaries, notes, and task management.</p>
+          </div>
+          <a
+            href="/category/ai"
+            class="text-xs font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"
+          >
+            <span>See all ({aiAndProdExtensions.length})</span>
+            <ArrowRight class="w-3 h-3" />
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {aiAndProdExtensions.map((ext) => (
+            <ExtensionCard extension={ext} />
+          ))}
+        </div>
+      </section>
+
+      <!-- Section 4: Privacy & Security -->
+      <section id="privacy-utilities" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+              Privacy & Security
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Ad blockers, passkeys, and memory savers.</p>
+          </div>
+          <a
+            href="/category/privacy"
+            class="text-xs font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"
+          >
+            <span>See all ({privacyAndUtilExtensions.length})</span>
+            <ArrowRight class="w-3 h-3" />
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {privacyAndUtilExtensions.map((ext) => (
+            <ExtensionCard extension={ext} />
+          ))}
+        </div>
+      </section>
+
+      <!-- Section 5: Clean Developer Callout with Monetag Highlight -->
+      <section id="developers" class="rounded-2xl border border-slate-200 bg-white p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xs">
+        <div class="space-y-2 text-center sm:text-left">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+              💰 Monetag Partner Program
+            </span>
+            <span class="text-[11px] text-slate-500 font-medium">100% Direct Ad Revenue</span>
+          </div>
+          <h3 class="text-base sm:text-lg font-bold text-slate-800 tracking-tight">
+            Publish your browser extension & monetize every install
+          </h3>
+          <p class="text-xs text-slate-500 max-w-lg leading-relaxed">
+            Reach thousands of users. Attach your Monetag Direct Link to earn 100% direct revenue with zero platform fees.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <a
+            href="/developers"
+            class="px-4 py-2 bg-slate-800 text-white text-xs font-semibold rounded-xl hover:bg-slate-900 cursor-pointer shadow-2xs transition-colors"
+          >
+            Submit Extension & Earn
+          </a>
+          <a
+            href="/developers"
+            class="px-3.5 py-2 bg-white text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+          >
+            Monetag Guide
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Minimalist Toast Notification -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <div
+        id="toast"
+        class="hidden bg-slate-800 text-white text-xs py-2.5 px-4 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2"
+      >
+        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span id="toast-message">Notification message</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Client-side Logic (Vanilla JS) -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const desktopSearch = document.getElementById('global-search-input') as HTMLInputElement | null;
+        const mobileSearch = document.getElementById('mobile-search-input') as HTMLInputElement | null;
+        const categoryButtons = document.querySelectorAll('.category-filter-btn');
+        const extensionCards = document.querySelectorAll('.extension-item');
+        const shelfSections = document.querySelectorAll('.shelf-section');
+        const searchStatusBar = document.getElementById('search-status-bar');
+        const searchQueryText = document.getElementById('search-query-text');
+        const resultsCounter = document.getElementById('results-counter');
+        const clearFilterBtn = document.getElementById('clear-filter-btn');
+        const noResultsState = document.getElementById('no-results-state');
+        const noResultsResetBtn = document.getElementById('no-results-reset-btn');
+
+        // Active State variables (null = default home page view with all shelves)
+        let activeCategory: string | null = null;
+        let searchQuery = '';
+
+        function filterExtensions() {
+          const query = searchQuery.trim().toLowerCase();
+          let visibleCount = 0;
+
+          extensionCards.forEach(card => {
+            const cardCategory = card.getAttribute('data-category') || '';
+            const cardName = card.getAttribute('data-name') || '';
+            const cardDesc = card.getAttribute('data-description') || '';
+            const cardTags = card.getAttribute('data-tags') || '';
+
+            const matchesCategory = !activeCategory || (cardCategory === activeCategory);
+            const matchesQuery = !query || 
+              cardName.includes(query) || 
+              cardDesc.includes(query) || 
+              cardTags.includes(query) ||
+              cardCategory.includes(query);
+
+            if (matchesCategory && matchesQuery) {
+              card.classList.remove('hidden');
+              visibleCount++;
+            } else {
+              card.classList.add('hidden');
+            }
+          });
+
+          // Check visibility of shelf sections
+          shelfSections.forEach(section => {
+            const sectionCards = section.querySelectorAll('.extension-item:not(.hidden)');
+            if (sectionCards.length === 0 && (query || activeCategory)) {
+              section.classList.add('hidden');
+            } else {
+              section.classList.remove('hidden');
+            }
+          });
+
+          // Update Search Status Bar
+          if (searchStatusBar && searchQueryText && resultsCounter) {
+            if (query || activeCategory) {
+              searchStatusBar.classList.remove('hidden');
+              let label = [];
+              if (activeCategory) label.push(`Category: "${activeCategory.toUpperCase()}"`);
+              if (query) label.push(`Keyword: "${query}"`);
+              searchQueryText.textContent = label.join(' + ');
+              resultsCounter.textContent = `${visibleCount} item${visibleCount === 1 ? '' : 's'}`;
+            } else {
+              searchStatusBar.classList.add('hidden');
+            }
+          }
+
+          // No results check
+          if (noResultsState) {
+            if (visibleCount === 0) {
+              noResultsState.classList.remove('hidden');
+            } else {
+              noResultsState.classList.add('hidden');
+            }
+          }
+        }
+
+        // Category filter buttons click handler (toggles category filter)
+        function setCategory(catId: string) {
+          if (activeCategory === catId) {
+            activeCategory = null; // toggle off to return to full home view
+          } else {
+            activeCategory = catId;
+          }
+
+          categoryButtons.forEach(btn => {
+            const btnCat = btn.getAttribute('data-category-filter');
+            const badge = btn.querySelector('span:last-child');
+            if (activeCategory && btnCat === activeCategory) {
+              btn.className = 'category-filter-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-slate-800 text-white border-slate-800 active-category';
+              if (badge) badge.className = 'text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-700 text-slate-200';
+            } else {
+              btn.className = 'category-filter-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900';
+              if (badge) badge.className = 'text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600';
+            }
+          });
+          filterExtensions();
+        }
+
+        categoryButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const cat = btn.getAttribute('data-category-filter');
+            if (cat) setCategory(cat);
+          });
+        });
+
+        // Search inputs sync & filter
+        function handleSearch(val: string) {
+          searchQuery = val;
+          if (desktopSearch && desktopSearch.value !== val) desktopSearch.value = val;
+          if (mobileSearch && mobileSearch.value !== val) mobileSearch.value = val;
+          filterExtensions();
+        }
+
+        if (desktopSearch) {
+          desktopSearch.addEventListener('input', (e) => handleSearch((e.target as HTMLInputElement).value));
+        }
+        if (mobileSearch) {
+          mobileSearch.addEventListener('input', (e) => handleSearch((e.target as HTMLInputElement).value));
+        }
+
+        // Clear filters back to normal home screen
+        function resetAllFilters() {
+          searchQuery = '';
+          activeCategory = null;
+          if (desktopSearch) desktopSearch.value = '';
+          if (mobileSearch) mobileSearch.value = '';
+          categoryButtons.forEach(btn => {
+            btn.className = 'category-filter-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900';
+            const badge = btn.querySelector('span:last-child');
+            if (badge) badge.className = 'text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600';
+          });
+          filterExtensions();
+        }
+
+        if (clearFilterBtn) clearFilterBtn.addEventListener('click', resetAllFilters);
+        if (noResultsResetBtn) noResultsResetBtn.addEventListener('click', resetAllFilters);
+
+        // Keyboard Shortcut: Cmd+K / Ctrl+K
+        window.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            if (desktopSearch) {
+              desktopSearch.focus();
+              desktopSearch.select();
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

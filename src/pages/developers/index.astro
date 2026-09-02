@@ -1,0 +1,346 @@
+---
+// src/pages/developers/index.astro
+import "../../styles/global.css";
+import Navbar from "../../components/Navbar.astro";
+import Footer from "../../components/Footer.astro";
+import { ExternalLink, ArrowRight, ShieldCheck, Download, DollarSign, Coins } from '@lucide/astro';
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Developer Portal & Monetag Monetization — ExtLabs</title>
+    <meta name="description" content="Learn how developers earn 100% ad revenue via Monetag Direct Links on every extension download on ExtLabs." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Navigation -->
+    <Navbar />
+
+    <!-- Main Content Area with generous breathing room -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-16">
+      
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-slate-600">
+        <a href="/" class="hover:text-slate-800 transition-colors">Home</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-800 font-medium">Developer Portal</span>
+      </nav>
+
+      <!-- Hero Section -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-8 sm:p-12 shadow-2xs overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          <div class="lg:col-span-7 space-y-5">
+            <div class="inline-flex items-center gap-2">
+              <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-0.5 rounded-full flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Monetag Direct Link Monetization
+              </span>
+              <span class="text-xs text-slate-500 font-medium">
+                0% Platform Commission
+              </span>
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight leading-tight">
+              Monetize Every Extension Install with <span class="text-emerald-600">Monetag</span>
+            </h1>
+
+            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl">
+              Distribute your browser extensions to thousands of users. When a user clicks to download your extension, the file downloads automatically while your Monetag Direct Link opens in a new tab — generating 100% direct ad revenue for you.
+            </p>
+
+            <!-- Quick Highlight Badges -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                <span class="block text-lg font-bold text-slate-800">100%</span>
+                <span class="text-[11px] text-slate-500">To Developer</span>
+              </div>
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                <span class="block text-lg font-bold text-slate-800">$0</span>
+                <span class="text-[11px] text-slate-500">Platform Fees</span>
+              </div>
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                <span class="block text-lg font-bold text-slate-800">Dual</span>
+                <span class="text-[11px] text-slate-500">Auto Download + Tab</span>
+              </div>
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                <span class="block text-lg font-bold text-slate-800">MV3</span>
+                <span class="text-[11px] text-slate-500">Verified Safety</span>
+              </div>
+            </div>
+
+            <div class="pt-2 flex flex-wrap items-center gap-3">
+              <a
+                href="https://monetag.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl inline-flex items-center gap-2 shadow-2xs transition-colors"
+              >
+                <span>Get Monetag Direct Link</span>
+                <ExternalLink class="w-3.5 h-3.5" />
+              </a>
+
+              <a
+                href="#how-it-works"
+                class="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl inline-flex items-center gap-2 border border-slate-200 transition-colors"
+              >
+                <span>How Dual-Action Works</span>
+                <ArrowRight class="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          <!-- Hero Right Visual Banner -->
+          <div class="lg:col-span-5 aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 border border-slate-200/80 shadow-2xs relative">
+            <svg viewBox="0 0 420 315" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
+              <defs>
+                <linearGradient id="monetag-hero-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#022c22" />
+                  <stop offset="50%" stop-color="#064e3b" />
+                  <stop offset="100%" stop-color="#0f172a" />
+                </linearGradient>
+              </defs>
+              <rect width="420" height="315" fill="url(#monetag-hero-bg)" rx="16" />
+              
+              <!-- Floating Monetization Window -->
+              <g transform="translate(30, 25)">
+                <rect width="360" height="265" rx="14" fill="#042f2e" stroke="#10b981" stroke-width="1.5" />
+                
+                <!-- Window Header -->
+                <rect width="360" height="32" rx="14" fill="#064e3b" />
+                <circle cx="18" cy="16" r="4" fill="#ef4444" />
+                <circle cx="30" cy="16" r="4" fill="#f59e0b" />
+                <circle cx="42" cy="16" r="4" fill="#10b981" />
+                <text x="180" y="20" fill="#a7f3d0" font-size="10" font-family="sans-serif" font-weight="bold" text-anchor="middle">⚡ Dual Action: Download + Monetag Tab</text>
+
+                <!-- Step Flow Visual -->
+                <g transform="translate(20, 48)">
+                  <!-- User Click Box -->
+                  <rect width="80" height="55" rx="8" fill="#064e3b" stroke="#059669" stroke-width="1" />
+                  <text x="40" y="24" fill="#ffffff" font-size="9" font-family="sans-serif" font-weight="bold" text-anchor="middle">User Clicks</text>
+                  <text x="40" y="40" fill="#a7f3d0" font-size="8" font-family="sans-serif" text-anchor="middle">"Download"</text>
+
+                  <!-- Split Arrows -->
+                  <path d="M85 28 L110 15" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+                  <path d="M85 28 L110 42" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+
+                  <!-- Action 1: Auto File Download -->
+                  <g transform="translate(115, -4)">
+                    <rect width="105" height="36" rx="6" fill="#022c22" stroke="#10b981" stroke-width="1" />
+                    <text x="52" y="16" fill="#6ee7b7" font-size="9" font-family="sans-serif" font-weight="bold" text-anchor="middle">1. Auto Download</text>
+                    <text x="52" y="28" fill="#a7f3d0" font-size="8" font-family="monospace" text-anchor="middle">extension.zip ✓</text>
+                  </g>
+
+                  <!-- Action 2: Monetag Ad New Tab -->
+                  <g transform="translate(115, 36)">
+                    <rect width="105" height="36" rx="6" fill="#022c22" stroke="#34d399" stroke-width="1" />
+                    <text x="52" y="16" fill="#34d399" font-size="9" font-family="sans-serif" font-weight="bold" text-anchor="middle">2. Monetag Tab</text>
+                    <text x="52" y="28" fill="#fef08a" font-size="8" font-family="monospace" text-anchor="middle">+ $ CPM Earned</text>
+                  </g>
+
+                  <!-- Developer Wallet -->
+                  <g transform="translate(230, 8)">
+                    <rect width="90" height="50" rx="8" fill="#064e3b" stroke="#059669" stroke-width="1.5" />
+                    <text x="45" y="22" fill="#ffffff" font-size="9" font-family="sans-serif" font-weight="bold" text-anchor="middle">Dev Wallet</text>
+                    <text x="45" y="38" fill="#34d399" font-size="11" font-family="monospace" font-weight="bold" text-anchor="middle">100% Payout</text>
+                  </g>
+                </g>
+
+                <!-- Revenue Dashboard Card -->
+                <g transform="translate(20, 125)">
+                  <rect width="320" height="85" rx="10" fill="#022c22" stroke="#059669" stroke-width="1" />
+                  <text x="20" y="26" fill="#a7f3d0" font-size="11" font-family="sans-serif" font-weight="bold">Real-Time Monetag Direct Revenue</text>
+                  
+                  <text x="20" y="58" fill="#ffffff" font-size="24" font-family="monospace" font-weight="bold">$540.20</text>
+                  <text x="150" y="58" fill="#34d399" font-size="11" font-family="sans-serif" font-weight="bold">↑ 100% Directly To You</text>
+
+                  <rect x="20" y="68" width="280" height="4" rx="2" fill="#064e3b" />
+                  <rect x="20" y="68" width="230" height="4" rx="2" fill="#10b981" />
+                </g>
+              </g>
+            </svg>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- How It Works Section -->
+      <section id="how-it-works" class="space-y-6">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-slate-800 tracking-tight">
+            How Dual-Action Monetization Works
+          </h2>
+          <p class="text-xs text-slate-500">
+            A frictionless mechanism that delivers the extension to the user while monetizing the visit via Monetag.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Step 1 -->
+          <div class="p-6 bg-white rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-200">
+              01
+            </div>
+            <h3 class="text-sm font-bold text-slate-800">
+              Create Monetag Direct Link
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Sign up at <a href="https://monetag.com" target="_blank" class="text-emerald-700 font-semibold underline">Monetag.com</a> and generate a high-CPM SmartLink / Direct Link for your extension download stream.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="p-6 bg-white rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs flex items-center justify-center border border-blue-200">
+              02
+            </div>
+            <h3 class="text-sm font-bold text-slate-800">
+              Connect Extension & Direct Link
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              When listing your extension on ExtLabs, your package is paired with your personal Monetag Direct Link URL.
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="p-6 bg-white rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+            <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 font-bold text-xs flex items-center justify-center border border-purple-200">
+              03
+            </div>
+            <h3 class="text-sm font-bold text-slate-800">
+              Simultaneous Download & Ad Tab
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              When a user clicks "Download / Add to Browser", the extension file downloads automatically while your Monetag ad opens in a new tab.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Monetag Earnings Estimator -->
+      <section class="p-8 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 tracking-tight">
+              Estimate Your Monthly Monetag Revenue
+            </h2>
+            <p class="text-xs text-slate-500">
+              Calculate projected earnings based on your expected monthly extension downloads.
+            </p>
+          </div>
+          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg self-start md:self-auto">
+            Average CPM: $6.00 – $14.00
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center pt-2">
+          <!-- Slider Left -->
+          <div class="md:col-span-7 space-y-4">
+            <div class="flex justify-between items-center text-xs font-medium text-slate-700">
+              <span>Monthly Extension Downloads:</span>
+              <span id="slider-installs-label" class="font-mono text-slate-900 font-bold bg-slate-100 px-2.5 py-1 rounded-lg">
+                25,000 downloads
+              </span>
+            </div>
+
+            <input
+              id="installs-slider"
+              type="range"
+              min="1000"
+              max="150000"
+              step="1000"
+              value="25000"
+              class="w-full accent-slate-800 cursor-pointer"
+            />
+
+            <div class="flex justify-between text-[11px] text-slate-400 font-mono">
+              <span>1k</span>
+              <span>50k</span>
+              <span>100k</span>
+              <span>150k+</span>
+            </div>
+          </div>
+
+          <!-- Estimated Earnings Box Right -->
+          <div class="md:col-span-5 p-6 bg-slate-900 text-white rounded-2xl flex flex-col justify-between space-y-3">
+            <span class="text-xs text-slate-400 font-medium">Estimated Developer Earnings / Month</span>
+            <div class="flex items-baseline gap-2">
+              <span id="estimated-earnings-text" class="text-3xl font-bold font-mono text-emerald-400">
+                $175 – $350
+              </span>
+              <span class="text-xs text-slate-400">USD</span>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              Paid directly to you by Monetag via PayPal, Payoneer, Crypto (USDT), or Wire Transfer.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Developer Submission Program Notice Card -->
+      <section class="rounded-2xl border border-slate-200 bg-white p-8 sm:p-10 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 text-center md:text-left">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+              🚀 Developer Submissions
+            </span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 tracking-tight">
+            Ready to distribute your extension and monetize?
+          </h3>
+          <p class="text-xs text-slate-500 max-w-lg leading-relaxed">
+            Get your Monetag Direct Link ready. The dedicated Extension Submission Portal will open for public developer onboarding soon.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <a
+            href="https://monetag.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl inline-flex items-center gap-2 shadow-2xs transition-colors"
+          >
+            <span>Register on Monetag</span>
+            <ExternalLink class="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Client-Side Earnings Slider Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const slider = document.getElementById('installs-slider') as HTMLInputElement | null;
+        const installsLabel = document.getElementById('slider-installs-label');
+        const earningsText = document.getElementById('estimated-earnings-text');
+
+        function updateEarnings() {
+          if (!slider) return;
+          const val = parseInt(slider.value, 10);
+          if (installsLabel) installsLabel.textContent = `${val.toLocaleString()} downloads`;
+          
+          const low = Math.round((val / 1000) * 7);
+          const high = Math.round((val / 1000) * 14);
+          if (earningsText) earningsText.textContent = `$${low.toLocaleString()} – $${high.toLocaleString()}`;
+        }
+
+        if (slider) {
+          slider.addEventListener('input', updateEarnings);
+        }
+      });
+    </script>
+  </body>
+</html>

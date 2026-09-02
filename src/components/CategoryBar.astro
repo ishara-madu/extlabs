@@ -1,0 +1,43 @@
+---
+// CategoryBar.astro
+import { CATEGORIES } from '../data/extensions';
+
+interface Props {
+  activeCategoryId?: string;
+}
+
+const { activeCategoryId } = Astro.props;
+---
+
+<div class="border-b border-slate-200/60 bg-white py-3.5">
+  <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+    <div class="flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-2" id="category-pills-container">
+        {CATEGORIES.map((cat) => (
+          <a
+            href={`/category/${cat.id}`}
+            class={`category-filter-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap select-none border transition-colors ${
+              activeCategoryId === cat.id
+                ? 'bg-slate-800 text-white border-slate-800 shadow-2xs'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <span>{cat.label}</span>
+            <span class={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+              activeCategoryId === cat.id ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600'
+            }`}>
+              {cat.count}
+            </span>
+          </a>
+        ))}
+      </div>
+
+      <div class="hidden lg:flex items-center gap-2 shrink-0">
+        <span class="inline-flex items-center gap-1.5 text-xs text-slate-500 font-normal">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          Manifest V3 Verified Directory
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,72 @@
+---
+// Navbar.astro
+import { Box, Search, Plus } from '@lucide/astro';
+---
+
+<header class="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+  <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+    <div class="flex items-center justify-between h-16 gap-6">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-8">
+        <a href="/" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-2xs">
+            <Box class="w-4 h-4 text-white" />
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm font-bold tracking-tight text-slate-900">ExtLabs</span>
+            <span class="text-[10px] text-slate-500 font-medium tracking-wider uppercase -mt-0.5">Directory</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center gap-1">
+          <a href="/#featured" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-50 transition-colors">Featured</a>
+          <a href="/categories" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-50 transition-colors">Categories</a>
+          <a href="/developers" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-50 transition-colors">Developers</a>
+        </nav>
+      </div>
+
+      <!-- Search Input -->
+      <div class="flex-1 max-w-md hidden sm:block">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <Search class="w-4 h-4" />
+          </div>
+          <input
+            id="global-search-input"
+            type="text"
+            placeholder="Search extensions and tools..."
+            class="w-full pl-10 pr-12 py-2 text-xs bg-slate-50 hover:bg-slate-100 focus:bg-white text-slate-900 rounded-lg border border-slate-200 focus:border-slate-400 focus:outline-none placeholder-slate-400"
+          />
+          <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+            <kbd class="text-[10px] font-sans font-medium text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded">⌘K</kbd>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Action Items -->
+      <div class="flex items-center gap-3">
+        <a
+          href="/developers"
+          id="publish-btn"
+          class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-800 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors"
+        >
+          <Plus class="w-3.5 h-3.5 text-emerald-600" />
+          <span>Submit Extension</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile Search Bar -->
+  <div class="sm:hidden px-6 pb-3">
+    <input
+      id="mobile-search-input"
+      type="text"
+      placeholder="Search extensions..."
+      class="w-full px-3 py-1.5 text-xs bg-slate-50 text-slate-800 rounded-lg border border-slate-200 focus:outline-none"
+    />
+  </div>
+</header>

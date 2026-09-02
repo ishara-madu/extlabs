@@ -1,0 +1,945 @@
+---
+// src/pages/extension/[id].astro
+import "../../styles/global.css";
+import Navbar from "../../components/Navbar.astro";
+import Footer from "../../components/Footer.astro";
+import ExtensionCard from "../../components/ExtensionCard.astro";
+import { EXTENSIONS, getExtensionWithDefaults, getRelatedExtensions } from "../../data/extensions";
+import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ArrowRight } from '@lucide/astro';
+
+export function getStaticPaths() {
+  return EXTENSIONS.map((item) => ({
+    params: { id: item.id },
+    props: { rawExtension: item },
+  }));
+}
+
+interface Props {
+  rawExtension: (typeof EXTENSIONS)[0];
+}
+
+const { rawExtension } = Astro.props;
+const ext = getExtensionWithDefaults(rawExtension);
+const relatedExtensions = getRelatedExtensions(ext.id, ext.category, 3);
+
+// JSON-LD Schema.org Structured Data for SEO
+const jsonLdSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": ext.name,
+      "operatingSystem": "Chromium Browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi)",
+      "applicationCategory": "BrowserExtension",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": ext.rating.toFixed(1),
+        "reviewCount": ext.reviewCount,
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": ext.developer,
+        "url": ext.developerSupport?.website
+      },
+      "softwareVersion": ext.version,
+      "fileSize": ext.size,
+      "dateModified": ext.updatedDate,
+      "description": ext.description
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": ext.faqs?.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    }
+  ]
+};
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>{ext.name} — Free Browser Extension | ExtLabs</title>
+    <meta name="title" content={`${ext.name} — Free Browser Extension | ExtLabs`} />
+    <meta name="description" content={`${ext.tagline}. ${ext.description.slice(0, 140)}...`} />
+    <meta name="keywords" content={`${ext.tags.join(', ')}, ${ext.categoryLabel}, browser extension, chrome extension, manifest v3`} />
+    <meta name="author" content={ext.developer} />
+    <link rel="canonical" href={`https://extlabs.io/extension/${ext.id}`} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={`https://extlabs.io/extension/${ext.id}`} />
+    <meta property="og:title" content={`${ext.name} — ExtLabs Extension`} />
+    <meta property="og:description" content={ext.tagline} />
+    <meta property="og:site_name" content="ExtLabs" />
+
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={`https://extlabs.io/extension/${ext.id}`} />
+    <meta property="twitter:title" content={`${ext.name} — ExtLabs`} />
+    <meta property="twitter:description" content={ext.tagline} />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD Structured Data Schema -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Navigation -->
+    <Navbar />
+
+    <!-- Main Content Area (Minimalist HyperUI & daisyUI Structure) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-12">
+      
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-slate-500" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-slate-900 transition-colors">Home</a>
+        <span class="text-slate-300">/</span>
+        <a href="/categories" class="hover:text-slate-900 transition-colors">Categories</a>
+        <span class="text-slate-300">/</span>
+        <a href={`/category/${ext.category}`} class="hover:text-slate-900 transition-colors">{ext.categoryLabel}</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 font-medium truncate max-w-xs">{ext.name}</span>
+      </nav>
+
+      <!-- 1. Header Section (Minimalist, Crisp Typography, Zero Card Boxing) -->
+      <section class="space-y-4 pb-6 border-b border-slate-200">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          
+          <!-- Left Info Block -->
+          <div class="space-y-3 max-w-3xl">
+            <div class="flex items-center gap-2 flex-wrap">
+              <a
+                href={`/category/${ext.category}`}
+                class="text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded transition-colors"
+              >
+                {ext.categoryLabel}
+              </a>
+
+              <span class="text-xs text-slate-500 flex items-center gap-1">
+                <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
+                <span>Manifest V3</span>
+              </span>
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight flex items-center gap-2">
+              <span>{ext.name}</span>
+              {ext.isVerified && (
+                <BadgeCheck class="w-5 h-5 text-blue-600 shrink-0 inline" />
+              )}
+            </h1>
+
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              {ext.tagline}
+            </p>
+
+            <!-- Metrics -->
+            <div class="flex items-center gap-3 text-xs text-slate-500 flex-wrap pt-0.5">
+              <div class="flex items-center gap-1 font-semibold text-slate-800">
+                <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                <span>{ext.rating.toFixed(1)}</span>
+                <a href="#reviews-section" class="text-slate-500 hover:text-slate-900 underline font-normal">
+                  ({ext.reviewCount.toLocaleString()})
+                </a>
+              </div>
+
+              <span class="text-slate-300">•</span>
+              <span>{ext.userCount} users</span>
+              <span class="text-slate-300">•</span>
+              <span>By <strong class="text-slate-800 font-medium">{ext.developer}</strong></span>
+            </div>
+          </div>
+
+          <!-- Right Action CTA Button -->
+          <div class="space-y-1.5 shrink-0 flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end">
+            <button
+              type="button"
+              id="detail-download-btn"
+              data-ext-id={ext.id}
+              data-ext-name={ext.name}
+              data-ext-version={ext.version}
+              data-ext-developer={ext.developer}
+              data-monetag-url={ext.monetagUrl}
+              class="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-black text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            >
+              <Download class="w-4 h-4" />
+              <span>Add to Browser</span>
+            </button>
+
+            <span class="text-[11px] text-slate-400 text-center lg:text-right">
+              Free • Direct Package Download
+            </span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 2. Media Showcase: Direct Screenshot & Video Player -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <button
+              type="button"
+              id="tab-screenshot-btn"
+              class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-slate-900 text-white cursor-pointer transition-colors"
+            >
+              Screenshot
+            </button>
+            <button
+              type="button"
+              id="tab-video-btn"
+              class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+            >
+              Video Demo
+            </button>
+          </div>
+
+          <span class="hidden sm:inline-block text-[11px] text-slate-400 font-mono">16:9 Preview</span>
+        </div>
+
+        <!-- Media View 1: Screenshot Graphic Banner -->
+        <div id="media-screenshot-view" class="w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
+          <Fragment set:html={ext.bannerSvg} />
+        </div>
+
+        <!-- Media View 2: YouTube Video Player Embed -->
+        <div id="media-video-view" class="hidden w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative">
+          <iframe
+            id="youtube-iframe"
+            class="w-full h-full"
+            src={`https://www.youtube-nocookie.com/embed/${ext.youtubeVideoId}?rel=0&modestbranding=1`}
+            title={`${ext.name} Video Demo`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </section>
+
+      <!-- 3. Top 2-Column Section (Content Left + Clean Specs Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        
+        <!-- Left Column (8 Cols): Overview, Core Features & Internal Workflow (Open Layout) -->
+        <div class="lg:col-span-8 space-y-10">
+          
+          <!-- Overview -->
+          <section class="space-y-3">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight border-b border-slate-200 pb-2">
+              Overview
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              {ext.description}
+            </p>
+
+            <div class="pt-1 space-y-1.5">
+              <span class="text-xs font-semibold text-slate-800 block">Highlights:</span>
+              <ul class="space-y-1.5 text-xs text-slate-600">
+                {ext.overview.map((item) => (
+                  <li class="flex items-start gap-2">
+                    <span class="text-slate-400 font-medium">─</span>
+                    <span class="leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          <!-- Core Features (Open Typographic Grid - No Card Fatigue) -->
+          <section class="space-y-4">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight border-b border-slate-200 pb-2">
+              Features & Capabilities
+            </h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              {ext.features?.map((feat) => (
+                <div class="space-y-1">
+                  <h3 class="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
+                    <span>{feat.title}</span>
+                  </h3>
+                  <p class="text-xs text-slate-500 leading-relaxed pl-3">
+                    {feat.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <!-- Internal Execution Flow (Open Stage Breakdown) -->
+          <section class="space-y-4">
+            <div class="border-b border-slate-200 pb-2 flex items-baseline justify-between">
+              <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                Internal Execution Workflow
+              </h2>
+              <span class="text-[11px] font-mono text-slate-400">Architecture</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {ext.howItWorks?.map((step) => (
+                <div class="space-y-1.5">
+                  <span class="text-[11px] font-mono font-medium text-slate-400">Stage 0{step.step}</span>
+                  <h3 class="text-xs font-semibold text-slate-900">
+                    {step.title}
+                  </h3>
+                  <p class="text-xs text-slate-500 leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Right Column (4 Cols): HyperUI Definition List Specs -->
+        <aside class="lg:col-span-4 sticky top-6 self-start">
+          
+          <div class="rounded-lg border border-slate-200 bg-white p-5 space-y-5">
+            
+            <!-- Specs -->
+            <div class="space-y-3">
+              <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
+                Specifications
+              </h3>
+
+              <dl class="divide-y divide-slate-100 text-xs">
+                <div class="flex items-center justify-between py-1.5">
+                  <dt class="text-slate-500">Version</dt>
+                  <dd class="font-mono text-slate-800 font-medium">{ext.version}</dd>
+                </div>
+
+                <div class="flex items-center justify-between py-1.5">
+                  <dt class="text-slate-500">Size</dt>
+                  <dd class="font-mono text-slate-800">{ext.size}</dd>
+                </div>
+
+                <div class="flex items-center justify-between py-1.5">
+                  <dt class="text-slate-500">Updated</dt>
+                  <dd class="text-slate-700">{ext.updatedDate}</dd>
+                </div>
+
+                <div class="flex items-center justify-between py-1.5">
+                  <dt class="text-slate-500">Standard</dt>
+                  <dd class="text-slate-800 font-medium">Manifest V3</dd>
+                </div>
+
+                <div class="flex items-center justify-between py-1.5">
+                  <dt class="text-slate-500">License</dt>
+                  <dd class="text-slate-700">Open License</dd>
+                </div>
+              </dl>
+            </div>
+
+            <!-- Supported Browsers -->
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Supported Browsers</span>
+              <div class="flex flex-wrap gap-1 text-[11px] text-slate-600 font-medium">
+                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Chrome</span>
+                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Brave</span>
+                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Edge</span>
+                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Opera</span>
+              </div>
+            </div>
+
+            <!-- Permissions -->
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Permissions</span>
+              <div class="flex flex-wrap gap-1">
+                {ext.permissions.map((perm) => (
+                  <span class="text-[11px] font-mono bg-slate-50 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                    {perm}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <!-- Developer Links -->
+            <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
+              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Developer Links</span>
+              
+              <div class="space-y-1 text-slate-600">
+                <a
+                  href={ext.developerSupport?.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
+                >
+                  <span>Website</span>
+                  <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
+                </a>
+
+                <a
+                  href={ext.developerSupport?.supportUrl}
+                  class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
+                >
+                  <span>Support Center</span>
+                  <ArrowRight class="w-3.5 h-3.5 text-slate-400" />
+                </a>
+
+                <a
+                  href={ext.developerSupport?.privacyPolicy}
+                  class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
+                >
+                  <span>Privacy Policy</span>
+                  <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
+                </a>
+              </div>
+
+              <!-- Report Button -->
+              <div class="pt-2">
+                <button
+                  type="button"
+                  id="report-abuse-btn"
+                  class="text-xs text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1 cursor-pointer"
+                >
+                  <AlertTriangle class="w-3 h-3" />
+                  <span>Report issue</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </aside>
+
+      </div>
+
+      <!-- 4. HyperUI Minimalist Comparison Table -->
+      <section class="space-y-4 pt-4 border-t border-slate-200">
+        <div class="border-b border-slate-200 pb-2">
+          <h2 class="text-base font-bold text-slate-900 tracking-tight">
+            Comparison Overview
+          </h2>
+          <p class="text-xs text-slate-500">Key architectural differences compared to generic extensions.</p>
+        </div>
+
+        <!-- HyperUI Clean Table -->
+        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table class="min-w-full divide-y-2 divide-slate-200 text-xs">
+            <thead class="bg-slate-50 text-left">
+              <tr>
+                <th class="px-4 py-3 font-semibold text-slate-900 w-1/4">Capability & Metric</th>
+                <th class="px-4 py-3 font-semibold text-slate-900 bg-slate-100/60 w-3/8 border-x border-slate-200">
+                  {ext.name} (ExtLabs)
+                </th>
+                <th class="px-4 py-3 font-medium text-slate-500 w-3/8">
+                  Traditional / Other Tools
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {ext.comparison?.map((row) => (
+                <tr class="hover:bg-slate-50/50">
+                  <td class="px-4 py-3 font-medium text-slate-800 align-top">
+                    {row.feature}
+                  </td>
+                  <td class="px-4 py-3 text-slate-900 bg-slate-50/30 border-x border-slate-200 align-top leading-relaxed">
+                    <div class="flex items-start gap-1.5">
+                      <span class="text-emerald-600 font-bold shrink-0 mt-0.5">✓</span>
+                      <span>{row.current}</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-slate-500 align-top leading-relaxed">
+                    <div class="flex items-start gap-1.5">
+                      <span class="text-slate-400 font-bold shrink-0 mt-0.5">✕</span>
+                      <span>{row.others}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5. 2-Column Grid: Ratings & Reviews (Left) vs FAQs (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start pt-4 border-t border-slate-200">
+        
+        <!-- Left Column (6 Cols): Ratings & Reviews -->
+        <section id="reviews-section" class="lg:col-span-6 space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                Ratings & Reviews
+              </h2>
+              <p class="text-xs text-slate-500">Feedback from active users.</p>
+            </div>
+
+            <button
+              type="button"
+              id="open-review-form-btn"
+              class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-medium rounded cursor-pointer transition-colors"
+            >
+              Write Review
+            </button>
+          </div>
+
+          <!-- Score & Distribution -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+            <div class="sm:col-span-4 text-center sm:text-left space-y-0.5">
+              <span class="text-3xl font-bold text-slate-900 font-mono">
+                {ext.rating.toFixed(1)}
+              </span>
+              <div class="flex items-center justify-center sm:justify-start gap-1 text-amber-500">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star class={`w-3.5 h-3.5 ${s <= Math.round(ext.rating) ? 'text-amber-500 fill-amber-500' : 'text-slate-200 fill-slate-200'}`} />
+                ))}
+              </div>
+              <span class="text-[11px] text-slate-400 block">
+                {ext.reviewCount.toLocaleString()} ratings
+              </span>
+            </div>
+
+            <!-- Rating Bars -->
+            <div class="sm:col-span-8 space-y-1 text-xs text-slate-500">
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = ext.ratingBreakdown ? (ext.ratingBreakdown as any)[star] : 0;
+                const percent = Math.round((count / ext.reviewCount) * 100);
+
+                return (
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 font-mono text-slate-600 text-[11px]">{star}★</span>
+                    <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div class="h-full bg-slate-800 rounded-full" style={`width: ${percent}%;`}></div>
+                    </div>
+                    <span class="w-7 text-right font-mono text-slate-400 text-[10px]">{percent}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <!-- Write Review Form (Collapsible) -->
+          <form id="write-review-form" class="hidden p-4 bg-white rounded-lg border border-slate-200 space-y-3">
+            <span class="text-xs font-semibold text-slate-900 block">Leave Feedback</span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                id="review-name"
+                type="text"
+                required
+                placeholder="Your Name"
+                class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none"
+              />
+              <select
+                id="review-rating"
+                class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none cursor-pointer"
+              >
+                <option value="5">5 Stars (Excellent)</option>
+                <option value="4">4 Stars (Very Good)</option>
+                <option value="3">3 Stars (Good)</option>
+                <option value="2">2 Stars (Fair)</option>
+                <option value="1">1 Star (Poor)</option>
+              </select>
+            </div>
+
+            <textarea
+              id="review-comment"
+              rows="3"
+              required
+              placeholder="Your review..."
+              class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none leading-relaxed"
+            ></textarea>
+
+            <button
+              type="submit"
+              class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-medium rounded cursor-pointer"
+            >
+              Submit Review
+            </button>
+          </form>
+
+          <!-- Rating Filter Pills -->
+          <div class="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100">
+            <span class="text-[11px] font-medium text-slate-400 mr-1">Filter:</span>
+            <button
+              type="button"
+              data-filter-rating="all"
+              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-900 text-white cursor-pointer transition-colors"
+            >
+              All ({ext.reviews?.length || 0})
+            </button>
+            <button
+              type="button"
+              data-filter-rating="5"
+              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
+            >
+              5 ★
+            </button>
+            <button
+              type="button"
+              data-filter-rating="4"
+              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
+            >
+              4 ★
+            </button>
+            <button
+              type="button"
+              data-filter-rating="3"
+              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
+            >
+              3 ★
+            </button>
+          </div>
+
+          <!-- Reviews List (Top 3 Featured by default) -->
+          <div id="reviews-list-container" class="divide-y divide-slate-100">
+            {ext.reviews?.map((rev, index) => (
+              <div
+                class={`review-entry py-3 space-y-1 ${index >= 3 ? 'hidden extra-review' : ''}`}
+                data-rating={rev.rating}
+              >
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-medium text-slate-900">{rev.author}</span>
+                    {rev.verified && (
+                      <span class="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded">
+                        Verified
+                      </span>
+                    )}
+                  </div>
+                  <span class="text-[11px] text-slate-400">{rev.date}</span>
+                </div>
+
+                <div class="flex items-center gap-0.5 text-amber-500">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star class={`w-3 h-3 ${s <= rev.rating ? 'text-amber-500 fill-amber-500' : 'text-slate-200 fill-slate-200'}`} />
+                  ))}
+                </div>
+
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  "{rev.comment}"
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <!-- Show More / Show Fewer Reviews Toggle -->
+          {ext.reviews && ext.reviews.length > 3 && (
+            <div class="pt-1">
+              <button
+                type="button"
+                id="toggle-more-reviews-btn"
+                data-expanded="false"
+                data-extra-count={ext.reviews.length - 3}
+                class="w-full py-2 text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer transition-colors"
+              >
+                Show more reviews ({ext.reviews.length - 3})
+              </button>
+            </div>
+          )}
+        </section>
+
+        <!-- Right Column (6 Cols): HyperUI FAQ Accordion -->
+        <section class="lg:col-span-6 space-y-4">
+          <div class="border-b border-slate-200 pb-2">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight">
+              Frequently Asked Questions
+            </h2>
+            <p class="text-xs text-slate-500">Common questions about this extension.</p>
+          </div>
+
+          <div class="divide-y divide-slate-100">
+            {ext.faqs?.map((faq) => (
+              <details class="group py-3 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                <summary class="flex items-center justify-between text-xs font-semibold text-slate-900 select-none">
+                  <span>{faq.question}</span>
+                  <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform" />
+                </summary>
+                <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+      </div>
+
+      <!-- 6. Related Extensions Shelf -->
+      {relatedExtensions.length > 0 && (
+        <section class="space-y-4 pt-4 border-t border-slate-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                More in {ext.categoryLabel}
+              </h2>
+              <p class="text-xs text-slate-500">Related browser extensions.</p>
+            </div>
+
+            <a
+              href={`/category/${ext.category}`}
+              class="text-xs font-medium text-slate-700 hover:text-slate-900 flex items-center gap-1"
+            >
+              <span>View all</span>
+              <ArrowRight class="w-3 h-3" />
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedExtensions.map((item) => (
+              <ExtensionCard extension={item} />
+            ))}
+          </div>
+        </section>
+      )}
+
+    </main>
+
+    <!-- Report Modal Dialog -->
+    <dialog id="report-modal" class="modal">
+      <div class="modal-box max-w-md p-5 bg-white rounded-lg border border-slate-200 space-y-3">
+        <h3 class="text-sm font-bold text-slate-900">Report Extension</h3>
+        <p class="text-xs text-slate-500">
+          Describe the issue with <strong>{ext.name}</strong>:
+        </p>
+
+        <form id="report-form" class="space-y-2.5">
+          <select class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none">
+            <option>Malware / Security Concern</option>
+            <option>Broken functionality</option>
+            <option>Misleading description</option>
+            <option>Copyright / Trademark</option>
+            <option>Other issue</option>
+          </select>
+
+          <textarea
+            rows="3"
+            required
+            placeholder="Details..."
+            class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none leading-relaxed"
+          ></textarea>
+
+          <div class="flex items-center justify-end gap-2 pt-1">
+            <button
+              type="button"
+              id="report-cancel-btn"
+              class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium rounded cursor-pointer"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Minimalist Toast Notification -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <div
+        id="toast"
+        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-lg border border-slate-800 flex items-center gap-2"
+      >
+        <Check class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+        <span id="toast-message">Notification message</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Client-Side Interactivity Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Media Tab Switcher (Screenshot vs YouTube Video)
+        const tabScreenshot = document.getElementById('tab-screenshot-btn');
+        const tabVideo = document.getElementById('tab-video-btn');
+        const viewScreenshot = document.getElementById('media-screenshot-view');
+        const viewVideo = document.getElementById('media-video-view');
+
+        if (tabScreenshot && tabVideo && viewScreenshot && viewVideo) {
+          tabScreenshot.addEventListener('click', () => {
+            tabScreenshot.className = 'media-tab-btn px-3 py-1 rounded text-xs font-medium bg-slate-900 text-white cursor-pointer transition-colors';
+            tabVideo.className = 'media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors';
+            viewScreenshot.classList.remove('hidden');
+            viewVideo.classList.add('hidden');
+          });
+
+          tabVideo.addEventListener('click', () => {
+            tabVideo.className = 'media-tab-btn px-3 py-1 rounded text-xs font-medium bg-slate-900 text-white cursor-pointer transition-colors';
+            tabScreenshot.className = 'media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors';
+            viewVideo.classList.remove('hidden');
+            viewScreenshot.classList.add('hidden');
+          });
+        }
+
+        // Toast Helper
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-message');
+        let toastTimeout: number | null = null;
+
+        function showToast(message: string) {
+          if (toastTimeout) window.clearTimeout(toastTimeout);
+          if (toast && toastMsg) {
+            toastMsg.textContent = message;
+            toast.classList.remove('hidden');
+            toastTimeout = window.setTimeout(() => {
+              toast.classList.add('hidden');
+            }, 3000);
+          }
+        }
+
+        // Dual-Action Download CTA Button
+        const downloadBtn = document.getElementById('detail-download-btn');
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', () => {
+            const extName = downloadBtn.getAttribute('data-ext-name') || 'extension';
+            const extId = downloadBtn.getAttribute('data-ext-id') || 'ext';
+            const extVersion = downloadBtn.getAttribute('data-ext-version') || '1.0.0';
+            const extDeveloper = downloadBtn.getAttribute('data-ext-developer') || 'Developer';
+            const monetagUrl = downloadBtn.getAttribute('data-monetag-url') || 'https://monetag.com';
+
+            // 1. Open Monetag Direct Link in a new tab (Generates revenue for developer)
+            window.open(monetagUrl, '_blank', 'noopener,noreferrer');
+
+            // 2. Automatically trigger extension zip download
+            const dummyPackage = `Package: ${extName}\nVersion: ${extVersion}\nDeveloper: ${extDeveloper}\nManifest: Manifest V3 Compliant\nVerified by: ExtLabs Directory`;
+            const blob = new Blob([dummyPackage], { type: 'application/zip' });
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `${extId}-v${extVersion}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
+
+            // 3. Update button state
+            downloadBtn.innerHTML = `
+              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Downloaded</span>
+            `;
+            downloadBtn.className = 'w-full sm:w-auto px-6 py-3 bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors';
+
+            showToast(`Downloading ${extName} & opening sponsor tab.`);
+          });
+        }
+
+        // Write Review Toggle & Submission
+        const openReviewBtn = document.getElementById('open-review-form-btn');
+        const reviewForm = document.getElementById('write-review-form');
+
+        if (openReviewBtn && reviewForm) {
+          openReviewBtn.addEventListener('click', () => {
+            reviewForm.classList.toggle('hidden');
+          });
+
+          reviewForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            reviewForm.classList.add('hidden');
+            showToast('Review submitted.');
+          });
+        }
+
+        // Ratings Filter & Show More Reviews Handler
+        const filterButtons = document.querySelectorAll('.review-filter-btn');
+        const reviewEntries = document.querySelectorAll('.review-entry');
+        const toggleMoreBtn = document.getElementById('toggle-more-reviews-btn');
+        let currentRatingFilter = 'all';
+        let isExpanded = false;
+
+        function applyReviewFilter() {
+          let visibleCount = 0;
+          reviewEntries.forEach((entry) => {
+            const entryRating = entry.getAttribute('data-rating') || '';
+            const matchesRating = currentRatingFilter === 'all' || entryRating === currentRatingFilter;
+
+            if (!matchesRating) {
+              entry.classList.add('hidden');
+            } else {
+              visibleCount++;
+              if (currentRatingFilter === 'all' && !isExpanded && visibleCount > 3) {
+                entry.classList.add('hidden');
+              } else {
+                entry.classList.remove('hidden');
+              }
+            }
+          });
+
+          if (toggleMoreBtn) {
+            if (currentRatingFilter !== 'all' || reviewEntries.length <= 3) {
+              toggleMoreBtn.classList.add('hidden');
+            } else {
+              toggleMoreBtn.classList.remove('hidden');
+              const extraCount = toggleMoreBtn.getAttribute('data-extra-count') || '0';
+              toggleMoreBtn.textContent = isExpanded ? 'Show fewer reviews' : `Show more reviews (${extraCount})`;
+            }
+          }
+        }
+
+        filterButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const rating = btn.getAttribute('data-filter-rating') || 'all';
+            currentRatingFilter = rating;
+
+            filterButtons.forEach((b) => {
+              b.className = 'review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors';
+            });
+            btn.className = 'review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-900 text-white cursor-pointer transition-colors';
+
+            applyReviewFilter();
+          });
+        });
+
+        if (toggleMoreBtn) {
+          toggleMoreBtn.addEventListener('click', () => {
+            isExpanded = !isExpanded;
+            applyReviewFilter();
+          });
+        }
+
+        // Report Modal Handlers
+        const reportBtn = document.getElementById('report-abuse-btn');
+        const reportModal = document.getElementById('report-modal') as HTMLDialogElement | null;
+        const reportCancel = document.getElementById('report-cancel-btn');
+        const reportForm = document.getElementById('report-form');
+
+        if (reportBtn && reportModal) {
+          reportBtn.addEventListener('click', () => reportModal.showModal());
+        }
+        if (reportCancel && reportModal) {
+          reportCancel.addEventListener('click', () => reportModal.close());
+        }
+        if (reportForm && reportModal) {
+          reportForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            reportModal.close();
+            showToast('Report submitted.');
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
