@@ -3,29 +3,25 @@
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
-import { ExternalLink, ArrowRight, ChevronDown, Check } from "@lucide/astro";
+import { ExternalLink, ArrowRight, ChevronDown, Check } from '@lucide/astro';
 
 const developerFaqs = [
   {
     question: "How does the dual-action download mechanism work?",
-    answer:
-      "When a user clicks 'Add to Browser' or 'Download' on your extension page, the browser automatically initiates the direct file download (.zip) while simultaneously opening your Monetag Direct Link in a new tab. This delivers the extension immediately to the user while recording an ad impression for you.",
+    answer: "When a user clicks 'Add to Browser' or 'Download' on your extension page, the browser automatically initiates the direct file download (.zip) while simultaneously opening your Monetag Direct Link in a new tab. This delivers the extension immediately to the user while recording an ad impression for you."
   },
   {
     question: "How much can I earn per 1,000 extension downloads?",
-    answer:
-      "Monetag Direct Link CPM rates vary by traffic geography. Global and Asian traffic typically averages ~$0.85 CPM, while Tier-1 traffic (US, UK, EU) commands $6.00 to $12.00+ CPM. You receive 100% of your earnings directly from Monetag with zero platform cut.",
+    answer: "Monetag Direct Link CPM rates vary by traffic geography. Global and Asian traffic typically averages ~$0.85 CPM, while Tier-1 traffic (US, UK, EU) commands $6.00 to $12.00+ CPM. You receive 100% of your earnings directly from Monetag with zero platform cut."
   },
   {
     question: "How and when does Monetag pay developers?",
-    answer:
-      "Monetag processes payouts on a weekly basis with a low $5.00 minimum threshold. Supported payout methods include PayPal, Payoneer, Wire Transfer, Skrill, and Cryptocurrency (USDT TRC20 / ERC20).",
+    answer: "Monetag processes payouts on a weekly basis with a low $5.00 minimum threshold. Supported payout methods include PayPal, Payoneer, Wire Transfer, Skrill, and Cryptocurrency (USDT TRC20 / ERC20)."
   },
   {
     question: "What extension packaging standards are required?",
-    answer:
-      "All submitted extensions must comply with modern Chromium Manifest V3 security standards. ExtLabs conducts an automated static audit before making packages publicly searchable.",
-  },
+    answer: "All submitted extensions must comply with modern Chromium Manifest V3 security standards. ExtLabs conducts an automated static audit before making packages publicly searchable."
+  }
 ];
 ---
 
@@ -37,45 +33,33 @@ const developerFaqs = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>Developer Portal & Monetag Monetization — ExtLabs</title>
-    <meta
-      name="description"
-      content="Monetize browser extensions with Monetag Direct Links. Earn 100% ad revenue on every extension download with zero platform fees."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <meta name="description" content="Monetize browser extensions with Monetag Direct Links. Earn 100% ad revenue on every extension download with zero platform fees." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 
-  <body
-    class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans"
-  >
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
     <!-- Top Navigation -->
     <Navbar />
 
-    <!-- Main Content Area (Clean HyperUI Open Minimalist Layout) -->
-    <main
-      class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-14"
-    >
-      <!-- Breadcrumb Navigation (Subtle Blue Navigation Links) -->
-      <nav
-        class="flex items-center gap-2 text-xs text-slate-500"
-        aria-label="Breadcrumb"
-      >
+    <!-- Main Content Area with Generous Visual Hierarchy -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-24 sm:space-y-28">
+      
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-slate-500" aria-label="Breadcrumb">
         <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
         <span class="text-slate-300">/</span>
         <span class="text-slate-900 font-medium">Developer Portal</span>
       </nav>
 
       <!-- 1. Hero Section with Dedicated Image Slot -->
-      <section class="space-y-6 pb-8 border-b border-slate-200">
-        <div
-          class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
-        >
+      <section class="space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          
           <!-- Left Content (7 Cols) -->
-          <div class="lg:col-span-7 space-y-4">
+          <div class="lg:col-span-7 space-y-5">
             <div class="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
               <span class="text-emerald-700 font-semibold">Monetag Direct Link Integration</span>
               <span class="text-slate-300">•</span>
@@ -84,71 +68,47 @@ const developerFaqs = [
               <span>100% Direct Revenue</span>
             </div>
 
-            <h1
-              class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight"
-            >
-              Monetize browser extension installs with <span
-                class="text-emerald-700">Monetag Direct Links</span
-              >
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              Monetize browser extension installs with <span class="text-emerald-700">Monetag Direct Links</span>
             </h1>
 
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Distribute your browser extensions on ExtLabs. When a user clicks
-              to download your extension, the file downloads automatically while
-              your personal <span class="text-emerald-800 font-medium"
-                >Monetag Direct Link</span
-              > opens in a new tab — generating 100% direct ad revenue for you.
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
+              Distribute your browser extensions on ExtLabs. When a user clicks to download your extension, the file downloads automatically while your personal <span class="text-emerald-800 font-medium">Monetag Direct Link</span> opens in a new tab — generating 100% direct ad revenue for you.
             </p>
 
             <!-- Metrics Strip -->
-            <div
-              class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 border-t border-slate-100"
-            >
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
               <div class="space-y-0.5">
-                <span class="block text-lg font-bold text-slate-900 font-mono"
-                  >100%</span
-                >
+                <span class="block text-xl font-bold text-slate-900 font-mono">100%</span>
                 <span class="text-xs text-slate-500">Direct to Dev</span>
               </div>
               <div class="space-y-0.5">
-                <span class="block text-lg font-bold text-slate-900 font-mono"
-                  >$0.00</span
-                >
+                <span class="block text-xl font-bold text-slate-900 font-mono">$0.00</span>
                 <span class="text-xs text-slate-500">Listing Fees</span>
               </div>
               <div class="space-y-0.5">
-                <span class="block text-lg font-bold text-slate-900 font-mono"
-                  >Dual-Action</span
-                >
+                <span class="block text-xl font-bold text-slate-900 font-mono">Dual-Action</span>
                 <span class="text-xs text-slate-500">Download + Tab</span>
               </div>
               <div class="space-y-0.5">
-                <span class="block text-lg font-bold text-slate-900 font-mono"
-                  >Manifest V3</span
-                >
+                <span class="block text-xl font-bold text-slate-900 font-mono">Manifest V3</span>
                 <span class="text-xs text-slate-500">Verified Safety</span>
               </div>
             </div>
 
             <!-- Hero Action Buttons -->
             <div class="pt-2 flex flex-wrap items-center gap-3">
-              <!-- Monetag Primary Button -->
               <a
-                href="https://monetag.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg inline-flex items-center gap-2 cursor-pointer transition-colors shadow-2xs group"
+                href="#how-it-works"
+                class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg inline-flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
               >
-                <span>Get Monetag Direct Link</span>
-                <ExternalLink
-                  class="w-3.5 h-3.5 group-hover:text-blue-300 transition-colors"
-                />
+                <span>Monetization Setup Guide</span>
+                <ArrowRight class="w-3.5 h-3.5 text-blue-400" />
               </a>
 
-              <!-- Secondary Navigation Link (Subtle Blue) -->
               <a
                 href="#revenue-calculator"
-                class="px-4 py-2 bg-white hover:bg-blue-50/40 text-slate-800 hover:text-blue-600 text-xs font-medium rounded-lg inline-flex items-center gap-2 border border-slate-200 hover:border-blue-200 transition-colors"
+                class="px-5 py-2.5 bg-white hover:bg-blue-50/40 text-slate-800 hover:text-blue-600 text-xs font-medium rounded-lg inline-flex items-center gap-2 border border-slate-200 hover:border-blue-200 transition-colors"
               >
                 <span>Estimate Revenue</span>
                 <ArrowRight class="w-3.5 h-3.5 text-blue-500" />
@@ -157,9 +117,7 @@ const developerFaqs = [
           </div>
 
           <!-- Right Image Container Slot (5 Cols) -->
-          <div
-            class="lg:col-span-5 w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative group"
-          >
+          <div class="lg:col-span-5 w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative group shadow-2xs">
             <img
               src="/images/developer-hero.jpg"
               alt="Developer Portal & Monetag Monetization Dashboard"
@@ -167,203 +125,176 @@ const developerFaqs = [
               loading="eager"
             />
           </div>
+
         </div>
       </section>
 
       <!-- 2. How Dual-Action Monetization Works (Open 3-Stage Pipeline) -->
       <section id="how-it-works" class="space-y-6">
-        <div class="border-b border-slate-200 pb-2">
-          <h2 class="text-base font-bold text-slate-900 tracking-tight">
+        <div class="border-b border-slate-200/90 pb-3">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             How Dual-Action Monetization Works
           </h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            A frictionless mechanism that delivers the extension to the user while monetizing the visit via Monetag.
+          </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-1">
+          
           <!-- Step 1 -->
-          <div class="space-y-2">
-            <span class="text-xs font-mono font-semibold text-emerald-700 block"
-              >Stage 01</span
-            >
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded">01</span>
+              <span class="text-xs font-mono text-slate-400">Step 1</span>
+            </div>
             <h3 class="text-sm font-semibold text-slate-900">
               Generate Monetag Direct Link
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              Create a free account on <a
-                href="https://monetag.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-emerald-700 font-semibold underline decoration-emerald-300 underline-offset-2 hover:text-emerald-800"
-                >Monetag.com</a
-              > and generate a Direct Link URL for your download stream.
+              Create a free account on <a href="https://monetag.com" target="_blank" rel="noopener noreferrer" class="text-emerald-700 font-semibold underline decoration-emerald-300 underline-offset-2 hover:text-emerald-800">Monetag.com</a>, go to <strong>Direct Links</strong>, click <strong>Add Direct Link</strong>, and copy your monetization URL.
             </p>
           </div>
 
           <!-- Step 2 -->
-          <div class="space-y-2">
-            <span class="text-xs font-mono font-semibold text-blue-600 block"
-              >Stage 02</span
-            >
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-mono font-bold text-blue-800 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">02</span>
+              <span class="text-xs font-mono text-slate-400">Step 2</span>
+            </div>
             <h3 class="text-sm font-semibold text-slate-900">
               Connect Extension & Monetag URL
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              When listing your extension on ExtLabs, provide your package file
-              (.zip) alongside your <span class="text-emerald-700 font-medium"
-                >Monetag Direct Link URL</span
-              >.
+              When listing your extension on ExtLabs, provide your package file (.zip) alongside your <span class="text-emerald-700 font-medium">Monetag Direct Link URL</span>.
             </p>
           </div>
 
           <!-- Step 3 -->
-          <div class="space-y-2">
-            <span class="text-xs font-mono font-semibold text-blue-600 block"
-              >Stage 03</span
-            >
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-mono font-bold text-blue-800 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">03</span>
+              <span class="text-xs font-mono text-slate-400">Step 3</span>
+            </div>
             <h3 class="text-sm font-semibold text-slate-900">
               Simultaneous Download & Ad Tab
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              When a user clicks "Add to Browser", the extension downloads
-              automatically while your <span
-                class="text-emerald-700 font-medium">Monetag ad</span
-              > opens in a separate tab.
+              When a user clicks "Add to Browser", the extension downloads automatically while your <span class="text-emerald-700 font-medium">Monetag ad</span> opens in a separate tab.
             </p>
           </div>
+
         </div>
       </section>
 
       <!-- 3. Key Developer Advantages (Open Typographic Grid) -->
-      <section class="space-y-4 pt-4 border-t border-slate-200">
-        <div class="border-b border-slate-200 pb-2">
-          <h2 class="text-base font-bold text-slate-900 tracking-tight">
+      <section class="space-y-6">
+        <div class="border-b border-slate-200/90 pb-3">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             Developer Benefits
           </h2>
-          <p class="text-xs text-slate-500">
-            Why developers publish and monetize on ExtLabs.
+          <p class="text-xs text-slate-500 mt-0.5">
+            Why developers choose to publish and monetize their extensions on ExtLabs.
           </p>
         </div>
 
-        <div
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6"
-        >
-          <div class="space-y-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 pt-1">
+          <div class="space-y-1.5">
             <h3 class="text-xs font-semibold text-slate-900">
               100% Direct Payouts
             </h3>
             <p class="text-xs text-slate-500 leading-relaxed">
-              <span class="text-emerald-700 font-medium">Monetag</span> pays you directly
-              via PayPal, Payoneer, Crypto (USDT), or Wire Transfer with 0% platform
-              fee.
+              <span class="text-emerald-700 font-medium">Monetag</span> pays you directly via PayPal, Payoneer, Crypto (USDT), or Wire Transfer with 0% platform fee.
             </p>
           </div>
 
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             <h3 class="text-xs font-semibold text-slate-900">
               No Listing Fees
             </h3>
             <p class="text-xs text-slate-500 leading-relaxed">
-              Listing and distributing your extensions on ExtLabs is completely
-              free forever.
+              Listing and distributing your extensions on ExtLabs is completely free forever.
             </p>
           </div>
 
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             <h3 class="text-xs font-semibold text-slate-900">
               Manifest V3 Compliance
             </h3>
             <p class="text-xs text-slate-500 leading-relaxed">
-              Optimized for modern Chrome, Brave, Edge, Opera, and Vivaldi
-              extension architectures.
+              Optimized for modern Chrome, Brave, Edge, Opera, and Vivaldi extension architectures.
             </p>
           </div>
 
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             <h3 class="text-xs font-semibold text-slate-900">
               Dedicated SEO Landing Pages
             </h3>
             <p class="text-xs text-slate-500 leading-relaxed">
-              Each extension receives a full SEO landing page with Schema.org
-              markup and comparison matrix.
+              Each extension receives a full SEO landing page with Schema.org markup and comparison matrix.
             </p>
           </div>
 
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             <h3 class="text-xs font-semibold text-slate-900">
               Direct Link Flexibility
             </h3>
             <p class="text-xs text-slate-500 leading-relaxed">
-              Update your <span class="text-emerald-700 font-medium"
-                >Monetag Direct Link URL</span
-              > anytime without re-uploading extension packages.
+              Update your <span class="text-emerald-700 font-medium">Monetag Direct Link URL</span> anytime without re-uploading extension packages.
             </p>
           </div>
 
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             <h3 class="text-xs font-semibold text-slate-900">
               Low $5 Threshold
             </h3>
             <p class="text-xs text-slate-500 leading-relaxed">
-              Withdraw earnings weekly starting at just $5.00 directly from your <span
-                class="text-emerald-700 font-medium">Monetag</span
-              > dashboard.
+              Withdraw earnings weekly starting at just $5.00 directly from your <span class="text-emerald-700 font-medium">Monetag</span> dashboard.
             </p>
           </div>
         </div>
       </section>
 
-      <!-- 4. Minimalist Revenue Estimator (Clean HyperUI Box) -->
-      <section
-        id="revenue-calculator"
-        class="p-6 sm:p-7 bg-white rounded-lg border border-slate-200 space-y-6"
-      >
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-base font-bold text-slate-900 tracking-tight">
+      <!-- 4. Interactive Revenue Estimator (Distinct Interactive Workspace Card) -->
+      <section id="revenue-calculator" class="p-7 sm:p-9 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-7">
+        
+        <div class="border-b border-slate-100 pb-4">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             Revenue Estimator
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            Projected developer earnings from <span
-              class="text-emerald-700 font-medium">Monetag Direct Links</span
-            > based on monthly download volume.
+            Projected developer earnings from <span class="text-emerald-700 font-medium">Monetag Direct Links</span> based on monthly download volume.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          
           <!-- Controls Left (7 Cols) -->
           <div class="md:col-span-7 space-y-5">
+            
             <!-- Custom HyperUI Dropdown Component -->
             <div class="space-y-1.5" id="cpm-dropdown-wrapper">
               <label class="block text-xs font-medium text-slate-700">
                 Traffic Geography & CPM Rate:
               </label>
-
+              
               <div class="relative">
                 <!-- Trigger Button -->
                 <button
                   id="cpm-dropdown-trigger"
                   type="button"
-                  class="w-full flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-800 hover:border-blue-300 focus:outline-none focus:border-blue-400 cursor-pointer transition-colors shadow-2xs text-left"
+                  class="w-full flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-800 hover:border-blue-300 focus:outline-none focus:border-blue-400 cursor-pointer transition-colors shadow-2xs text-left"
                   aria-haspopup="listbox"
                   aria-expanded="false"
                 >
                   <div class="flex items-center gap-2">
-                    <span
-                      id="cpm-display-title"
-                      class="font-semibold text-slate-900"
-                      >Tier 1 (USA, UK, EU, Canada)</span
-                    >
-                    <span
-                      id="cpm-display-sub"
-                      class="text-emerald-700 font-mono text-[11px] font-medium"
-                      >~$8.50 CPM</span
-                    >
+                    <span id="cpm-display-title" class="font-semibold text-slate-900">Tier 1 (USA, UK, EU, Canada)</span>
+                    <span id="cpm-display-sub" class="text-emerald-700 font-mono text-[11px] font-medium">~$8.50 CPM</span>
                   </div>
-                  <ChevronDown
-                    id="cpm-dropdown-arrow"
-                    class="w-3.5 h-3.5 text-slate-400 transition-transform"
-                  />
+                  <ChevronDown id="cpm-dropdown-arrow" class="w-3.5 h-3.5 text-slate-400 transition-transform" />
                 </button>
 
-                <!-- Floating Dropdown Menu (Clean Minimalist White Card) -->
+                <!-- Floating Dropdown Menu -->
                 <div
                   id="cpm-dropdown-menu"
                   class="hidden absolute left-0 right-0 top-full mt-1.5 z-30 rounded-lg border border-slate-200 bg-white p-1 shadow-md space-y-0.5"
@@ -380,13 +311,8 @@ const developerFaqs = [
                     aria-selected="true"
                   >
                     <div class="flex items-center gap-2">
-                      <span class="font-semibold text-slate-900"
-                        >Tier 1 (USA, UK, EU, Canada)</span
-                      >
-                      <span
-                        class="text-emerald-700 font-mono text-[11px] font-medium"
-                        >~$8.50 CPM</span
-                      >
+                      <span class="font-semibold text-slate-900">Tier 1 (USA, UK, EU, Canada)</span>
+                      <span class="text-emerald-700 font-mono text-[11px] font-medium">~$8.50 CPM</span>
                     </div>
                     <Check class="w-3.5 h-3.5 text-blue-600 check-indicator" />
                   </button>
@@ -402,17 +328,10 @@ const developerFaqs = [
                     aria-selected="false"
                   >
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-slate-800"
-                        >Tier 2 (Global Mixed Traffic)</span
-                      >
-                      <span
-                        class="text-emerald-700 font-mono text-[11px] font-medium"
-                        >~$3.50 CPM</span
-                      >
+                      <span class="font-medium text-slate-800">Tier 2 (Global Mixed Traffic)</span>
+                      <span class="text-emerald-700 font-mono text-[11px] font-medium">~$3.50 CPM</span>
                     </div>
-                    <Check
-                      class="w-3.5 h-3.5 text-blue-600 check-indicator hidden"
-                    />
+                    <Check class="w-3.5 h-3.5 text-blue-600 check-indicator hidden" />
                   </button>
 
                   <!-- Option 3: Tier 3 -->
@@ -426,32 +345,20 @@ const developerFaqs = [
                     aria-selected="false"
                   >
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-slate-800"
-                        >Tier 3 (India & South Asia)</span
-                      >
-                      <span
-                        class="text-emerald-700 font-mono text-[11px] font-medium"
-                        >~$0.85 CPM</span
-                      >
+                      <span class="font-medium text-slate-800">Tier 3 (India & South Asia)</span>
+                      <span class="text-emerald-700 font-mono text-[11px] font-medium">~$0.85 CPM</span>
                     </div>
-                    <Check
-                      class="w-3.5 h-3.5 text-blue-600 check-indicator hidden"
-                    />
+                    <Check class="w-3.5 h-3.5 text-blue-600 check-indicator hidden" />
                   </button>
                 </div>
               </div>
             </div>
 
             <!-- Volume Slider & Input -->
-            <div class="space-y-2 pt-1">
-              <div
-                class="flex items-center justify-between text-xs font-medium text-slate-700"
-              >
+            <div class="space-y-2.5 pt-1">
+              <div class="flex items-center justify-between text-xs font-medium text-slate-700">
                 <span>Monthly Installs:</span>
-                <span
-                  id="slider-installs-label"
-                  class="font-mono text-blue-700 font-bold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded text-xs"
-                >
+                <span id="slider-installs-label" class="font-mono text-blue-700 font-bold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded text-xs">
                   50,000
                 </span>
               </div>
@@ -469,153 +376,121 @@ const developerFaqs = [
               <!-- Presets with Subtle Blue Hover -->
               <div class="flex items-center gap-1.5 pt-1">
                 <span class="text-[11px] text-slate-400">Presets:</span>
-                {
-                  [10000, 25000, 50000, 100000, 250000].map((num) => (
-                    <button
-                      type="button"
-                      data-preset-val={num}
-                      class="preset-btn px-2 py-0.5 text-[10px] font-mono text-slate-600 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 border border-slate-200 rounded cursor-pointer transition-colors"
-                    >
-                      {num / 1000}k
-                    </button>
-                  ))
-                }
+                {[10000, 25000, 50000, 100000, 250000].map((num) => (
+                  <button
+                    type="button"
+                    data-preset-val={num}
+                    class="preset-btn px-2.5 py-0.5 text-[10px] font-mono text-slate-600 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 border border-slate-200 rounded cursor-pointer transition-colors"
+                  >
+                    {(num / 1000)}k
+                  </button>
+                ))}
               </div>
             </div>
+
           </div>
 
           <!-- Calculation Output Right (5 Cols with Emerald Earnings) -->
-          <div
-            class="md:col-span-5 p-5 bg-slate-50 rounded-lg border border-slate-200 space-y-4"
-          >
+          <div class="md:col-span-5 p-6 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
             <div class="space-y-1">
-              <span class="text-xs text-slate-500 block"
-                >Projected Monthly Revenue</span
-              >
+              <span class="text-xs text-slate-500 block">Projected Monthly Revenue</span>
               <div class="flex items-baseline gap-1.5">
-                <span
-                  id="estimated-monthly-text"
-                  class="text-3xl font-extrabold font-mono text-emerald-600"
-                >
+                <span id="estimated-monthly-text" class="text-3xl font-extrabold font-mono text-emerald-600">
                   $425.00
                 </span>
                 <span class="text-xs text-slate-500 font-mono">USD</span>
               </div>
             </div>
 
-            <div
-              class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 text-xs"
-            >
+            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 text-xs">
               <div class="space-y-0.5">
-                <span class="text-[11px] text-slate-500 block"
-                  >Annual Projection</span
-                >
-                <span
-                  id="estimated-annual-text"
-                  class="font-bold font-mono text-slate-800"
-                >
+                <span class="text-[11px] text-slate-500 block">Annual Projection</span>
+                <span id="estimated-annual-text" class="font-bold font-mono text-slate-800">
                   $5,100.00 / yr
                 </span>
               </div>
 
               <div class="space-y-0.5">
-                <span class="text-[11px] text-slate-500 block"
-                  >Daily Average</span
-                >
-                <span
-                  id="estimated-daily-text"
-                  class="font-bold font-mono text-slate-800"
-                >
+                <span class="text-[11px] text-slate-500 block">Daily Average</span>
+                <span id="estimated-daily-text" class="font-bold font-mono text-slate-800">
                   $14.17 / day
                 </span>
               </div>
             </div>
 
-            <p
-              class="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60 leading-relaxed"
-            >
-              Paid directly to your account by <span
-                class="text-emerald-700 font-medium">Monetag</span
-              > via PayPal, Payoneer, Crypto (USDT), or Wire Transfer.
+            <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60 leading-relaxed">
+              Paid directly to your account by <span class="text-emerald-700 font-medium">Monetag</span> via PayPal, Payoneer, Crypto (USDT), or Wire Transfer.
             </p>
           </div>
+
         </div>
+
       </section>
 
       <!-- 5. Developer FAQs & Submission Notice (2-Column Balanced Section) -->
-      <div
-        class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start pt-4 border-t border-slate-200"
-      >
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        
         <!-- Left Column (6 Cols): Frequently Asked Questions -->
         <section class="lg:col-span-6 space-y-4">
-          <div class="border-b border-slate-200 pb-2">
-            <h2 class="text-base font-bold text-slate-900 tracking-tight">
+          <div class="border-b border-slate-200/90 pb-3">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
               Developer Questions & Answers
             </h2>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs text-slate-500 mt-0.5">
               Common questions about monetization and payouts.
             </p>
           </div>
 
           <div class="divide-y divide-slate-100">
-            {
-              developerFaqs.map((faq) => (
-                <details class="group py-3 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-                  <summary class="flex items-center justify-between text-xs font-semibold text-slate-900 group-hover:text-blue-600 select-none transition-colors">
-                    <span>{faq.question}</span>
-                    <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 group-hover:text-blue-600 transition-all" />
-                  </summary>
-                  <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-                    {faq.answer}
-                  </p>
-                </details>
-              ))
-            }
+            {developerFaqs.map((faq) => (
+              <details class="group py-3 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                <summary class="flex items-center justify-between text-xs font-semibold text-slate-900 group-hover:text-blue-600 select-none transition-colors">
+                  <span>{faq.question}</span>
+                  <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 group-hover:text-blue-600 transition-all" />
+                </summary>
+                <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
           </div>
         </section>
 
         <!-- Right Column (6 Cols): Submission Notice -->
         <section class="lg:col-span-6 space-y-4">
-          <div class="border-b border-slate-200 pb-2">
-            <h2 class="text-base font-bold text-slate-900 tracking-tight">
+          <div class="border-b border-slate-200/90 pb-3">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
               Extension Submissions
             </h2>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs text-slate-500 mt-0.5">
               Get ready to publish your extension.
             </p>
           </div>
 
-          <div
-            class="p-5 rounded-lg border border-slate-200 bg-white space-y-4"
-          >
+          <div class="p-6 rounded-xl border border-slate-200 bg-white space-y-4 shadow-2xs">
             <div class="space-y-1.5">
               <span class="text-xs font-semibold text-slate-900 block">
                 Public Submission Portal
               </span>
               <p class="text-xs text-slate-600 leading-relaxed">
-                We are preparing the dedicated developer submission form for
-                public onboarding. In the meantime, you can register on <span
-                  class="text-emerald-700 font-medium">Monetag</span
-                > and prepare your Direct Link.
+                We are preparing the dedicated developer submission form for public onboarding. In the meantime, you can register on <span class="text-emerald-700 font-medium">Monetag</span> and prepare your Direct Link.
               </p>
             </div>
 
             <div class="pt-1">
               <a
-                href="https://monetag.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs group"
+                href="#how-it-works"
+                class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
               >
-                <span>Register on Monetag</span>
-                <ExternalLink
-                  class="w-3.5 h-3.5 group-hover:text-blue-300 transition-colors"
-                />
+                <span>Read Monetization Guide</span>
+                <ArrowRight class="w-3.5 h-3.5 text-blue-400" />
               </a>
             </div>
           </div>
         </section>
+
       </div>
+
     </main>
 
     <!-- Footer -->
@@ -623,30 +498,28 @@ const developerFaqs = [
 
     <!-- Client-Side Minimalist Revenue Calculation Script with Custom Dropdown -->
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const slider = document.getElementById(
-          "installs-slider",
-        ) as HTMLInputElement | null;
-        const installsLabel = document.getElementById("slider-installs-label");
-        const monthlyText = document.getElementById("estimated-monthly-text");
-        const annualText = document.getElementById("estimated-annual-text");
-        const dailyText = document.getElementById("estimated-daily-text");
-        const presetButtons = document.querySelectorAll(".preset-btn");
+      document.addEventListener('DOMContentLoaded', () => {
+        const slider = document.getElementById('installs-slider') as HTMLInputElement | null;
+        const installsLabel = document.getElementById('slider-installs-label');
+        const monthlyText = document.getElementById('estimated-monthly-text');
+        const annualText = document.getElementById('estimated-annual-text');
+        const dailyText = document.getElementById('estimated-daily-text');
+        const presetButtons = document.querySelectorAll('.preset-btn');
 
         // Custom Dropdown Elements
-        const trigger = document.getElementById("cpm-dropdown-trigger");
-        const menu = document.getElementById("cpm-dropdown-menu");
-        const arrow = document.getElementById("cpm-dropdown-arrow");
-        const displayTitle = document.getElementById("cpm-display-title");
-        const displaySub = document.getElementById("cpm-display-sub");
-        const menuItems = document.querySelectorAll(".cpm-menu-item");
+        const trigger = document.getElementById('cpm-dropdown-trigger');
+        const menu = document.getElementById('cpm-dropdown-menu');
+        const arrow = document.getElementById('cpm-dropdown-arrow');
+        const displayTitle = document.getElementById('cpm-display-title');
+        const displaySub = document.getElementById('cpm-display-sub');
+        const menuItems = document.querySelectorAll('.cpm-menu-item');
 
-        let activeCpm = 8.5; // Default Tier 1 CPM
+        let activeCpm = 8.50; // Default Tier 1 CPM
 
         function calculateRevenue() {
           if (!slider) return;
           const installs = parseInt(slider.value, 10);
-
+          
           if (installsLabel) {
             installsLabel.textContent = `${installs.toLocaleString()}`;
           }
@@ -669,39 +542,36 @@ const developerFaqs = [
 
         // Toggle dropdown open/close
         if (trigger && menu && arrow) {
-          trigger.addEventListener("click", (e) => {
+          trigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isOpen = !menu.classList.contains("hidden");
+            const isOpen = !menu.classList.contains('hidden');
             if (isOpen) {
-              menu.classList.add("hidden");
-              arrow.classList.remove("rotate-180");
-              trigger.setAttribute("aria-expanded", "false");
+              menu.classList.add('hidden');
+              arrow.classList.remove('rotate-180');
+              trigger.setAttribute('aria-expanded', 'false');
             } else {
-              menu.classList.remove("hidden");
-              arrow.classList.add("rotate-180");
-              trigger.setAttribute("aria-expanded", "true");
+              menu.classList.remove('hidden');
+              arrow.classList.add('rotate-180');
+              trigger.setAttribute('aria-expanded', 'true');
             }
           });
 
           // Close on click outside
-          document.addEventListener("click", (e) => {
-            if (
-              !trigger.contains(e.target as Node) &&
-              !menu.contains(e.target as Node)
-            ) {
-              menu.classList.add("hidden");
-              arrow.classList.remove("rotate-180");
-              trigger.setAttribute("aria-expanded", "false");
+          document.addEventListener('click', (e) => {
+            if (!trigger.contains(e.target as Node) && !menu.contains(e.target as Node)) {
+              menu.classList.add('hidden');
+              arrow.classList.remove('rotate-180');
+              trigger.setAttribute('aria-expanded', 'false');
             }
           });
         }
 
         // Select an item from custom dropdown
         menuItems.forEach((item) => {
-          item.addEventListener("click", () => {
-            const valStr = item.getAttribute("data-cpm-val") || "8.50";
-            const titleStr = item.getAttribute("data-title") || "";
-            const subStr = item.getAttribute("data-sub") || "";
+          item.addEventListener('click', () => {
+            const valStr = item.getAttribute('data-cpm-val') || '8.50';
+            const titleStr = item.getAttribute('data-title') || '';
+            const subStr = item.getAttribute('data-sub') || '';
 
             activeCpm = parseFloat(valStr);
 
@@ -710,24 +580,22 @@ const developerFaqs = [
 
             // Update item active styles
             menuItems.forEach((mi) => {
-              mi.className =
-                "cpm-menu-item w-full flex items-center justify-between px-3 py-2 text-xs rounded-md text-left cursor-pointer transition-colors hover:bg-slate-50 text-slate-700";
-              mi.setAttribute("aria-selected", "false");
-              const chk = mi.querySelector(".check-indicator");
-              if (chk) chk.classList.add("hidden");
+              mi.className = 'cpm-menu-item w-full flex items-center justify-between px-3 py-2 text-xs rounded-md text-left cursor-pointer transition-colors hover:bg-slate-50 text-slate-700';
+              mi.setAttribute('aria-selected', 'false');
+              const chk = mi.querySelector('.check-indicator');
+              if (chk) chk.classList.add('hidden');
             });
 
-            item.className =
-              "cpm-menu-item w-full flex items-center justify-between px-3 py-2 text-xs rounded-md text-left cursor-pointer transition-colors bg-blue-50/60 text-slate-900 font-medium";
-            item.setAttribute("aria-selected", "true");
-            const activeChk = item.querySelector(".check-indicator");
-            if (activeChk) activeChk.classList.remove("hidden");
+            item.className = 'cpm-menu-item w-full flex items-center justify-between px-3 py-2 text-xs rounded-md text-left cursor-pointer transition-colors bg-blue-50/60 text-slate-900 font-medium';
+            item.setAttribute('aria-selected', 'true');
+            const activeChk = item.querySelector('.check-indicator');
+            if (activeChk) activeChk.classList.remove('hidden');
 
             // Close menu
             if (menu && arrow && trigger) {
-              menu.classList.add("hidden");
-              arrow.classList.remove("rotate-180");
-              trigger.setAttribute("aria-expanded", "false");
+              menu.classList.add('hidden');
+              arrow.classList.remove('rotate-180');
+              trigger.setAttribute('aria-expanded', 'false');
             }
 
             calculateRevenue();
@@ -736,8 +604,8 @@ const developerFaqs = [
 
         // Presets
         presetButtons.forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const val = btn.getAttribute("data-preset-val");
+          btn.addEventListener('click', () => {
+            const val = btn.getAttribute('data-preset-val');
             if (slider && val) {
               slider.value = val;
               calculateRevenue();
@@ -746,7 +614,7 @@ const developerFaqs = [
         });
 
         if (slider) {
-          slider.addEventListener("input", calculateRevenue);
+          slider.addEventListener('input', calculateRevenue);
         }
 
         // Initial Calculation
