@@ -1,6 +1,6 @@
 ---
 // Navbar.astro
-import { Box, Search, Plus } from '@lucide/astro';
+import { Box, Search, Plus, HelpCircle } from '@lucide/astro';
 ---
 
 <header class="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80">
@@ -46,7 +46,15 @@ import { Box, Search, Plus } from '@lucide/astro';
       </div>
 
       <!-- Right Action Items -->
-      <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-2">
+        <a
+          href="/how-to-install"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100/70 transition-colors"
+        >
+          <HelpCircle class="w-3.5 h-3.5 text-slate-400" />
+          <span>Install Guide</span>
+        </a>
+
         <a
           href="/developers/new"
           id="publish-btn"
