@@ -25,7 +25,10 @@ import {
   AlertCircle,
   CheckCircle2,
   FolderOpen,
-  Filter
+  Filter,
+  Users,
+  BarChart3,
+  Settings
 } from '@lucide/astro';
 
 // Pending submissions queue
@@ -163,6 +166,67 @@ const userReports = [
         </div>
       </div>
 
+      <!-- Admin Navigation Submenu / Tabs (Quick Section Navigation) -->
+      <div class="border-b border-slate-200 -mt-6">
+        <nav class="flex items-center gap-1 sm:gap-6 overflow-x-auto no-scrollbar text-xs sm:text-sm font-medium">
+          <!-- 1. Moderation & Review (Active) -->
+          <a
+            href="/admin"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-slate-900 text-slate-900 font-semibold shrink-0"
+          >
+            <ShieldCheck class="w-4 h-4 text-slate-900" />
+            <span>Moderation Hub</span>
+          </a>
+
+          <!-- 2. Pending Review -->
+          <a
+            href="/admin/pending-review"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Clock class="w-4 h-4 text-slate-400" />
+            <span>Pending Review</span>
+            <span class="text-[11px] font-mono font-semibold text-amber-600">25</span>
+          </a>
+
+          <!-- 3. Developers -->
+          <a
+            href="/developers/dashboard"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Users class="w-4 h-4 text-slate-400" />
+            <span>Developers</span>
+          </a>
+
+          <!-- 4. Statistics -->
+          <a
+            href="#"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <BarChart3 class="w-4 h-4 text-slate-400" />
+            <span>Statistics</span>
+          </a>
+
+          <!-- 5. Reports -->
+          <a
+            href="#"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <AlertCircle class="w-4 h-4 text-slate-400" />
+            <span>Reports</span>
+            <span class="text-[11px] font-mono font-semibold text-rose-600">2</span>
+          </a>
+
+          <!-- 6. Settings -->
+          <a
+            href="/developers/settings"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Settings class="w-4 h-4 text-slate-400" />
+            <span>Settings</span>
+          </a>
+        </nav>
+      </div>
+
       <!-- 1. Key Operational Metrics (Soft #f0f4f9 Cards) -->
       <section class="space-y-3">
         <div class="flex items-center justify-between">
@@ -184,18 +248,18 @@ const userReports = [
               <div class="flex items-center justify-between">
                 <span class="text-xs font-semibold text-slate-600">Pending Review</span>
                 <span class="text-xs font-semibold text-amber-600 font-mono">
-                  4 Submissions
+                  25 Submissions
                 </span>
               </div>
               <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
-                4
+                25
               </div>
               <span class="text-[11px] text-slate-500 block leading-tight">
-                3 automated pass • 1 manual triage
+                21 automated pass • 4 manual triage
               </span>
             </div>
             <a
-              href="#queue-table-body"
+              href="/admin/pending-review"
               class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 pt-2"
             >
               <span>View review queue</span>
@@ -245,10 +309,10 @@ const userReports = [
               </span>
             </div>
             <a
-              href="#rep-101"
+              href="#"
               class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 pt-2"
             >
-              <span>View abuse reports</span>
+              <span>View open reports</span>
               <ArrowRight class="w-3.5 h-3.5" />
             </a>
           </div>
@@ -296,7 +360,7 @@ const userReports = [
 
           <!-- View all link in queue header -->
           <a
-            href="#"
+            href="/admin/pending-review"
             class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 shrink-0"
           >
             <span>View all pending submissions ({pendingQueue.length})</span>
@@ -560,64 +624,6 @@ const userReports = [
         </div>
       </section>
 
-      <!-- 4. User Abuse Reports & Quality Triage (Soft #f0f4f9 Cards) -->
-      <section class="space-y-4">
-        <div class="space-y-1">
-          <h2 class="text-lg font-bold text-slate-900 tracking-tight">
-            User Quality & Security Reports
-          </h2>
-          <p class="text-xs text-slate-500">
-            Tickets submitted by platform users and automated monitoring alerts.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {userReports.map((report) => (
-            <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-3" id={report.id}>
-              <div class="flex items-center justify-between">
-                <div class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600">
-                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                  <span>{report.severity} Severity</span>
-                </div>
-                <span class="text-[11px] text-slate-400 font-medium">{report.reportedAt}</span>
-              </div>
-
-              <div class="space-y-1">
-                <h3 class="text-xs sm:text-sm font-bold text-slate-900">
-                  {report.extensionName}
-                </h3>
-                <p class="text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-200/80">
-                  "{report.reason}"
-                </p>
-              </div>
-
-              <div class="flex items-center justify-between pt-1">
-                <span class="text-[11px] text-slate-400 font-mono">
-                  Reported by: @{report.reporter}
-                </span>
-
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    class="dismiss-report-btn px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-medium rounded-lg border border-slate-200 cursor-pointer transition-colors shadow-2xs"
-                    data-report-id={report.id}
-                  >
-                    Dismiss
-                  </button>
-                  <button
-                    type="button"
-                    class="resolve-report-btn px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-[11px] font-semibold rounded-lg cursor-pointer transition-colors shadow-2xs"
-                    data-report-id={report.id}
-                  >
-                    Mark Resolved
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
     </main>
 
     <!-- Minimalist Floating Admin Toast -->
@@ -743,32 +749,7 @@ const userReports = [
           });
         });
 
-        // 6. User Reports Dismiss & Resolve
-        const dismissButtons = document.querySelectorAll('.dismiss-report-btn');
-        dismissButtons.forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const reportId = btn.getAttribute('data-report-id');
-            const card = document.getElementById(reportId);
-            if (card) {
-              card.style.display = 'none';
-              showAdminToast('Ticket dismissed.');
-            }
-          });
-        });
-
-        const resolveButtons = document.querySelectorAll('.resolve-report-btn');
-        resolveButtons.forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const reportId = btn.getAttribute('data-report-id');
-            const card = document.getElementById(reportId);
-            if (card) {
-              card.style.display = 'none';
-              showAdminToast('Ticket marked as Resolved.');
-            }
-          });
-        });
-
-        // 7. Live Table Search Filter
+        // 6. Live Table Search Filter
         const searchInput = document.getElementById('admin-search-input');
         const rows = document.querySelectorAll('.live-row');
         if (searchInput) {
