@@ -8,7 +8,11 @@ import {
   KeyRound, 
   Server,
   User,
-  LayoutDashboard
+  Settings,
+  Bell,
+  ChevronUp,
+  ChevronDown,
+  Trash2
 } from '@lucide/astro';
 ---
 
@@ -45,7 +49,7 @@ import {
         </div>
       </div>
 
-      <!-- Right: Storefront Link & Profile Dropdown (Developer Console Style) -->
+      <!-- Right: Storefront Link, Notifications & Profile Dropdown -->
       <div class="flex items-center gap-3">
         
         <!-- View Public Store -->
@@ -60,7 +64,229 @@ import {
 
         <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
 
-        <!-- PROFILE AVATAR & DROPDOWN (Identical to Developer Console) -->
+        <!-- 1. NOTIFICATIONS DROPDOWN (Identical to Developer Console Style) -->
+        <div class="relative">
+          <button
+            type="button"
+            id="admin-notifications-toggle-btn"
+            class="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            title="View admin notifications"
+          >
+            <Bell class="w-4 h-4" />
+            <!-- Notification Alert Dot -->
+            <span id="admin-notification-alert-dot" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+          </button>
+
+          <!-- Notification Dropdown Window -->
+          <div
+            id="admin-notifications-dropdown-menu"
+            class="hidden absolute right-0 mt-2 w-88 sm:w-[440px] bg-white rounded-2xl border border-slate-200 shadow-2xl z-50 overflow-hidden"
+          >
+            
+            <!-- Notification Deleted Undo Banner (Hidden by default) -->
+            <div id="admin-notification-deleted-banner" class="hidden m-3 p-3 bg-[#f0f4f9] rounded-xl flex items-center justify-between text-xs text-slate-800">
+              <span class="font-medium">Notification dismissed</span>
+              <button
+                type="button"
+                id="admin-notification-undo-btn"
+                class="text-blue-600 hover:text-blue-700 font-semibold hover:underline cursor-pointer"
+              >
+                Undo
+              </button>
+            </div>
+
+            <!-- Notifications List Container -->
+            <div class="p-3 space-y-3 max-h-[420px] overflow-y-auto" id="admin-notifications-list">
+              
+              <!-- Notification 1 (Expanded State) -->
+              <div
+                class="admin-notif-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
+                data-id="admin-notif-1"
+                data-expanded="true"
+              >
+                <!-- Top Header Row -->
+                <div class="flex items-center justify-between">
+                  <!-- User / Sender Tag -->
+                  <div class="inline-flex items-center gap-1.5 text-xs text-slate-700 font-medium">
+                    <img
+                      src="https://avatars.githubusercontent.com/u/583231"
+                      alt="ExtLabs Triage Bot"
+                      class="w-4.5 h-4.5 rounded-full object-cover border border-slate-200"
+                    />
+                    <span class="font-medium text-[11px]">Triage Bot</span>
+                  </div>
+
+                  <!-- Date & Chevron -->
+                  <div class="flex items-center gap-2 text-slate-500 text-xs">
+                    <span class="font-normal text-[11px]">Just now</span>
+                    <ChevronUp class="w-3.5 h-3.5 admin-notif-chevron text-slate-600" />
+                  </div>
+                </div>
+
+                <!-- Expanded Content Area -->
+                <div class="admin-notif-expanded-body space-y-2">
+                  <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
+                    New extension "API Quick Tester" (v1.2.0) awaiting moderator review
+                  </h4>
+                  
+                  <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                    Automated static security analysis passed with zero warnings. Verify permissions and manifest compliance before publishing.
+                  </p>
+
+                  <!-- Bottom Actions Row -->
+                  <div class="flex items-center justify-between pt-1">
+                    <a
+                      href="/admin#queue-table-body"
+                      class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
+                    >
+                      Review in Queue
+                    </a>
+
+                    <button
+                      type="button"
+                      class="admin-notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      title="Dismiss notification"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Collapsed Preview (Hidden when expanded) -->
+                <div class="admin-notif-collapsed-preview hidden text-xs text-slate-800 font-normal leading-snug">
+                  New extension "API Quick Tester" (v1.2.0) awaiting review...
+                </div>
+
+              </div>
+
+              <!-- Notification 2 (Collapsed State by Default) -->
+              <div
+                class="admin-notif-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
+                data-id="admin-notif-2"
+                data-expanded="false"
+              >
+                <!-- Top Header Row -->
+                <div class="flex items-center justify-between">
+                  <!-- User / Sender Tag -->
+                  <div class="inline-flex items-center gap-1.5 text-xs text-slate-700 font-medium">
+                    <img
+                      src="https://avatars.githubusercontent.com/u/583231"
+                      alt="Abuse Sentinel"
+                      class="w-4.5 h-4.5 rounded-full object-cover border border-slate-200"
+                    />
+                    <span class="font-medium text-[11px]">Abuse Sentinel</span>
+                  </div>
+
+                  <!-- Date & Chevron -->
+                  <div class="flex items-center gap-2 text-slate-500 text-xs">
+                    <span class="font-normal text-[11px]">2h ago</span>
+                    <ChevronDown class="w-3.5 h-3.5 admin-notif-chevron text-slate-600" />
+                  </div>
+                </div>
+
+                <!-- Expanded Content Area (Hidden initially) -->
+                <div class="admin-notif-expanded-body hidden space-y-2">
+                  <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
+                    User abuse ticket filed: TabSuspender: Smart Memory Saver
+                  </h4>
+                  
+                  <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                    Reporter @alex_researcher flagged duplicate nested directory structure causing archive extraction issues on macOS.
+                  </p>
+
+                  <!-- Bottom Actions Row -->
+                  <div class="flex items-center justify-between pt-1">
+                    <a
+                      href="/admin#rep-101"
+                      class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
+                    >
+                      Triage Report
+                    </a>
+
+                    <button
+                      type="button"
+                      class="admin-notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      title="Dismiss notification"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Collapsed Preview (Shown initially) -->
+                <div class="admin-notif-collapsed-preview text-xs text-slate-800 font-normal leading-snug">
+                  User abuse ticket filed for TabSuspender: Smart Memory Saver
+                </div>
+
+              </div>
+
+              <!-- Notification 3 (Collapsed State by Default) -->
+              <div
+                class="admin-notif-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
+                data-id="admin-notif-3"
+                data-expanded="false"
+              >
+                <!-- Top Header Row -->
+                <div class="flex items-center justify-between">
+                  <!-- User / Sender Tag -->
+                  <div class="inline-flex items-center gap-1.5 text-xs text-slate-700 font-medium">
+                    <img
+                      src="https://avatars.githubusercontent.com/u/583231"
+                      alt="Manifest V3 Scanner"
+                      class="w-4.5 h-4.5 rounded-full object-cover border border-slate-200"
+                    />
+                    <span class="font-medium text-[11px]">Security Sentinel</span>
+                  </div>
+
+                  <!-- Date & Chevron -->
+                  <div class="flex items-center gap-2 text-slate-500 text-xs">
+                    <span class="font-normal text-[11px]">1d ago</span>
+                    <ChevronDown class="w-3.5 h-3.5 admin-notif-chevron text-slate-600" />
+                  </div>
+                </div>
+
+                <!-- Expanded Content Area (Hidden initially) -->
+                <div class="admin-notif-expanded-body hidden space-y-2">
+                  <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
+                    Periodic directory security audit completed successfully
+                  </h4>
+                  
+                  <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                    All 12 live Chromium packages re-verified against latest security policies. Zero malicious API violations detected.
+                  </p>
+
+                  <!-- Bottom Actions Row -->
+                  <div class="flex items-center justify-between pt-1">
+                    <a
+                      href="/admin"
+                      class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
+                    >
+                      View Live Inventory
+                    </a>
+
+                    <button
+                      type="button"
+                      class="admin-notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      title="Dismiss notification"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Collapsed Preview (Shown initially) -->
+                <div class="admin-notif-collapsed-preview text-xs text-slate-800 font-normal leading-snug">
+                  Periodic directory security audit completed successfully
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2. PROFILE AVATAR & DROPDOWN (Cleaned up strictly per user requirements) -->
         <div class="relative">
           <button
             type="button"
@@ -101,44 +327,51 @@ import {
               </div>
             </div>
 
-            <!-- Menu Navigation Links -->
+            <!-- Menu Navigation Links: Exact 4 Items + Logout Requested by User -->
             <div class="p-1.5 space-y-0.5 text-xs text-slate-700">
+              
+              <!-- 1. Profile Settings -->
               <a
-                id="admin-github-profile-link"
-                href="https://github.com/ishara-madu"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+                href="/developers/settings"
+                class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
-                <div class="flex items-center gap-2.5">
-                  <User class="w-3.5 h-3.5 text-slate-500" />
-                  <span>GitHub Profile</span>
-                </div>
-                <ExternalLink class="w-3 h-3 text-slate-400" />
+                <User class="w-3.5 h-3.5 text-slate-500" />
+                <span>Profile Settings</span>
               </a>
 
+              <!-- 2. System / Platform Settings -->
+              <a
+                href="/developers/settings"
+                class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <Settings class="w-3.5 h-3.5 text-slate-500" />
+                <span>Settings</span>
+              </a>
+
+              <!-- 3. Admin Controls / Moderation Hub -->
               <a
                 href="/admin"
                 class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
-                <LayoutDashboard class="w-3.5 h-3.5 text-slate-500" />
-                <span>Moderation Hub</span>
+                <ShieldCheck class="w-3.5 h-3.5 text-slate-500" />
+                <span>Admin Controls</span>
               </a>
 
+              <!-- 4. Developer Console (Publish Apps as ExtLabs Official Team) -->
               <a
-                href="/"
-                target="_blank"
+                href="/developers/dashboard"
                 class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <div class="flex items-center gap-2.5">
                   <Box class="w-3.5 h-3.5 text-slate-500" />
-                  <span>Storefront Directory</span>
+                  <span>Developer Console (ExtLabs Team)</span>
                 </div>
                 <ExternalLink class="w-3 h-3 text-slate-400" />
               </a>
+
             </div>
 
-            <!-- Sign Out Action -->
+            <!-- 5. Sign Out Action -->
             <div class="p-1.5 border-t border-slate-100">
               <button
                 type="button"
@@ -161,6 +394,13 @@ import {
 
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
+    // 1. Elements
+    const notifToggleBtn = document.getElementById('admin-notifications-toggle-btn');
+    const notifMenu = document.getElementById('admin-notifications-dropdown-menu');
+    const notifDot = document.getElementById('admin-notification-alert-dot');
+    const deletedBanner = document.getElementById('admin-notification-deleted-banner');
+    const undoBtn = document.getElementById('admin-notification-undo-btn');
+    
     const profileToggleBtn = document.getElementById('admin-profile-toggle-btn');
     const profileMenu = document.getElementById('admin-profile-dropdown-menu');
     const signOutBtn = document.getElementById('admin-signout-menu-btn');
@@ -168,9 +408,10 @@ import {
     const dropAvatar = document.getElementById('admin-dropdown-avatar');
     const dropName = document.getElementById('admin-dropdown-name');
     const dropHandle = document.getElementById('admin-dropdown-handle');
-    const ghLink = document.getElementById('admin-github-profile-link');
 
-    // Populate user details from localStorage
+    let lastDeletedItem = null;
+
+    // 2. Populate user details from localStorage
     const savedUser = localStorage.getItem('extlabs_admin_user');
     if (savedUser) {
       try {
@@ -180,31 +421,92 @@ import {
           if (dropAvatar) dropAvatar.src = u.avatar;
         }
         if (u.name && dropName) dropName.textContent = u.name;
-        if (u.username) {
-          if (dropHandle) dropHandle.textContent = `@${u.username}`;
-          if (ghLink) ghLink.href = `https://github.com/${u.username}`;
-        }
+        if (u.username && dropHandle) dropHandle.textContent = `@${u.username}`;
       } catch (e) {}
     }
 
-    // Toggle Profile Dropdown Menu
+    // 3. Toggle Notifications Dropdown
+    if (notifToggleBtn && notifMenu) {
+      notifToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (profileMenu) profileMenu.classList.add('hidden');
+        notifMenu.classList.toggle('hidden');
+        if (notifDot) notifDot.classList.add('hidden'); // Clear alert dot on view
+      });
+    }
+
+    // 4. Notification Expand / Collapse & Delete Handlers
+    const notifItems = document.querySelectorAll('.admin-notif-item');
+    notifItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        const isExpanded = item.getAttribute('data-expanded') === 'true';
+        const expandedBody = item.querySelector('.admin-notif-expanded-body');
+        const collapsedPreview = item.querySelector('.admin-notif-collapsed-preview');
+        const chevron = item.querySelector('.admin-notif-chevron');
+
+        if (isExpanded) {
+          item.setAttribute('data-expanded', 'false');
+          if (expandedBody) expandedBody.classList.add('hidden');
+          if (collapsedPreview) collapsedPreview.classList.remove('hidden');
+          if (chevron) {
+            chevron.innerHTML = '<polyline points="6 9 12 15 18 9"/>'; // chevron down
+          }
+        } else {
+          item.setAttribute('data-expanded', 'true');
+          if (expandedBody) expandedBody.classList.remove('hidden');
+          if (collapsedPreview) collapsedPreview.classList.add('hidden');
+          if (chevron) {
+            chevron.innerHTML = '<polyline points="18 15 12 9 6 15"/>'; // chevron up
+          }
+        }
+      });
+
+      // Delete Button Handler
+      const delBtn = item.querySelector('.admin-notif-delete-btn');
+      if (delBtn) {
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          lastDeletedItem = item;
+          lastDeletedItem.style.display = 'none';
+          if (deletedBanner) deletedBanner.classList.remove('hidden');
+        });
+      }
+    });
+
+    // Undo Deleted Notification
+    if (undoBtn && deletedBanner) {
+      undoBtn.addEventListener('click', () => {
+        if (lastDeletedItem) {
+          lastDeletedItem.style.display = '';
+          lastDeletedItem = null;
+        }
+        deletedBanner.classList.add('hidden');
+      });
+    }
+
+    // 5. Toggle Profile Dropdown Menu
     if (profileToggleBtn && profileMenu) {
       profileToggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (notifMenu) notifMenu.classList.add('hidden');
         profileMenu.classList.toggle('hidden');
       });
     }
 
-    // Close when clicking outside
+    // Close all dropdowns when clicking outside
     document.addEventListener('click', () => {
+      if (notifMenu) notifMenu.classList.add('hidden');
       if (profileMenu) profileMenu.classList.add('hidden');
     });
 
+    if (notifMenu) {
+      notifMenu.addEventListener('click', (e) => e.stopPropagation());
+    }
     if (profileMenu) {
       profileMenu.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    // Sign Out Handler
+    // 6. Sign Out Handler
     if (signOutBtn) {
       signOutBtn.addEventListener('click', () => {
         localStorage.removeItem('extlabs_admin_session');
