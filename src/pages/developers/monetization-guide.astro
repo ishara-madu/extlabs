@@ -1,0 +1,529 @@
+---
+// src/pages/developers/monetization-guide.astro
+import "../../styles/global.css";
+import Navbar from "../../components/Navbar.astro";
+import Footer from "../../components/Footer.astro";
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  ExternalLink, 
+  Check, 
+  ChevronDown, 
+  Zap, 
+  ShieldCheck, 
+  Globe, 
+  DollarSign, 
+  Link as LinkIcon, 
+  Layers, 
+  CheckCircle2, 
+  HelpCircle, 
+  AlertCircle, 
+  Copy, 
+  Sliders, 
+  CreditCard, 
+  Sparkles,
+  RefreshCw,
+  BookOpen,
+  Image as ImageIcon
+} from '@lucide/astro';
+
+const guideFaqs = [
+  {
+    q: "Does ExtLabs take any commission or platform cut from my earnings?",
+    a: "No. ExtLabs charges 0% platform fees. When you paste your Monetag Direct Link into your extension listing, 100% of all ad impressions and revenue stream directly into your personal Monetag Publisher Account."
+  },
+  {
+    q: "Do I need to re-upload my extension .zip file whenever I update my Monetag link?",
+    a: "No. Your Monetag Direct Link URL is configured dynamically in your ExtLabs Developer Console. You can change your link or adjust trigger frequencies anytime with a single click without creating a new package release."
+  },
+  {
+    q: "Can I monetize users from all countries?",
+    a: "Yes. Monetag supports 100% global fill rates across all geographies (Tier 1, Tier 2, and Tier 3). Advertisers automatically serve the highest-paying offers based on the user's location."
+  },
+  {
+    q: "How does the dual-action download mechanism work?",
+    a: "When a user clicks 'Add to Browser' or 'Download' on your extension store page, the browser initiates the direct file download (.zip) in the background while simultaneously opening your Monetag Direct Link in a new tab. The user receives the extension instantly while an impression is credited to you."
+  },
+  {
+    q: "What is the minimum payout threshold and payment schedule?",
+    a: "Monetag has a low minimum payout threshold of just $5.00 USD. Automated payouts are processed on a weekly basis via PayPal, Payoneer, Crypto (USDT TRC20/ERC20), Wire Transfer, and Skrill."
+  },
+  {
+    q: "Is creating a Monetag Publisher Account free?",
+    a: "Yes. Monetag is completely free for all publishers and developers. There are no registration fees, monthly charges, or waiting periods for Direct Links."
+  }
+];
+
+const steps = [
+  {
+    num: "01",
+    title: "Create a Free Monetag Publisher Account",
+    summary: "Register as an Individual Publisher to unlock instant Direct Links.",
+    details: [
+      "Visit Monetag.com and click 'Sign Up' in the top right corner.",
+      "Select 'Individual' account type and enter your developer name, email, and country.",
+      "Verify your email address to gain instant access to your Monetag Publisher Hub.",
+      "No website ownership verification or approval wait times are required for Direct Links."
+    ],
+    proTip: "You do not need a domain name. Direct Links work immediately upon account creation.",
+    imageCaption: "Monetag Publisher Registration — Individual Publisher Account Setup",
+    imagePlaceholder: "Screenshot: Monetag Publisher Signup Form & Individual Account Selection"
+  },
+  {
+    num: "02",
+    title: "Navigate to Direct Links & Add a Link Zone",
+    summary: "Generate a dedicated monetization link for your browser extension downloads.",
+    details: [
+      "In the left navigation sidebar of your Monetag dashboard, click on 'Direct Links'.",
+      "Click the 'Add Direct Link' button at the top right of the screen.",
+      "Give your direct link a clear name (e.g., 'ExtLabs - Deep Summarize AI').",
+      "Click 'Get Link' or 'Save'. Monetag will instantly generate your unique monetization URL."
+    ],
+    proTip: "Naming each direct link per extension allows you to track individual install metrics and revenue in your Monetag telemetry dashboard.",
+    imageCaption: "Monetag Dashboard — Creating a New Direct Link Zone",
+    imagePlaceholder: "Screenshot: Direct Links Section & 'Add Direct Link' Configuration Modal"
+  },
+  {
+    num: "03",
+    title: "Copy Your Unique Monetag Direct Link URL",
+    summary: "Your direct link is optimized to route traffic to top-performing ad campaigns.",
+    details: [
+      "Locate your newly created link in the Direct Links table.",
+      "Click the 'Copy' icon next to the link or copy the URL directly.",
+      "A valid Monetag direct link will follow the format: https://monetag.com/direct/xxxxxxx or https://go.monetag.com/...",
+      "Do not modify or append random parameters to this URL."
+    ],
+    proTip: "Keep this URL copied on your clipboard to paste into your ExtLabs Developer Console.",
+    imageCaption: "Monetag Direct Link URL — Copying Link from Dashboard",
+    imagePlaceholder: "Screenshot: Direct Link URL Table & One-Click Copy Action"
+  },
+  {
+    num: "04",
+    title: "Paste the Direct Link in ExtLabs Developer Console",
+    summary: "Connect your direct link to your extension store listing in under 10 seconds.",
+    details: [
+      "Open your ExtLabs Developer Console (/developers/new to publish or /developers/manage/[id]/edit to update).",
+      "Navigate to Tab 4: 'Monetization & Specs'.",
+      "Paste your copied Monetag URL into the 'Monetag Direct Link URL' input field.",
+      "Click 'Test Link' to verify that the URL opens your live ad stream in a new tab."
+    ],
+    proTip: "You can also save a default Monetag link in your Developer Settings (/developers/settings) to automatically populate future extension listings.",
+    imageCaption: "ExtLabs Extension Editor — Tab 4: Monetization & Specs",
+    imagePlaceholder: "Screenshot: ExtLabs Developer Console with Monetag Direct Link Input & Test Link Action"
+  },
+  {
+    num: "05",
+    title: "Select Trigger Frequency & Cooldown Rules",
+    summary: "Choose how often the ad tab is presented to users downloading your extension.",
+    details: [
+      "Once every 24 hours per user (Recommended): Balanced user experience preventing duplicate ad tabs within the same day.",
+      "On every download event (Max Monetization): Triggers a direct link open on every package install click.",
+      "Twice every 24 hours (12h cooldown): Ideal for high-frequency utility extensions.",
+      "Once per browser session startup: Triggers once when the browser session begins."
+    ],
+    proTip: "The '24 Hours Cooldown' setting yields the highest user retention and 5-star store reviews while maintaining steady earnings.",
+    imageCaption: "ExtLabs Developer Console — Ad Tab Trigger Frequency Selector",
+    imagePlaceholder: "Screenshot: Trigger Frequency Dropdown & Cooldown Settings"
+  },
+  {
+    num: "06",
+    title: "Track Real-Time Earnings & Receive Weekly Payouts",
+    summary: "Monitor impressions, CPM rates, and withdraw your funds starting at $5.00.",
+    details: [
+      "Log in to your Monetag Publisher Dashboard to view real-time statistics (Impressions, CPM, Total Profit).",
+      "Go to 'Payment Methods' in Monetag settings and select your preferred payout channel.",
+      "Supported methods: PayPal, Payoneer, USDT (TRC20/ERC20), Wire Transfer, and Skrill.",
+      "Payouts are processed automatically every week once your balance reaches the $5.00 threshold."
+    ],
+    proTip: "Set up two-factor authentication (2FA) in Monetag to secure your payout wallet and credentials.",
+    imageCaption: "Monetag Publisher Dashboard — Real-time Telemetry & Weekly Payouts",
+    imagePlaceholder: "Screenshot: Monetag Analytics Dashboard (CPM, Impressions, Daily Revenue Graph)"
+  }
+];
+
+const payoutMethods = [
+  {
+    name: "PayPal",
+    threshold: "$5.00 USD",
+    fee: "Low fee",
+    speed: "Instant / Weekly",
+    bestFor: "Global developers seeking fast fiat withdrawals."
+  },
+  {
+    name: "Cryptocurrency (USDT TRC20 / ERC20)",
+    threshold: "$5.00 USD",
+    fee: "Minimal gas fee",
+    speed: "Instant blockchain transfer",
+    bestFor: "Developers worldwide wanting decentralized, borderless payouts."
+  },
+  {
+    name: "Payoneer",
+    threshold: "$20.00 USD",
+    fee: "Standard Payoneer fee",
+    speed: "1-2 business days",
+    bestFor: "International bank account transfers and local debit cards."
+  },
+  {
+    name: "Bank Wire Transfer",
+    threshold: "$500.00 USD",
+    fee: "Bank standard",
+    speed: "3-5 business days",
+    bestFor: "High-volume teams and registered software studios."
+  }
+];
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- SEO & Metadata -->
+    <title>Monetag Direct Link Monetization Guide — ExtLabs Developer Portal</title>
+    <meta 
+      name="description" 
+      content="Comprehensive step-by-step guide for browser extension developers on generating, configuring, and earning 100% direct payouts with Monetag Direct Links on ExtLabs." 
+    />
+    <meta name="keywords" content="Monetag direct link, monetize browser extension, chrome extension earnings, extension monetization guide, ExtLabs developer guide" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
+    
+    <Navbar />
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-20">
+      
+      <!-- 1. Top Breadcrumbs & Page Header (Clean & Typographic) -->
+      <header class="space-y-4 border-b border-slate-200 pb-8">
+        <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium" aria-label="Breadcrumb">
+          <a href="/developers" class="hover:text-blue-600 transition-colors">Developer Portal</a>
+          <span class="text-slate-300">/</span>
+          <span class="text-slate-900">Monetization Guide</span>
+        </nav>
+
+        <div class="space-y-2">
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <span class="text-emerald-700 font-bold">Monetag</span> Direct Link Monetization Guide
+          </h1>
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl">
+            A complete step-by-step walkthrough for extension developers to generate, connect, and earn 100% direct payouts with <span class="text-emerald-700 font-semibold">Monetag</span> Direct Links on ExtLabs.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-500">
+          <span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
+            <BookOpen class="w-3.5 h-3.5 text-blue-600" />
+            <span>4 min read</span>
+          </span>
+          <span>•</span>
+          <span class="inline-flex items-center gap-1.5 font-medium text-emerald-700">
+            <CheckCircle2 class="w-3.5 h-3.5 text-emerald-600" />
+            <span>100% Direct Payouts (0% Platform Fee)</span>
+          </span>
+          <span>•</span>
+          <span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
+            <DollarSign class="w-3.5 h-3.5 text-blue-600" />
+            <span>$5.00 Minimum Threshold</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3 pt-3">
+          <a
+            href="https://monetag.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          >
+            <span>Open Monetag.com</span>
+            <ExternalLink class="w-3.5 h-3.5" />
+          </a>
+
+          <a
+            href="/developers/new"
+            class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>Publish Your Extension</span>
+            <ArrowRight class="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </header>
+
+      <!-- 2. How Monetization Works Architecture (Open Typographic Section) -->
+      <section class="space-y-6">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+            How Monetization Works on ExtLabs
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Clean dual-stream execution designed for user satisfaction and developer revenue.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
+          
+          <div class="space-y-2">
+            <span class="text-xs font-mono font-bold text-blue-600">01. User Download</span>
+            <h3 class="text-sm font-bold text-slate-900">User Initiates Download</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              A user visits your extension store page and clicks the prominent "Add to Browser" button to download your .zip package.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <span class="text-xs font-mono font-bold text-blue-600">02. Dual Action</span>
+            <h3 class="text-sm font-bold text-slate-900">Simultaneous Download & Ad Tab</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              The browser begins downloading your extension package instantly while opening your <span class="text-emerald-700 font-semibold">Monetag</span> Direct Link in a separate browser tab.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <span class="text-xs font-mono font-bold text-emerald-600">03. 100% Payout</span>
+            <h3 class="text-sm font-bold text-slate-900">Direct Account Credit</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              The ad impression is credited directly to your <span class="text-emerald-700 font-semibold">Monetag</span> publisher account in real-time. ExtLabs takes 0% cut.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Dark Note Style for Important Architecture Insight -->
+        <div class="p-5 bg-slate-900 rounded-xl text-white space-y-1.5 shadow-2xs">
+          <span class="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+            <ShieldCheck class="w-4 h-4 text-emerald-400" />
+            <span>Why <span class="text-emerald-400 font-semibold">Monetag</span> Direct Links?</span>
+          </span>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Unlike intrusive pop-ups or banner injections inside extension popup UIs, Direct Links trigger only when a user intentionally downloads or updates your package. This keeps the extension code itself 100% clean, fast, and fully compliant with Chrome Web Store safety guidelines.
+          </p>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- 3. Step-by-Step Walkthrough with Dedicated Image Areas (Clean Spacing & Dividers) -->
+      <section class="space-y-8">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+            Step-by-Step Setup Walkthrough
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Follow these 6 straightforward steps to generate and connect your monetization stream.
+          </p>
+        </div>
+
+        <div class="divide-y divide-slate-200">
+          {steps.map((st, idx) => (
+            <div class={`space-y-6 ${idx === 0 ? 'pb-14' : 'py-14'}`}>
+              
+              <!-- Step Header & Info -->
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 border border-blue-200/80 px-2.5 py-0.5 rounded-md shadow-2xs">
+                    Step {st.num}
+                  </span>
+                  <h3 class="text-lg font-bold text-slate-900 tracking-tight">
+                    {st.title}
+                  </h3>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-500">
+                  {st.summary}
+                </p>
+              </div>
+
+              <!-- Step Bullet Points -->
+              <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+                {st.details.map((item) => (
+                  <li class="flex items-start gap-2.5">
+                    <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span class="leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <!-- Dedicated Screenshot / Visual Guide Image Frame -->
+              <div class="space-y-2 pt-2">
+                <div class="aspect-[16/9] max-w-3xl bg-slate-100 rounded-xl border border-slate-200/90 flex flex-col items-center justify-center text-center p-6 gap-2 group hover:border-blue-400 transition-colors cursor-pointer shadow-2xs relative overflow-hidden">
+                  <div class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors shadow-2xs">
+                    <ImageIcon class="w-5 h-5" />
+                  </div>
+                  <div class="space-y-0.5 max-w-sm">
+                    <span class="text-xs font-semibold text-slate-700 block group-hover:text-blue-600 transition-colors">
+                      {st.imagePlaceholder}
+                    </span>
+                    <span class="text-[10px] text-slate-400 block font-mono">
+                      Step screenshot illustration preview
+                    </span>
+                  </div>
+                </div>
+                <span class="text-[11px] text-slate-400 block pl-1">
+                  Figure {st.num}: {st.imageCaption}
+                </span>
+              </div>
+
+              <!-- Dark Note Style for Pro Tip -->
+              <div class="p-4 bg-slate-900 rounded-xl text-white text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
+                <span class="text-emerald-400 font-bold shrink-0">Pro-Tip:</span>
+                <span class="text-slate-300 leading-relaxed">{st.proTip}</span>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- 4. Payout Channels & Minimum Thresholds (Open Typographic Grid) -->
+      <section class="space-y-6">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+            Payout Channels & Withdrawal Terms
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            <span class="text-emerald-700 font-semibold">Monetag</span> processes automated weekly payouts across a wide range of global payment providers.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6 pt-2">
+          {payoutMethods.map((m) => (
+            <div class="space-y-2 border-b sm:border-b-0 border-slate-200 pb-4 sm:pb-0">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-900">
+                  {m.name}
+                </h3>
+                <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                  Min: {m.threshold}
+                </span>
+              </div>
+
+              <div class="space-y-0.5 text-xs text-slate-500">
+                <div class="flex items-center justify-between">
+                  <span>Processing Speed:</span>
+                  <span class="font-medium text-slate-700">{m.speed}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span>Fee Structure:</span>
+                  <span class="font-medium text-slate-700">{m.fee}</span>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-600 leading-relaxed pt-1">
+                {m.bestFor}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- 5. Developer Best Practices (Open 3-Column Layout) -->
+      <section class="space-y-6">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+            Best Practices for Maximum Retention & Revenue
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Ensure high user satisfaction while maximizing developer earnings.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-2">
+          <div class="space-y-2">
+            <h3 class="text-xs font-bold text-slate-900">1. Use 24h Cooldown</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Setting frequency to once every 24 hours prevents users from experiencing multiple ad tabs if they download several updates on the same day.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="text-xs font-bold text-slate-900">2. Keep Extensions Free</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Users are glad to support open-source extensions via a quick sponsor tab when the core extension tool remains 100% free with no locked paywalls.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="text-xs font-bold text-slate-900">3. Accurate Metadata</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Keep your extension name, screenshots, and version in sync with GitHub releases to build strong user trust and higher search rankings.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- 6. Frequently Asked Questions (Open Typographic Accordion) -->
+      <section class="space-y-6">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+            Frequently Asked Questions
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Answers to common developer questions about <span class="text-emerald-700 font-semibold">Monetag</span> direct links and ExtLabs.
+          </p>
+        </div>
+
+        <div class="divide-y divide-slate-200">
+          {guideFaqs.map((faq) => (
+            <details class="group py-4 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+              <summary class="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-900 group-hover:text-blue-600 select-none transition-colors">
+                <span>{faq.q}</span>
+                <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 group-hover:text-blue-600 transition-all shrink-0 ml-2" />
+              </summary>
+              <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+                {faq.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <!-- 7. Dark CTA Notification Card -->
+      <section class="p-8 bg-slate-900 rounded-2xl text-white space-y-5 shadow-2xs">
+        <div class="space-y-1">
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+            Ready to monetize your browser extension?
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+            Publish your open-source or custom extension on ExtLabs today. Keep 100% of your earnings with instant weekly payouts directly from <span class="text-emerald-400 font-semibold">Monetag</span>.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a
+            href="/developers/new"
+            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          >
+            <span>Submit Extension in Console</span>
+            <ArrowRight class="w-3.5 h-3.5" />
+          </a>
+
+          <a
+            href="https://monetag.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
+          >
+            <span>Create Free Monetag Account</span>
+            <ExternalLink class="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <Footer />
+
+  </body>
+</html>
