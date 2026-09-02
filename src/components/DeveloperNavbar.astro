@@ -1,6 +1,19 @@
 ---
 // src/components/DeveloperNavbar.astro
-import { Box, Search, HelpCircle, LogOut, ExternalLink, Plus } from '@lucide/astro';
+import { 
+  Box, 
+  Bell, 
+  HelpCircle, 
+  LogOut, 
+  ExternalLink, 
+  ChevronDown, 
+  ChevronUp,
+  Settings, 
+  User, 
+  ShieldCheck,
+  Zap,
+  Trash2
+} from '@lucide/astro';
 ---
 
 <header class="sticky top-0 z-40 w-full bg-white border-b border-slate-200">
@@ -8,7 +21,7 @@ import { Box, Search, HelpCircle, LogOut, ExternalLink, Plus } from '@lucide/ast
     <div class="flex items-center justify-between h-14 gap-6">
       
       <!-- Brand & Console Title -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <a href="/" class="flex items-center gap-2.5 group">
           <div class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-2xs">
             <Box class="w-3.5 h-3.5 text-white" />
@@ -16,28 +29,15 @@ import { Box, Search, HelpCircle, LogOut, ExternalLink, Plus } from '@lucide/ast
           <span class="text-sm font-bold tracking-tight text-slate-900">ExtLabs</span>
         </a>
         
-        <span class="text-slate-300">/</span>
+        <span class="text-slate-300 font-normal">/</span>
         
-        <div class="flex items-center gap-1.5">
+        <a href="/developers/dashboard" class="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
           <span class="text-xs font-semibold text-slate-800">Developer Console</span>
-        </div>
+        </a>
       </div>
 
-      <!-- Quick Search inside Console -->
-      <div class="flex-1 max-w-sm hidden md:block">
-        <div class="relative">
-          <Search class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <input
-            id="console-search-input"
-            type="text"
-            placeholder="Search all extensions & releases..."
-            class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-900 rounded-lg border border-slate-200 focus:border-slate-400 focus:outline-none placeholder-slate-400"
-          />
-        </div>
-      </div>
-
-      <!-- Right Profile & Console Actions -->
-      <div class="flex items-center gap-4">
+      <!-- Right Action Items (Docs, Monetag, Notifications, Profile Dropdown) -->
+      <div class="flex items-center gap-3 sm:gap-4">
         
         <!-- Documentation / Setup Guide Link -->
         <a
@@ -49,40 +49,269 @@ import { Box, Search, HelpCircle, LogOut, ExternalLink, Plus } from '@lucide/ast
           <span>Docs</span>
         </a>
 
-        <!-- Monetag Dashboard Link -->
+        <!-- Monetag Dashboard Link (Green) -->
         <a
           href="https://monetag.com"
           target="_blank"
           rel="noopener noreferrer"
-          class="hidden sm:inline-flex items-center gap-1 text-xs text-slate-600 hover:text-blue-600 font-medium transition-colors"
+          class="hidden sm:inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 font-semibold transition-colors group"
         >
           <span>Monetag</span>
-          <ExternalLink class="w-3 h-3 text-slate-400" />
+          <ExternalLink class="w-3 h-3 text-emerald-600 group-hover:text-emerald-700 transition-colors" />
         </a>
 
         <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
 
-        <!-- Developer Account Profile & Sign Out -->
-        <div class="flex items-center gap-2.5">
-          <img
-            src="https://avatars.githubusercontent.com/u/583231"
-            alt="Developer Avatar"
-            class="w-7 h-7 rounded-full border border-slate-200 object-cover"
-          />
-          <div class="hidden lg:flex flex-col text-left">
-            <span class="text-xs font-semibold text-slate-900 leading-tight">NeuralLabs</span>
-            <span class="text-[10px] text-slate-400 font-mono leading-none">@neural-labs</span>
-          </div>
-
-          <!-- Sign Out Button -->
+        <!-- 1. GOOGLE PLAY CONSOLE STYLE NOTIFICATIONS DROPDOWN -->
+        <div class="relative">
           <button
             type="button"
-            id="dev-signout-btn"
-            class="ml-1 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-            title="Sign out of Developer Console"
+            id="notifications-toggle-btn"
+            class="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            title="View notifications"
           >
-            <LogOut class="w-3.5 h-3.5" />
+            <Bell class="w-4 h-4" />
+            <!-- Notification Alert Dot -->
+            <span id="notification-alert-dot" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
           </button>
+
+          <!-- Notification Dropdown Window -->
+          <div
+            id="notifications-dropdown-menu"
+            class="hidden absolute right-0 mt-2 w-88 sm:w-[440px] bg-white rounded-2xl border border-slate-200 shadow-2xl z-50 overflow-hidden"
+          >
+            
+            <!-- Notification Deleted Undo Banner (Hidden by default) -->
+            <div id="notification-deleted-banner" class="hidden m-3 p-3 bg-[#f0f4f9] rounded-xl flex items-center justify-between text-xs text-slate-800">
+              <span class="font-medium">Notification deleted</span>
+              <button
+                type="button"
+                id="notification-undo-btn"
+                class="text-blue-600 hover:text-blue-700 font-semibold hover:underline cursor-pointer"
+              >
+                Undo
+              </button>
+            </div>
+
+            <!-- Notifications List Container -->
+            <div class="p-3 space-y-3 max-h-[420px] overflow-y-auto" id="notifications-list">
+              
+              <!-- Notification 1 (Expanded State) -->
+              <div
+                class="notification-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
+                data-id="notif-1"
+                data-expanded="true"
+              >
+                <!-- Top Header Row -->
+                <div class="flex items-center justify-between">
+                  <!-- User / Sender Pill -->
+                  <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-xs text-slate-800 shadow-2xs">
+                    <img
+                      src="https://avatars.githubusercontent.com/u/583231"
+                      alt="Ishara Madhusanka"
+                      class="w-4.5 h-4.5 rounded-full object-cover"
+                    />
+                    <span class="font-medium text-[11px]">Ishara Madhusanka</span>
+                  </div>
+
+                  <!-- Date & Expand/Collapse Chevron -->
+                  <div class="flex items-center gap-2 text-slate-500 text-xs">
+                    <span class="font-normal text-[11px]">Aug 27</span>
+                    <ChevronUp class="w-3.5 h-3.5 notif-chevron text-slate-600" />
+                  </div>
+                </div>
+
+                <!-- Expanded Content Area -->
+                <div class="notif-expanded-body space-y-2">
+                  <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
+                    Introducing new quality requirements to optimize app memory and secure device migration
+                  </h4>
+                  
+                  <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                    Read our blog post to learn about new tools, performance thresholds, and 2027 deadlines
+                  </p>
+
+                  <!-- Bottom Actions Row -->
+                  <div class="flex items-center justify-between pt-1">
+                    <a
+                      href="/developers#how-it-works"
+                      class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
+                    >
+                      Read blog post
+                    </a>
+
+                    <button
+                      type="button"
+                      class="notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      title="Delete notification"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Collapsed Preview (Hidden when expanded) -->
+                <div class="notif-collapsed-preview hidden text-xs text-slate-800 font-normal leading-snug">
+                  Introducing new quality requirements to optimize app memory...
+                </div>
+
+              </div>
+
+              <!-- Notification 2 (Collapsed State by Default) -->
+              <div
+                class="notification-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
+                data-id="notif-2"
+                data-expanded="false"
+              >
+                <!-- Top Header Row -->
+                <div class="flex items-center justify-between">
+                  <!-- User / Sender Pill -->
+                  <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-xs text-slate-800 shadow-2xs">
+                    <img
+                      src="https://avatars.githubusercontent.com/u/583231"
+                      alt="Ishara Madhusanka"
+                      class="w-4.5 h-4.5 rounded-full object-cover"
+                    />
+                    <span class="font-medium text-[11px]">Ishara Madhusanka</span>
+                  </div>
+
+                  <!-- Date & Expand/Collapse Chevron -->
+                  <div class="flex items-center gap-2 text-slate-500 text-xs">
+                    <span class="font-normal text-[11px]">Aug 7</span>
+                    <ChevronDown class="w-3.5 h-3.5 notif-chevron text-slate-600" />
+                  </div>
+                </div>
+
+                <!-- Expanded Content Area (Hidden initially) -->
+                <div class="notif-expanded-body hidden space-y-2">
+                  <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
+                    Ensure your browser extensions are registered for developer verification by Sep 30, 2026
+                  </h4>
+                  
+                  <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                    Complete your publisher verification profile to ensure uninterrupted updates and automated Manifest V3 reviews.
+                  </p>
+
+                  <!-- Bottom Actions Row -->
+                  <div class="flex items-center justify-between pt-1">
+                    <a
+                      href="/developers/dashboard"
+                      class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
+                    >
+                      Complete verification
+                    </a>
+
+                    <button
+                      type="button"
+                      class="notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      title="Delete notification"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Collapsed Preview (Shown initially) -->
+                <div class="notif-collapsed-preview text-xs text-slate-800 font-normal leading-snug">
+                  Ensure your browser extensions are registered for developer verification by Sep 30, 2026
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2. PROFILE AVATAR & DROPDOWN (Avatar Only) -->
+        <div class="relative">
+          <button
+            type="button"
+            id="profile-toggle-btn"
+            class="p-0.5 rounded-full hover:ring-2 hover:ring-slate-300 focus:outline-none transition-all cursor-pointer flex items-center justify-center shrink-0"
+            title="Account & Settings"
+          >
+            <img
+              src="https://avatars.githubusercontent.com/u/583231"
+              alt="Developer Avatar"
+              class="w-7.5 h-7.5 rounded-full border border-slate-200 object-cover"
+            />
+          </button>
+
+          <!-- Profile Dropdown Menu -->
+          <div
+            id="profile-dropdown-menu"
+            class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-xl z-50 overflow-hidden"
+          >
+            <!-- User Info Header -->
+            <div class="p-4 border-b border-slate-100 bg-slate-50/50 space-y-1">
+              <div class="flex items-center gap-2.5">
+                <img
+                  src="https://avatars.githubusercontent.com/u/583231"
+                  alt="Developer Avatar"
+                  class="w-9 h-9 rounded-full border border-slate-200 object-cover"
+                />
+                <div class="space-y-0.5 overflow-hidden">
+                  <span class="text-xs font-bold text-slate-900 block truncate">NeuralLabs Studio</span>
+                  <span class="text-[11px] text-slate-500 font-mono block truncate">@neural-labs</span>
+                </div>
+              </div>
+              <div class="pt-1.5 flex items-center gap-1 text-[10px] text-blue-700 font-medium">
+                <ShieldCheck class="w-3.5 h-3.5 text-blue-600" />
+                <span>Verified Developer (GitHub OAuth)</span>
+              </div>
+            </div>
+
+            <!-- Menu Navigation Links (Strictly requested items) -->
+            <div class="p-1.5 space-y-0.5 text-xs text-slate-700">
+              <a
+                href="https://github.com/neural-labs"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-2.5">
+                  <User class="w-3.5 h-3.5 text-slate-500" />
+                  <span>GitHub Profile</span>
+                </div>
+                <ExternalLink class="w-3 h-3 text-slate-400" />
+              </a>
+
+              <a
+                href="https://monetag.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-2.5">
+                  <Zap class="w-3.5 h-3.5 text-slate-500" />
+                  <span>Monetag Publisher Hub</span>
+                </div>
+                <ExternalLink class="w-3 h-3 text-slate-400" />
+              </a>
+
+              <a
+                href="#settings"
+                class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <Settings class="w-3.5 h-3.5 text-slate-500" />
+                <span>Settings</span>
+              </a>
+            </div>
+
+            <!-- Sign Out Action -->
+            <div class="p-1.5 border-t border-slate-100">
+              <button
+                type="button"
+                id="dev-signout-menu-btn"
+                class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer text-left"
+              >
+                <LogOut class="w-3.5 h-3.5 text-red-500" />
+                <span>Logout</span>
+              </button>
+            </div>
+
+          </div>
         </div>
 
       </div>
@@ -93,7 +322,106 @@ import { Box, Search, HelpCircle, LogOut, ExternalLink, Plus } from '@lucide/ast
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const signOutBtn = document.getElementById('dev-signout-btn');
+    // Dropdown Controllers
+    const notifBtn = document.getElementById('notifications-toggle-btn');
+    const notifMenu = document.getElementById('notifications-dropdown-menu');
+    const profileBtn = document.getElementById('profile-toggle-btn');
+    const profileMenu = document.getElementById('profile-dropdown-menu');
+    const signOutBtn = document.getElementById('dev-signout-menu-btn');
+    const deletedBanner = document.getElementById('notification-deleted-banner');
+    const undoBtn = document.getElementById('notification-undo-btn');
+    let lastDeletedItem: HTMLElement | null = null;
+
+    // Toggle Notifications Dropdown
+    if (notifBtn && notifMenu) {
+      notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifMenu.classList.toggle('hidden');
+        if (profileMenu) profileMenu.classList.add('hidden');
+      });
+    }
+
+    // Toggle Profile Dropdown
+    if (profileBtn && profileMenu) {
+      profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileMenu.classList.toggle('hidden');
+        if (notifMenu) notifMenu.classList.add('hidden');
+      });
+    }
+
+    // Expand / Collapse Google Play Console Notification Items
+    const notifItems = document.querySelectorAll('.notification-item');
+    notifItems.forEach((item) => {
+      item.addEventListener('click', (e) => {
+        // Prevent toggle if clicking delete button or links
+        const target = e.target as HTMLElement;
+        if (target.closest('.notif-delete-btn') || target.closest('a')) {
+          return;
+        }
+
+        const expandedBody = item.querySelector('.notif-expanded-body');
+        const collapsedPreview = item.querySelector('.notif-collapsed-preview');
+        const chevron = item.querySelector('.notif-chevron');
+        const isExpanded = item.getAttribute('data-expanded') === 'true';
+
+        if (isExpanded) {
+          // Collapse
+          item.setAttribute('data-expanded', 'false');
+          expandedBody?.classList.add('hidden');
+          collapsedPreview?.classList.remove('hidden');
+          if (chevron) {
+            chevron.classList.add('rotate-180');
+          }
+        } else {
+          // Expand
+          item.setAttribute('data-expanded', 'true');
+          expandedBody?.classList.remove('hidden');
+          collapsedPreview?.classList.add('hidden');
+          if (chevron) {
+            chevron.classList.remove('rotate-180');
+          }
+        }
+      });
+
+      // Delete Button Handler
+      const delBtn = item.querySelector('.notif-delete-btn');
+      if (delBtn) {
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          lastDeletedItem = item as HTMLElement;
+          lastDeletedItem.style.display = 'none';
+          if (deletedBanner) deletedBanner.classList.remove('hidden');
+        });
+      }
+    });
+
+    // Undo Deleted Notification
+    if (undoBtn && deletedBanner) {
+      undoBtn.addEventListener('click', () => {
+        if (lastDeletedItem) {
+          lastDeletedItem.style.display = '';
+          lastDeletedItem = null;
+        }
+        deletedBanner.classList.add('hidden');
+      });
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', () => {
+      if (notifMenu) notifMenu.classList.add('hidden');
+      if (profileMenu) profileMenu.classList.add('hidden');
+    });
+
+    if (notifMenu) {
+      notifMenu.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    if (profileMenu) {
+      profileMenu.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    // Sign Out Handler
     if (signOutBtn) {
       signOutBtn.addEventListener('click', () => {
         localStorage.removeItem('extlabs_dev_session');
