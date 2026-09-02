@@ -558,18 +558,6 @@ const userReports = [
           return;
         }
 
-        // Set logged-in user email if saved
-        const adminUser = localStorage.getItem('extlabs_admin_user');
-        if (adminUser) {
-          try {
-            const parsed = JSON.parse(adminUser);
-            const userDisplay = document.getElementById('admin-user-display');
-            if (userDisplay && parsed.email) {
-              userDisplay.textContent = parsed.email;
-            }
-          } catch (e) {}
-        }
-
         // 2. Toast Helper
         const toast = document.getElementById('admin-toast');
         const toastText = document.getElementById('admin-toast-text');
@@ -584,16 +572,6 @@ const userReports = [
               toast.classList.add('hidden');
             }, 3000);
           }
-        }
-
-        // 3. Log Out Action
-        const logoutBtn = document.getElementById('admin-logout-btn');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('extlabs_admin_session');
-            localStorage.removeItem('extlabs_admin_user');
-            window.location.href = '/admin/login';
-          });
         }
 
         // 4. Review Queue Action Handlers (Approve / Reject)

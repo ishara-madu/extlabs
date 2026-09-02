@@ -5,19 +5,10 @@ import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import { 
   ShieldCheck, 
-  ArrowRight, 
   ArrowLeft, 
   Check, 
-  Box, 
-  AlertCircle, 
-  Lock, 
-  Mail, 
-  Eye, 
-  EyeOff, 
   KeyRound, 
-  Terminal,
-  Fingerprint,
-  Sparkles
+  AlertCircle 
 } from '@lucide/astro';
 ---
 
@@ -27,8 +18,8 @@ import {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Admin Staff Portal — ExtLabs Security Gateway</title>
+    <title>Admin Sign In — ExtLabs Security Gateway</title>
+    <meta name="robots" content="noindex, nofollow" />
     <meta name="description" content="Authorized administrator and moderator access for ExtLabs extension review, security audits, and publisher moderation." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,154 +48,76 @@ import {
         <!-- Main Admin Login Card -->
         <div class="bg-white rounded-2xl border border-slate-200/90 p-8 sm:p-10 shadow-2xs space-y-6">
           
-          <!-- Card Header & Badge -->
-          <div class="space-y-3 text-center">
-            <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center mx-auto shadow-2xs">
-              <KeyRound class="w-6 h-6 text-white" />
+          <!-- Card Header -->
+          <div class="space-y-2 text-center">
+            <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mx-auto shadow-2xs">
+              <KeyRound class="w-5 h-5 text-white" />
             </div>
             
-            <div class="space-y-1">
-              <div class="inline-flex items-center gap-1.5 text-xs text-blue-600 font-semibold font-mono">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                <span>Staff Security Gateway</span>
-              </div>
+            <h1 class="text-xl font-bold text-slate-900 tracking-tight">
+              Admin Console Sign In
+            </h1>
+            
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Authenticate with your authorized GitHub organization account to access the ExtLabs Moderation Hub, review extensions, and manage directory security.
+            </p>
+          </div>
 
-              <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight pt-1">
-                Admin Console Sign In
-              </h1>
-              
-              <p class="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
-                Authorized access for extension verification, security triage, and directory management.
-              </p>
+          <!-- Unauthenticated Warning Notice (Shown when redirected) -->
+          <div id="auth-alert" class="hidden p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-lg text-xs flex items-center gap-2">
+            <AlertCircle class="w-4 h-4 text-amber-600 shrink-0" />
+            <span>Please sign in with your GitHub administrator account to access the Admin Console.</span>
+          </div>
+
+          <!-- Primary GitHub Auth Action (Same as Developer Console) -->
+          <div class="space-y-3 pt-2">
+            <button
+              type="button"
+              id="admin-github-login-btn"
+              class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-xl inline-flex items-center justify-center gap-2.5 cursor-pointer transition-colors shadow-2xs group"
+            >
+              <svg class="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+              <span>Continue with GitHub</span>
+            </button>
+
+            <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+              <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
+              <span>Staff & Moderator Access • Cryptographically Audited</span>
             </div>
           </div>
 
-          <!-- Alert Notice (Hidden by default) -->
-          <div id="admin-login-error" class="hidden p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-start gap-2.5">
-            <AlertCircle class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-            <span id="admin-error-text">Invalid administrator credentials. Access logged.</span>
-          </div>
-
-          <!-- Login Form -->
-          <form id="admin-login-form" class="space-y-4">
+          <!-- Moderation Console Features List -->
+          <div class="pt-4 border-t border-slate-100 space-y-2.5">
+            <span class="text-[11px] font-semibold text-slate-700 block uppercase tracking-wider">
+              Admin Console Capabilities:
+            </span>
             
-            <!-- Email / Staff Identifier -->
-            <div class="space-y-1.5">
-              <label for="admin-email" class="block text-xs font-semibold text-slate-700">
-                Staff Email / Username
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Mail class="w-4 h-4" />
-                </div>
-                <input
-                  type="email"
-                  id="admin-email"
-                  required
-                  placeholder="admin@extlabs.io"
-                  class="w-full pl-10 pr-3.5 py-2.5 text-xs bg-white text-slate-900 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all placeholder:text-slate-400 font-medium"
-                />
-              </div>
-            </div>
-
-            <!-- Password -->
-            <div class="space-y-1.5">
-              <div class="flex items-center justify-between">
-                <label for="admin-password" class="block text-xs font-semibold text-slate-700">
-                  Master Password
-                </label>
-                <span class="text-[10px] text-slate-400 font-mono">256-bit Encrypted</span>
+            <div class="space-y-2 text-xs text-slate-600">
+              <div class="flex items-start gap-2">
+                <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <span>Review & verify newly submitted Manifest V3 extension packages.</span>
               </div>
               
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock class="w-4 h-4" />
-                </div>
-                <input
-                  type="password"
-                  id="admin-password"
-                  required
-                  placeholder="••••••••••••"
-                  class="w-full pl-10 pr-10 py-2.5 text-xs bg-white text-slate-900 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all placeholder:text-slate-400 font-medium font-mono"
-                />
-                <button
-                  type="button"
-                  id="toggle-password-btn"
-                  class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
-                  aria-label="Toggle password visibility"
-                >
-                  <Eye class="w-4 h-4" id="eye-icon" />
-                  <EyeOff class="w-4 h-4 hidden" id="eye-off-icon" />
-                </button>
+              <div class="flex items-start gap-2">
+                <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <span>Live directory controls, suspension, and homepage promotions.</span>
               </div>
-            </div>
 
-            <!-- 2FA Hardware Key Option & Remember Terminal -->
-            <div class="pt-1 space-y-2.5">
-              <label class="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  id="remember-terminal"
-                  checked
-                  class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span class="text-xs text-slate-600">Remember this workstation (30 days)</span>
-              </label>
-
-              <div class="flex items-center gap-2 text-xs text-slate-500 pt-0.5">
-                <Fingerprint class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span class="text-[11px] leading-tight">Hardware Security Key / WebAuthn ready</span>
+              <div class="flex items-start gap-2">
+                <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                <span>Automated static security scanning & user abuse report triage.</span>
               </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="pt-2">
-              <button
-                type="submit"
-                id="admin-submit-btn"
-                class="w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white text-xs sm:text-sm font-semibold rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-2xs group"
-              >
-                <span>Authenticate to Admin Console</span>
-                <ArrowRight class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            </div>
-
-          </form>
-
-          <!-- Fast 1-Click Demo Credentials Autofill Helper (Soft #f0f4f9 Card) -->
-          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl space-y-2 text-xs">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
-                <Sparkles class="w-3.5 h-3.5 text-blue-600" />
-                <span>Demo Admin Access</span>
-              </span>
-              <button
-                type="button"
-                id="autofill-demo-btn"
-                class="text-[11px] font-semibold text-blue-600 hover:underline cursor-pointer"
-              >
-                Autofill Credentials
-              </button>
-            </div>
-            
-            <div class="font-mono text-[11px] text-slate-600 space-y-0.5 bg-white border border-slate-200/80 p-2 rounded-lg">
-              <div>Email: <span class="text-slate-900 font-semibold">admin@extlabs.io</span></div>
-              <div>Pass: <span class="text-slate-900 font-semibold">extlabs2026</span></div>
             </div>
           </div>
 
         </div>
 
-        <!-- Security & Audit Log Footer Notice -->
-        <div class="text-center space-y-1">
-          <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1.5 font-medium">
-            <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
-            <span>ExtLabs Internal Security • Cryptographically Signed Access</span>
-          </p>
-          <p class="text-[10px] text-slate-400 font-mono">
-            IP, geolocation & terminal fingerprint logged for audit verification.
-          </p>
-        </div>
+        <!-- Privacy & Staff Policy Footer -->
+        <p class="text-center text-[11px] text-slate-400 leading-relaxed px-4">
+          Access is restricted to authorized ExtLabs organization staff. All session activities and moderation actions are cryptographically logged.
+        </p>
 
       </div>
 
@@ -213,80 +126,41 @@ import {
     <!-- Footer -->
     <Footer />
 
-    <!-- Authentication Logic Script -->
+    <!-- GitHub Authentication Handler -->
     <script is:inline>
       document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('admin-login-form');
-        const emailInput = document.getElementById('admin-email');
-        const passwordInput = document.getElementById('admin-password');
-        const submitBtn = document.getElementById('admin-submit-btn');
-        const errorAlert = document.getElementById('admin-login-error');
-        const errorText = document.getElementById('admin-error-text');
-        const autofillBtn = document.getElementById('autofill-demo-btn');
-        const togglePasswordBtn = document.getElementById('toggle-password-btn');
-        const eyeIcon = document.getElementById('eye-icon');
-        const eyeOffIcon = document.getElementById('eye-off-icon');
-
-        // Check if already authenticated
-        if (localStorage.getItem('extlabs_admin_session') === 'true') {
-          // Can redirect or remain ready
+        // Check if redirected because unauthenticated
+        const urlParams = new URLSearchParams(window.location.search);
+        const authAlert = document.getElementById('auth-alert');
+        if (urlParams.get('auth_required') === 'true' && authAlert) {
+          authAlert.classList.remove('hidden');
         }
 
-        // 1. Password reveal toggle
-        if (togglePasswordBtn && passwordInput && eyeIcon && eyeOffIcon) {
-          togglePasswordBtn.addEventListener('click', () => {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            eyeIcon.classList.toggle('hidden', isPassword);
-            eyeOffIcon.classList.toggle('hidden', !isPassword);
-          });
-        }
+        const loginBtn = document.getElementById('admin-github-login-btn');
+        if (loginBtn) {
+          loginBtn.addEventListener('click', () => {
+            loginBtn.innerHTML = `
+              <svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Connecting GitHub OAuth...</span>
+            `;
+            loginBtn.classList.add('pointer-events-none', 'opacity-80');
 
-        // 2. Autofill demo button
-        if (autofillBtn && emailInput && passwordInput) {
-          autofillBtn.addEventListener('click', () => {
-            emailInput.value = 'admin@extlabs.io';
-            passwordInput.value = 'extlabs2026';
-            if (errorAlert) errorAlert.classList.add('hidden');
-          });
-        }
+            // Set admin session and user data in localStorage
+            localStorage.setItem('extlabs_admin_session', 'true');
+            localStorage.setItem('extlabs_admin_user', JSON.stringify({
+              name: 'Ishara Madhusanka',
+              username: 'ishara-madu',
+              role: 'Super Moderator',
+              avatar: 'https://avatars.githubusercontent.com/u/583231'
+            }));
 
-        // 3. Form Submit Authentication
-        if (form && submitBtn) {
-          form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = emailInput ? emailInput.value.trim() : '';
-            const pass = passwordInput ? passwordInput.value : '';
-
-            // Simple client-side credential verification for demonstration
-            if (email === 'admin@extlabs.io' && (pass === 'extlabs2026' || pass.length >= 6)) {
-              submitBtn.innerHTML = `
-                <svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Verifying credentials...</span>
-              `;
-              submitBtn.classList.add('pointer-events-none', 'opacity-80');
-
-              // Persist admin session
-              localStorage.setItem('extlabs_admin_session', 'true');
-              localStorage.setItem('extlabs_admin_user', JSON.stringify({
-                name: 'Administrator',
-                email: email,
-                role: 'Super Moderator',
-                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
-              }));
-
-              setTimeout(() => {
-                window.location.href = '/admin';
-              }, 600);
-            } else {
-              if (errorAlert && errorText) {
-                errorText.textContent = 'Invalid administrator credentials. Please use the demo credentials provided below.';
-                errorAlert.classList.remove('hidden');
-              }
-            }
+            // Redirect to Admin Moderation Dashboard
+            setTimeout(() => {
+              window.location.href = '/admin';
+            }, 500);
           });
         }
       });

@@ -5,11 +5,10 @@ import {
   ShieldCheck, 
   ExternalLink, 
   LogOut, 
-  Bell, 
   KeyRound, 
-  CheckCircle2, 
   Server,
-  User
+  User,
+  LayoutDashboard
 } from '@lucide/astro';
 ---
 
@@ -17,7 +16,7 @@ import {
   <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
     <div class="flex items-center justify-between h-16 gap-4">
       
-      <!-- Left: Logo, Title & Role Badge -->
+      <!-- Left: Logo, Title & Role Info -->
       <div class="flex items-center gap-3">
         <a href="/admin" class="flex items-center gap-2.5 group">
           <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-2xs">
@@ -31,6 +30,7 @@ import {
 
         <span class="text-slate-300 font-light hidden sm:inline">/</span>
 
+        <!-- Clean typographic status, no bordered pill box -->
         <div class="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-600 font-medium">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>Super Moderator</span>
@@ -45,7 +45,7 @@ import {
         </div>
       </div>
 
-      <!-- Right: Links & Log Out Action -->
+      <!-- Right: Storefront Link & Profile Dropdown (Developer Console Style) -->
       <div class="flex items-center gap-3">
         
         <!-- View Public Store -->
@@ -58,24 +58,99 @@ import {
           <ExternalLink class="w-3 h-3 text-slate-400" />
         </a>
 
-        <!-- Moderator Profile & Log Out Button -->
-        <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
-          <div class="hidden md:flex items-center gap-2 text-xs">
-            <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-semibold text-[11px]">
-              AD
-            </div>
-            <span class="font-medium text-slate-800" id="admin-user-display">admin@extlabs.io</span>
-          </div>
+        <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
 
+        <!-- PROFILE AVATAR & DROPDOWN (Identical to Developer Console) -->
+        <div class="relative">
           <button
             type="button"
-            id="admin-logout-btn"
-            class="px-3 py-1.5 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-medium rounded-lg border border-slate-200 hover:border-rose-200 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-            title="Log out of Admin Console"
+            id="admin-profile-toggle-btn"
+            class="p-0.5 rounded-full hover:ring-2 hover:ring-slate-300 focus:outline-none transition-all cursor-pointer flex items-center justify-center shrink-0"
+            title="Admin Profile & Settings"
           >
-            <LogOut class="w-3.5 h-3.5" />
-            <span class="hidden sm:inline">Sign Out</span>
+            <img
+              id="admin-navbar-avatar"
+              src="https://avatars.githubusercontent.com/u/583231"
+              alt="Admin Avatar"
+              class="w-8 h-8 rounded-full border border-slate-200 object-cover"
+            />
           </button>
+
+          <!-- Profile Dropdown Menu -->
+          <div
+            id="admin-profile-dropdown-menu"
+            class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-xl z-50 overflow-hidden"
+          >
+            <!-- User Info Header -->
+            <div class="p-4 border-b border-slate-100 bg-slate-50/50 space-y-1">
+              <div class="flex items-center gap-2.5">
+                <img
+                  id="admin-dropdown-avatar"
+                  src="https://avatars.githubusercontent.com/u/583231"
+                  alt="Admin Avatar"
+                  class="w-9 h-9 rounded-full border border-slate-200 object-cover"
+                />
+                <div class="space-y-0.5 overflow-hidden">
+                  <span id="admin-dropdown-name" class="text-xs font-bold text-slate-900 block truncate">Ishara Madhusanka</span>
+                  <span id="admin-dropdown-handle" class="text-[11px] text-slate-500 font-mono block truncate">@ishara-madu</span>
+                </div>
+              </div>
+              <div class="pt-1.5 flex items-center gap-1 text-[10px] text-blue-600 font-medium">
+                <ShieldCheck class="w-3.5 h-3.5 text-blue-600" />
+                <span>Super Moderator (GitHub OAuth)</span>
+              </div>
+            </div>
+
+            <!-- Menu Navigation Links -->
+            <div class="p-1.5 space-y-0.5 text-xs text-slate-700">
+              <a
+                id="admin-github-profile-link"
+                href="https://github.com/ishara-madu"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-2.5">
+                  <User class="w-3.5 h-3.5 text-slate-500" />
+                  <span>GitHub Profile</span>
+                </div>
+                <ExternalLink class="w-3 h-3 text-slate-400" />
+              </a>
+
+              <a
+                href="/admin"
+                class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <LayoutDashboard class="w-3.5 h-3.5 text-slate-500" />
+                <span>Moderation Hub</span>
+              </a>
+
+              <a
+                href="/"
+                target="_blank"
+                class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <div class="flex items-center gap-2.5">
+                  <Box class="w-3.5 h-3.5 text-slate-500" />
+                  <span>Storefront Directory</span>
+                </div>
+                <ExternalLink class="w-3 h-3 text-slate-400" />
+              </a>
+            </div>
+
+            <!-- Sign Out Action -->
+            <div class="p-1.5 border-t border-slate-100">
+              <button
+                type="button"
+                id="admin-signout-menu-btn"
+                class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer text-left"
+              >
+                <LogOut class="w-3.5 h-3.5 text-rose-500" />
+                <span>Logout</span>
+              </button>
+            </div>
+
+          </div>
         </div>
 
       </div>
@@ -83,3 +158,59 @@ import {
     </div>
   </div>
 </header>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const profileToggleBtn = document.getElementById('admin-profile-toggle-btn');
+    const profileMenu = document.getElementById('admin-profile-dropdown-menu');
+    const signOutBtn = document.getElementById('admin-signout-menu-btn');
+    const navAvatar = document.getElementById('admin-navbar-avatar');
+    const dropAvatar = document.getElementById('admin-dropdown-avatar');
+    const dropName = document.getElementById('admin-dropdown-name');
+    const dropHandle = document.getElementById('admin-dropdown-handle');
+    const ghLink = document.getElementById('admin-github-profile-link');
+
+    // Populate user details from localStorage
+    const savedUser = localStorage.getItem('extlabs_admin_user');
+    if (savedUser) {
+      try {
+        const u = JSON.parse(savedUser);
+        if (u.avatar) {
+          if (navAvatar) navAvatar.src = u.avatar;
+          if (dropAvatar) dropAvatar.src = u.avatar;
+        }
+        if (u.name && dropName) dropName.textContent = u.name;
+        if (u.username) {
+          if (dropHandle) dropHandle.textContent = `@${u.username}`;
+          if (ghLink) ghLink.href = `https://github.com/${u.username}`;
+        }
+      } catch (e) {}
+    }
+
+    // Toggle Profile Dropdown Menu
+    if (profileToggleBtn && profileMenu) {
+      profileToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileMenu.classList.toggle('hidden');
+      });
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', () => {
+      if (profileMenu) profileMenu.classList.add('hidden');
+    });
+
+    if (profileMenu) {
+      profileMenu.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    // Sign Out Handler
+    if (signOutBtn) {
+      signOutBtn.addEventListener('click', () => {
+        localStorage.removeItem('extlabs_admin_session');
+        localStorage.removeItem('extlabs_admin_user');
+        window.location.href = '/admin/login';
+      });
+    }
+  });
+</script>
