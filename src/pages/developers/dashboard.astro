@@ -1,0 +1,581 @@
+---
+// src/pages/developers/dashboard.astro
+import "../../styles/global.css";
+import DeveloperNavbar from "../../components/DeveloperNavbar.astro";
+import Footer from "../../components/Footer.astro";
+import { 
+  Plus, 
+  Search, 
+  ArrowRight, 
+  Pin, 
+  Star
+} from '@lucide/astro';
+
+// Pinned apps dataset (4 Direct & Meaningful Metrics)
+const pinnedExtensions = [
+  {
+    id: "deep-summarize-ai",
+    name: "DeepSummarize: AI Web & PDF Reader",
+    packageId: "io.extlabs.deepsummarize",
+    lastUpdated: "Aug 24, 2026",
+    status: "Production",
+    downloads: "54.2K",
+    downloadGrowth: "24.5%",
+    rating: "4.900",
+    reviewCount: "1,420",
+    topGeography: "US (44%)",
+    secondaryGeography: "DE 18% • UK 14%",
+    version: "v2.4.1",
+    targetEngine: "Manifest V3 • Chromium",
+    iconSvg: `<svg class="w-7 h-7 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>`
+  },
+  {
+    id: "smart-prompt-copilot",
+    name: "Smart Prompt Copilot for AI Chat",
+    packageId: "io.extlabs.smartprompt",
+    lastUpdated: "Aug 19, 2026",
+    status: "Production",
+    downloads: "28.4K",
+    downloadGrowth: "15.8%",
+    rating: "4.800",
+    reviewCount: "890",
+    topGeography: "US (38%)",
+    secondaryGeography: "CA 16% • UK 15%",
+    version: "v1.8.0",
+    targetEngine: "Manifest V3 • Chromium",
+    iconSvg: `<svg class="w-7 h-7 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`
+  }
+];
+
+// All extensions dataset for the lower data table
+const allExtensions = [
+  {
+    id: "deep-summarize-ai",
+    name: "DeepSummarize: AI Web & PDF Reader",
+    packageId: "io.extlabs.deepsummarize",
+    downloads: "54.2K",
+    status: "Production",
+    updateStatus: "Live on Directory",
+    lastUpdated: "Aug 24, 2026",
+    isPinned: true,
+    iconSvg: `<svg class="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>`
+  },
+  {
+    id: "smart-prompt-copilot",
+    name: "Smart Prompt Copilot for AI Chat",
+    packageId: "io.extlabs.smartprompt",
+    downloads: "28.4K",
+    status: "Production",
+    updateStatus: "Live on Directory",
+    lastUpdated: "Aug 19, 2026",
+    isPinned: true,
+    iconSvg: `<svg class="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`
+  },
+  {
+    id: "json-craft-formatter",
+    name: "JSONCraft Formatter & Validator Pro",
+    packageId: "io.extlabs.jsoncraft",
+    downloads: "0",
+    status: "In Review",
+    updateStatus: "Pending security audit",
+    lastUpdated: "Aug 31, 2026",
+    isPinned: false,
+    iconSvg: `<svg class="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>`
+  },
+  {
+    id: "cookie-sentinel-pro",
+    name: "Cookie Sentinel & Tracker Blocker",
+    packageId: "io.extlabs.cookiesentinel",
+    downloads: "14.1K",
+    status: "Production",
+    updateStatus: "Live on Directory",
+    lastUpdated: "Aug 12, 2026",
+    isPinned: false,
+    iconSvg: `<svg class="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`
+  },
+  {
+    id: "speed-reader-bionic",
+    name: "Bionic Reader: Speed Reading Assistant",
+    packageId: "io.extlabs.bionicreader",
+    downloads: "0",
+    status: "Draft",
+    updateStatus: "Not yet sent for review",
+    lastUpdated: "Aug 02, 2026",
+    isPinned: false,
+    iconSvg: `<svg class="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
+  }
+];
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Developer Console — ExtLabs</title>
+    <meta name="description" content="ExtLabs Developer Console. Manage your browser extensions, monitor downloads, and update releases." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Client-side Authentication Guard -->
+    <script is:inline>
+      (function() {
+        if (typeof window !== 'undefined') {
+          var isAuth = localStorage.getItem('extlabs_dev_session');
+          if (!isAuth) {
+            window.location.href = '/developers/login?auth_required=true';
+          }
+        }
+      })();
+    </script>
+
+    <!-- Dedicated Developer Console Top Navbar -->
+    <DeveloperNavbar />
+
+    <!-- Main Developer Console Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-10">
+      
+      <!-- 1. PINNED EXTENSIONS SECTION (4-Column Balanced Direct Metrics) -->
+      <section class="space-y-4">
+        
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+          <Pin class="w-3.5 h-3.5 text-blue-600 fill-blue-600" />
+          <span>Pinned extensions ({pinnedExtensions.length})</span>
+        </div>
+
+        <div class="space-y-4">
+          {pinnedExtensions.map((item) => (
+            <div class="p-6 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-6">
+              
+              <!-- Top Row: App Title & Manage App Link -->
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                  <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs" set:html={item.iconSvg} />
+                  
+                  <div class="space-y-0.5">
+                    <a
+                      href={`/developers/manage/${item.id}`}
+                      class="text-sm sm:text-base font-bold text-slate-900 hover:text-blue-600 leading-tight block transition-colors"
+                    >
+                      {item.name}
+                    </a>
+                    <p class="text-xs text-slate-500 font-normal">
+                      <span class="font-mono text-slate-400">{item.packageId}</span>
+                      <span class="mx-1.5 text-slate-300">•</span>
+                      <span>Last updated {item.lastUpdated}</span>
+                      <span class="mx-1.5 text-slate-300">•</span>
+                      <span class="text-slate-700 font-medium">{item.status}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href={`/developers/manage/${item.id}`}
+                  class="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1.5 shrink-0 transition-colors"
+                >
+                  <span>Manage extension</span>
+                  <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
+                </a>
+              </div>
+
+              <!-- 4-Column Verified Metrics Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-4 pt-4 border-t border-slate-100 sm:divide-x sm:divide-slate-100">
+                
+                <!-- Col 1: Total Downloads -->
+                <div class="sm:pr-4 space-y-1">
+                  <span class="text-xs text-slate-500 underline decoration-dotted decoration-slate-300 underline-offset-4 block cursor-help" title="Total verified extension downloads and installs.">
+                    Total downloads
+                  </span>
+                  <div class="text-xl sm:text-2xl font-bold font-mono text-slate-900">
+                    {item.downloads}
+                  </div>
+                  <div class="flex items-center gap-1 text-[11px] font-mono text-emerald-600 font-medium">
+                    <span>↑ {item.downloadGrowth}</span>
+                    <span class="text-slate-400 font-sans">vs. previous 30 days</span>
+                  </div>
+                </div>
+
+                <!-- Col 2: Store Rating -->
+                <div class="sm:px-4 space-y-1">
+                  <span class="text-xs text-slate-500 underline decoration-dotted decoration-slate-300 underline-offset-4 block cursor-help" title="Aggregate user rating score on ExtLabs.">
+                    ExtLabs store rating
+                  </span>
+                  <div class="flex items-center gap-1.5 text-xl sm:text-2xl font-bold font-mono text-slate-900">
+                    <span>{item.rating}</span>
+                    <Star class="w-4 h-4 text-amber-500 fill-amber-500 -mt-0.5" />
+                  </div>
+                  <div class="text-[11px] text-slate-400">
+                    {item.reviewCount} verified reviews
+                  </div>
+                </div>
+
+                <!-- Col 3: Primary Geography -->
+                <div class="sm:px-4 space-y-1">
+                  <span class="text-xs text-slate-500 underline decoration-dotted decoration-slate-300 underline-offset-4 block cursor-help" title="Primary geographic traffic distribution by download requests.">
+                    Top download region
+                  </span>
+                  <div class="text-xl sm:text-2xl font-bold font-mono text-slate-900">
+                    {item.topGeography}
+                  </div>
+                  <div class="text-[11px] text-slate-400 font-mono">
+                    {item.secondaryGeography}
+                  </div>
+                </div>
+
+                <!-- Col 4: Active Release Version -->
+                <div class="sm:pl-4 space-y-1">
+                  <span class="text-xs text-slate-500 underline decoration-dotted decoration-slate-300 underline-offset-4 block cursor-help" title="Currently deployed release package on the store.">
+                    Active release
+                  </span>
+                  <div class="text-xl sm:text-2xl font-bold font-mono text-slate-900">
+                    {item.version}
+                  </div>
+                  <div class="text-[11px] text-slate-500 font-sans">
+                    {item.targetEngine}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          ))}
+        </div>
+
+      </section>
+
+      <!-- 2. ALL EXTENSIONS DATA TABLE (Clean Direct Columns) -->
+      <section class="space-y-4">
+        
+        <!-- Table Section Header & Action Controls -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
+          
+          <div class="space-y-0.5">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight">
+              All extensions
+            </h2>
+            <p class="text-xs text-slate-500">
+              Complete catalog of your published, draft, and in-review browser extensions. Click any extension to manage settings.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Search Filter -->
+            <div class="relative">
+              <Search class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                id="filter-extensions-input"
+                type="text"
+                placeholder="Search extensions..."
+                class="h-9 pl-8 pr-3 text-xs bg-white border border-slate-200 rounded-lg focus:border-slate-400 focus:outline-none w-48 sm:w-60 placeholder-slate-400"
+              />
+            </div>
+
+            <!-- Create / Submit Button -->
+            <button
+              type="button"
+              id="open-submit-modal-btn"
+              class="h-9 px-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-300 hover:border-blue-300 text-xs font-medium rounded-lg inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs group shrink-0"
+            >
+              <Plus class="w-4 h-4 text-slate-700 group-hover:text-blue-600 transition-colors shrink-0" />
+              <span class="leading-none">Create extension</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Clean Data Table Container -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              
+              <!-- Table Header (Clean Minimal Columns) -->
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 font-medium bg-slate-50/50">
+                  <th scope="col" class="py-3 px-4 font-semibold">App</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Downloads</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">App status</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Update status</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Last updated</th>
+                  <th scope="col" class="py-3 px-4 text-right font-semibold">Manage</th>
+                </tr>
+              </thead>
+
+              <!-- Table Body Rows -->
+              <tbody class="divide-y divide-slate-100" id="extensions-table-body">
+                {allExtensions.map((ext) => (
+                  <tr class="extension-row hover:bg-slate-50/80 transition-colors group">
+                    
+                    <!-- App Info -->
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0" set:html={ext.iconSvg} />
+                        
+                        <div class="space-y-0.5">
+                          <a
+                            href={`/developers/manage/${ext.id}`}
+                            class="font-semibold text-slate-900 hover:text-blue-600 transition-colors block text-xs"
+                          >
+                            {ext.name}
+                          </a>
+                          <span class="font-mono text-[11px] text-slate-400 block">
+                            {ext.packageId}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Total Downloads -->
+                    <td class="py-3.5 px-4 font-mono text-slate-700 font-medium">
+                      {ext.downloads}
+                    </td>
+
+                    <!-- App Status -->
+                    <td class="py-3.5 px-4">
+                      {ext.status === 'Production' && (
+                        <span class="text-slate-800 font-medium flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
+                          <span>Production</span>
+                        </span>
+                      )}
+                      {ext.status === 'In Review' && (
+                        <span class="text-amber-700 font-medium flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          <span>In Review</span>
+                        </span>
+                      )}
+                      {ext.status === 'Draft' && (
+                        <span class="text-slate-500 flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                          <span>Draft</span>
+                        </span>
+                      )}
+                    </td>
+
+                    <!-- Update Status -->
+                    <td class="py-3.5 px-4 text-slate-500 text-[11px]">
+                      {ext.updateStatus}
+                    </td>
+
+                    <!-- Last Updated -->
+                    <td class="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                      {ext.lastUpdated}
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="py-3.5 px-4 text-right">
+                      <div class="flex items-center justify-end gap-2.5">
+                        {ext.isPinned ? (
+                          <button
+                            type="button"
+                            class="text-blue-600 hover:text-slate-400 cursor-pointer p-1 transition-colors"
+                            title="Pinned to top"
+                          >
+                            <Pin class="w-3.5 h-3.5 fill-blue-600" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            class="text-slate-300 hover:text-slate-600 cursor-pointer p-1 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Pin extension"
+                          >
+                            <Pin class="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
+                        <a
+                          href={`/developers/manage/${ext.id}`}
+                          class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer inline-flex items-center gap-1"
+                          title="Manage & Edit Extension"
+                        >
+                          <ArrowRight class="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                        </a>
+                      </div>
+                    </td>
+
+                  </tr>
+                ))}
+              </tbody>
+
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Create / Submit Extension Modal (Direct & Minimalist) -->
+    <div
+      id="submit-extension-modal"
+      class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-7 max-w-lg w-full shadow-lg space-y-4">
+        <div class="space-y-1 border-b border-slate-100 pb-3">
+          <h2 class="text-sm font-bold text-slate-900">
+            Create new extension
+          </h2>
+          <p class="text-xs text-slate-500">
+            Enter your GitHub repository and Monetag Direct Link to publish.
+          </p>
+        </div>
+
+        <form id="create-extension-form" class="space-y-3.5">
+          <div class="space-y-1">
+            <label for="modal-input-repo" class="block text-xs font-medium text-slate-700">
+              GitHub Repository URL <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="modal-input-repo"
+              type="url"
+              required
+              placeholder="https://github.com/neural-labs/my-extension"
+              class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none font-mono"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label for="modal-input-name" class="block text-xs font-medium text-slate-700">
+                Extension Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="modal-input-name"
+                type="text"
+                required
+                placeholder="e.g. Tab Suspender Eco"
+                class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none"
+              />
+            </div>
+
+            <div class="space-y-1">
+              <label for="modal-input-cat" class="block text-xs font-medium text-slate-700">
+                Category <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="modal-input-cat"
+                class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none cursor-pointer"
+              >
+                <option value="ai">AI & Machine Learning</option>
+                <option value="dev">Developer Tools</option>
+                <option value="productivity">Productivity</option>
+                <option value="privacy">Privacy & Security</option>
+                <option value="utilities">Workflow & Utilities</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label for="modal-input-monetag" class="block text-xs font-medium text-slate-700">
+              Monetag Direct Link URL <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="modal-input-monetag"
+              type="url"
+              required
+              placeholder="https://monetag.com/direct/your-direct-link"
+              class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 text-slate-900 rounded-lg focus:bg-white focus:border-blue-400 focus:outline-none font-mono"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label for="modal-input-desc" class="block text-xs font-medium text-slate-700">
+              Short Description <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              id="modal-input-desc"
+              rows="3"
+              required
+              placeholder="Brief description of the extension features and Manifest V3 compatibility..."
+              class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none leading-relaxed"
+            ></textarea>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              id="submit-modal-cancel-btn"
+              class="px-3.5 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg transition-colors cursor-pointer shadow-2xs"
+            >
+              Submit for review
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Client-side Interactive Search & Modal Controller -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Search Filter
+        const searchInput = document.getElementById('filter-extensions-input') as HTMLInputElement | null;
+        const consoleSearchInput = document.getElementById('console-search-input') as HTMLInputElement | null;
+        const rows = document.querySelectorAll('.extension-row');
+
+        function doSearch(q: string) {
+          rows.forEach((row) => {
+            const text = row.textContent?.toLowerCase() || '';
+            if (text.includes(q)) {
+              (row as HTMLElement).style.display = '';
+            } else {
+              (row as HTMLElement).style.display = 'none';
+            }
+          });
+        }
+
+        if (searchInput) {
+          searchInput.addEventListener('input', () => {
+            doSearch(searchInput.value.toLowerCase().trim());
+          });
+        }
+
+        if (consoleSearchInput) {
+          consoleSearchInput.addEventListener('input', () => {
+            doSearch(consoleSearchInput.value.toLowerCase().trim());
+          });
+        }
+
+        // Submit Modal
+        const submitModal = document.getElementById('submit-extension-modal');
+        const openSubmitBtn = document.getElementById('open-submit-modal-btn');
+        const cancelSubmitBtn = document.getElementById('submit-modal-cancel-btn');
+        const createForm = document.getElementById('create-extension-form');
+
+        if (openSubmitBtn && submitModal) {
+          openSubmitBtn.addEventListener('click', () => {
+            submitModal.classList.remove('hidden');
+          });
+        }
+
+        if (cancelSubmitBtn && submitModal) {
+          cancelSubmitBtn.addEventListener('click', () => {
+            submitModal.classList.add('hidden');
+          });
+        }
+
+        if (createForm && submitModal) {
+          createForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Extension submitted successfully for automated Manifest V3 review!');
+            submitModal.classList.add('hidden');
+          });
+        }
+      });
+    </script>
+
+  </body>
+</html>
