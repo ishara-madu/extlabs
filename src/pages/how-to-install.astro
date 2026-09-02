@@ -179,28 +179,28 @@ const faqs = [
 
         <!-- Quick Summary Strip -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
-          <div class="p-3 bg-white rounded-lg border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Format</span>
             <span class="font-medium text-slate-800">Unpacked .ZIP</span>
           </div>
-          <div class="p-3 bg-white rounded-lg border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Standard</span>
             <span class="font-medium text-slate-800">Chromium Native</span>
           </div>
-          <div class="p-3 bg-white rounded-lg border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Security</span>
             <span class="font-medium text-emerald-600 flex items-center gap-1">
               <ShieldCheck class="w-3.5 h-3.5" /> 100% Virus-Free
             </span>
           </div>
-          <div class="p-3 bg-white rounded-lg border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Permissions</span>
             <span class="font-medium text-slate-800">Client-Side Only</span>
           </div>
         </div>
       </header>
 
-      <!-- 2. Interactive Browser Switcher & URL Utility Box -->
+      <!-- 2. Interactive Browser Switcher & URL Utility Box (Soft Shaded Style) -->
       <section class="space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -232,14 +232,14 @@ const faqs = [
           </div>
         </div>
 
-        <!-- Address Bar Utility Box -->
-        <div class="p-4 bg-slate-900 text-white rounded-xl shadow-2xs space-y-3">
+        <!-- Address Bar Utility Box: Soft #f0f4f9 card with white pill elements -->
+        <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-3.5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="space-y-1">
-              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div class="space-y-1.5">
+              <span class="text-[11px] uppercase font-bold text-slate-500 tracking-wider block">
                 Internal Extension URL
               </span>
-              <div class="flex items-center gap-2 text-sm font-mono text-emerald-400">
+              <div class="flex items-center gap-2 text-xs sm:text-sm font-mono text-blue-700 font-semibold bg-white border border-slate-200/90 px-3 py-1.5 rounded-lg shadow-2xs w-fit">
                 <Terminal class="w-4 h-4 text-slate-400 shrink-0" />
                 <span id="active-browser-url">chrome://extensions</span>
               </div>
@@ -248,20 +248,20 @@ const faqs = [
             <button
               type="button"
               id="copy-url-btn"
-              class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-lg border border-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-2xs"
             >
-              <Copy class="w-3.5 h-3.5" id="copy-icon" />
+              <Copy class="w-3.5 h-3.5 text-slate-500" id="copy-icon" />
               <span id="copy-btn-text">Copy URL</span>
             </button>
           </div>
 
-          <p id="active-browser-notes" class="text-xs text-slate-400 leading-relaxed border-t border-slate-800 pt-2.5">
+          <p id="active-browser-notes" class="text-xs text-slate-600 leading-relaxed border-t border-slate-200/80 pt-3">
             Default Chromium browser. Developer mode toggle is located in the top-right corner.
           </p>
         </div>
       </section>
 
-      <!-- 3. The 4-Step Walkthrough with Custom SVG Visual Guides -->
+      <!-- 3. The 4-Step Walkthrough with Custom Light SVG Visual Guides -->
       <section class="space-y-12">
         <div class="space-y-1 border-b border-slate-200 pb-4">
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
@@ -297,50 +297,50 @@ const faqs = [
             ))}
           </ul>
 
-          <!-- Figure 01 SVG Illustration -->
+          <!-- Figure 01 Light SVG Illustration -->
           <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-2xs relative flex flex-col">
+            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
               <!-- Window Topbar -->
-              <div class="h-8 bg-slate-800/80 px-3 flex items-center justify-between border-b border-slate-700/60 shrink-0">
+              <div class="h-8 bg-white/80 px-3 flex items-center justify-between border-b border-slate-200/80 shrink-0">
                 <div class="flex items-center gap-1.5">
-                  <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
-                  <span class="text-[11px] text-slate-400 font-mono ml-2">Downloads / Archive Extraction</span>
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                  <span class="text-[11px] text-slate-500 font-mono ml-2 font-medium">Downloads / Archive Extraction</span>
                 </div>
-                <span class="text-[10px] text-slate-400 font-mono">Step 01</span>
+                <span class="text-[10px] text-blue-600 font-mono font-semibold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">Step 01</span>
               </div>
               <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-slate-950/60">
+              <div class="flex-1 flex items-center justify-center p-6 bg-slate-50/50">
                 <svg viewBox="0 0 700 320" class="w-full h-full max-h-72" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Left: Zip File Card -->
-                  <rect x="40" y="50" width="220" height="220" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
-                  <rect x="65" y="75" width="48" height="48" rx="8" fill="#3b82f6" fill-opacity="0.15" stroke="#3b82f6" stroke-width="1" />
-                  <path d="M83 91h12v16H83z" fill="#60a5fa"/>
-                  <path d="M89 83v8m0 16v8" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
-                  <text x="65" y="150" fill="#f8fafc" font-size="14" font-weight="bold" font-family="sans-serif">extension-package.zip</text>
-                  <text x="65" y="172" fill="#94a3b8" font-size="11" font-family="monospace">Size: ~1.2 MB • Compressed</text>
-                  <rect x="65" y="200" width="170" height="34" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1" />
-                  <text x="80" y="222" fill="#38bdf8" font-size="11" font-weight="600" font-family="sans-serif">Right click → Extract All</text>
+                  <rect x="40" y="50" width="220" height="220" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+                  <rect x="65" y="75" width="48" height="48" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1" />
+                  <path d="M83 91h12v16H83z" fill="#3b82f6"/>
+                  <path d="M89 83v8m0 16v8" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
+                  <text x="65" y="150" fill="#0f172a" font-size="14" font-weight="bold" font-family="sans-serif">extension-package.zip</text>
+                  <text x="65" y="172" fill="#64748b" font-size="11" font-family="monospace">Size: ~1.2 MB • Compressed</text>
+                  <rect x="65" y="200" width="170" height="34" rx="6" fill="#f0f4f9" stroke="#cbd5e1" stroke-width="1" />
+                  <text x="80" y="222" fill="#0284c7" font-size="11" font-weight="600" font-family="sans-serif">Right click → Extract All</text>
 
                   <!-- Middle: Arrow Flow -->
-                  <path d="M290 160h60m0 0l-12-12m12 12l-12 12" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <text x="295" y="145" fill="#94a3b8" font-size="10" font-family="sans-serif" font-weight="600">UNPACK</text>
+                  <path d="M290 160h60m0 0l-12-12m12 12l-12 12" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <text x="295" y="145" fill="#64748b" font-size="10" font-family="sans-serif" font-weight="600">UNPACK</text>
 
                   <!-- Right: Extracted Folder with Contents -->
-                  <rect x="380" y="50" width="280" height="220" rx="12" fill="#1e293b" stroke="#10b981" stroke-width="1.5" />
-                  <rect x="405" y="70" width="36" height="36" rx="6" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-width="1" />
-                  <path d="M417 84h12l-2 10h-8l-2-10z" stroke="#34d399" stroke-width="1.5"/>
-                  <text x="450" y="86" fill="#f8fafc" font-size="13" font-weight="bold" font-family="sans-serif">/extension-package (Folder)</text>
-                  <text x="450" y="100" fill="#34d399" font-size="10" font-family="monospace">Ready for Load Unpacked</text>
+                  <rect x="380" y="50" width="280" height="220" rx="12" fill="#ffffff" stroke="#10b981" stroke-width="1.5" />
+                  <rect x="405" y="70" width="36" height="36" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1" />
+                  <path d="M417 84h12l-2 10h-8l-2-10z" stroke="#059669" stroke-width="1.5"/>
+                  <text x="450" y="86" fill="#0f172a" font-size="13" font-weight="bold" font-family="sans-serif">/extension-package (Folder)</text>
+                  <text x="450" y="100" fill="#059669" font-size="10" font-family="monospace font-semibold">Ready for Load Unpacked</text>
 
                   <!-- Inner files list -->
-                  <rect x="405" y="120" width="230" height="125" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
-                  <text x="425" y="145" fill="#38bdf8" font-size="11" font-family="monospace">📄 manifest.json</text>
-                  <text x="560" y="145" fill="#10b981" font-size="10" font-family="sans-serif">Required ✓</text>
-                  <text x="425" y="172" fill="#cbd5e1" font-size="11" font-family="monospace">📄 background.js</text>
-                  <text x="425" y="198" fill="#cbd5e1" font-size="11" font-family="monospace">📁 icons/</text>
-                  <text x="425" y="224" fill="#cbd5e1" font-size="11" font-family="monospace">📁 popup/</text>
+                  <rect x="405" y="120" width="230" height="125" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+                  <text x="425" y="145" fill="#0284c7" font-size="11" font-family="monospace font-bold">📄 manifest.json</text>
+                  <text x="560" y="145" fill="#16a34a" font-size="10" font-family="sans-serif" font-weight="bold">Required ✓</text>
+                  <text x="425" y="172" fill="#475569" font-size="11" font-family="monospace">📄 background.js</text>
+                  <text x="425" y="198" fill="#475569" font-size="11" font-family="monospace">📁 icons/</text>
+                  <text x="425" y="224" fill="#475569" font-size="11" font-family="monospace">📁 popup/</text>
                 </svg>
               </div>
             </div>
@@ -349,10 +349,10 @@ const faqs = [
             </span>
           </div>
 
-          <!-- Pro Tip -->
-          <div class="p-4 bg-slate-900 rounded-xl text-white text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
-            <span class="text-emerald-400 font-bold shrink-0">Pro-Tip:</span>
-            <span class="text-slate-300 leading-relaxed">{installSteps[0].proTip}</span>
+          <!-- Soft Pro Tip Card (Matching the user screenshot) -->
+          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
+            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
+            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[0].proTip}</span>
           </div>
         </div>
 
@@ -381,48 +381,48 @@ const faqs = [
             ))}
           </ul>
 
-          <!-- Figure 02 SVG Illustration -->
+          <!-- Figure 02 Light SVG Illustration -->
           <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-2xs relative flex flex-col">
+            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
               <!-- Browser Chrome Mockup -->
-              <div class="h-10 bg-slate-800/90 px-3 flex items-center gap-3 border-b border-slate-700/60 shrink-0">
+              <div class="h-10 bg-white px-3 flex items-center gap-3 border-b border-slate-200/90 shrink-0">
                 <div class="flex items-center gap-1.5">
-                  <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
                 <!-- Browser Tab -->
-                <div class="px-3 py-1 bg-slate-900 rounded-t-md text-[11px] text-slate-200 font-medium flex items-center gap-1.5 border-t border-x border-slate-700">
-                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                <div class="px-3 py-1 bg-[#f0f4f9] rounded-t-md text-[11px] text-slate-800 font-medium flex items-center gap-1.5 border-t border-x border-slate-200">
+                  <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                   <span>Extensions</span>
                 </div>
               </div>
 
               <!-- Address Bar Mockup -->
-              <div class="p-4 bg-slate-900 border-b border-slate-800 flex items-center gap-3">
-                <div class="flex items-center gap-2 text-slate-500">
+              <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center gap-3">
+                <div class="flex items-center gap-2 text-slate-400">
                   <span>←</span>
                   <span>→</span>
                   <span>↻</span>
                 </div>
-                <div class="flex-1 bg-slate-950 border border-blue-500/50 rounded-lg px-3 py-2 flex items-center justify-between text-xs font-mono shadow-inner">
+                <div class="flex-1 bg-white border border-blue-400 rounded-lg px-3 py-2 flex items-center justify-between text-xs font-mono shadow-2xs">
                   <div class="flex items-center gap-2">
-                    <span class="text-slate-500">🔒</span>
-                    <span class="text-white font-semibold">chrome://extensions</span>
+                    <span class="text-slate-400">🔒</span>
+                    <span class="text-slate-900 font-semibold">chrome://extensions</span>
                   </div>
-                  <span class="text-[10px] text-blue-400 bg-blue-950/80 border border-blue-800 px-2 py-0.5 rounded font-sans">Press ↵ Enter</span>
+                  <span class="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-sans font-semibold">Press ↵ Enter</span>
                 </div>
               </div>
 
               <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-slate-950/60">
-                <div class="text-center space-y-2 max-w-sm">
-                  <div class="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 mx-auto flex items-center justify-center">
+              <div class="flex-1 flex items-center justify-center p-6 bg-[#f0f4f9]/40">
+                <div class="p-5 bg-white border border-slate-200 rounded-xl shadow-2xs max-w-sm text-center space-y-2">
+                  <div class="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 text-blue-600 mx-auto flex items-center justify-center">
                     <Terminal class="w-6 h-6" />
                   </div>
-                  <h4 class="text-sm font-bold text-slate-200">Address Bar Navigation</h4>
-                  <p class="text-xs text-slate-400 leading-relaxed">
-                    Paste <code class="text-emerald-400 font-mono">chrome://extensions</code> directly into your URL bar to immediately load the extension manager.
+                  <h4 class="text-sm font-bold text-slate-900">Address Bar Navigation</h4>
+                  <p class="text-xs text-slate-600 leading-relaxed">
+                    Paste <code class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-mono font-semibold">chrome://extensions</code> directly into your URL bar to immediately load the extension manager.
                   </p>
                 </div>
               </div>
@@ -432,10 +432,10 @@ const faqs = [
             </span>
           </div>
 
-          <!-- Pro Tip -->
-          <div class="p-4 bg-slate-900 rounded-xl text-white text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
-            <span class="text-emerald-400 font-bold shrink-0">Pro-Tip:</span>
-            <span class="text-slate-300 leading-relaxed">{installSteps[1].proTip}</span>
+          <!-- Soft Pro Tip Card -->
+          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
+            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
+            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[1].proTip}</span>
           </div>
         </div>
 
@@ -464,29 +464,29 @@ const faqs = [
             ))}
           </ul>
 
-          <!-- Figure 03 SVG Illustration -->
+          <!-- Figure 03 Light SVG Illustration -->
           <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-2xs relative flex flex-col">
+            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
               <!-- Mockup Header -->
-              <div class="h-8 bg-slate-800/80 px-3 flex items-center justify-between border-b border-slate-700/60 shrink-0">
-                <span class="text-[11px] text-slate-400 font-mono">Extensions Management Bar</span>
-                <span class="text-[10px] text-slate-400 font-mono">Step 03</span>
+              <div class="h-8 bg-white/80 px-3 flex items-center justify-between border-b border-slate-200/80 shrink-0">
+                <span class="text-[11px] text-slate-500 font-mono font-medium">Extensions Management Bar</span>
+                <span class="text-[10px] text-blue-600 font-mono font-semibold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">Step 03</span>
               </div>
 
               <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-slate-950/60">
+              <div class="flex-1 flex items-center justify-center p-6 bg-slate-50/50">
                 <svg viewBox="0 0 700 320" class="w-full h-full max-h-72" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Browser page container -->
-                  <rect x="30" y="40" width="640" height="240" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5" />
+                  <rect x="30" y="40" width="640" height="240" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
                   
                   <!-- Top Banner of Extensions Page -->
-                  <rect x="30" y="40" width="640" height="60" rx="10" fill="#1e293b" />
-                  <path d="M60 70h20v2H60zm0-6h20v2H60zm0 12h20v2H60z" fill="#94a3b8"/>
-                  <text x="95" y="76" fill="#f8fafc" font-size="16" font-weight="bold" font-family="sans-serif">Extensions</text>
+                  <rect x="30" y="40" width="640" height="60" rx="10" fill="#ffffff" stroke="#e2e8f0" />
+                  <path d="M60 70h20v2H60zm0-6h20v2H60zm0 12h20v2H60z" fill="#64748b"/>
+                  <text x="95" y="76" fill="#0f172a" font-size="16" font-weight="bold" font-family="sans-serif">Extensions</text>
 
                   <!-- Developer Mode Toggle Box Highlight -->
-                  <rect x="420" y="52" width="230" height="38" rx="8" fill="#1e3a8a" fill-opacity="0.4" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 4" />
-                  <text x="435" y="76" fill="#f8fafc" font-size="12" font-weight="600" font-family="sans-serif">Developer mode</text>
+                  <rect x="420" y="52" width="230" height="38" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 4" />
+                  <text x="435" y="76" fill="#1e3a8a" font-size="12" font-weight="bold" font-family="sans-serif">Developer mode</text>
                   
                   <!-- Modern Toggle Switch (ON) -->
                   <rect x="580" y="60" width="44" height="22" rx="11" fill="#2563eb" />
@@ -494,19 +494,19 @@ const faqs = [
                   <circle cx="612" cy="71" r="3" fill="#10b981" />
 
                   <!-- Indicator Arrow -->
-                  <path d="M540 140l50-45" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
-                  <rect x="410" y="150" width="220" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
-                  <text x="425" y="172" fill="#38bdf8" font-size="11" font-weight="bold" font-family="sans-serif">Click to toggle ON (Right)</text>
-                  <text x="425" y="190" fill="#94a3b8" font-size="10" font-family="sans-serif">Reveals the "Load unpacked" button</text>
+                  <path d="M540 140l50-45" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+                  <rect x="410" y="150" width="220" height="50" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1" />
+                  <text x="425" y="172" fill="#1e40af" font-size="11" font-weight="bold" font-family="sans-serif">Click to toggle ON (Right)</text>
+                  <text x="425" y="190" fill="#64748b" font-size="10" font-family="sans-serif">Reveals the "Load unpacked" button</text>
 
                   <!-- Left: Unlocked buttons preview -->
-                  <rect x="60" y="130" width="300" height="110" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1" />
-                  <text x="80" y="155" fill="#94a3b8" font-size="11" font-weight="600" font-family="sans-serif">Action bar unlocks below:</text>
-                  <rect x="80" y="175" width="105" height="32" rx="6" fill="#2563eb" fill-opacity="0.2" stroke="#3b82f6" stroke-width="1.5"/>
-                  <text x="92" y="195" fill="#60a5fa" font-size="11" font-weight="bold" font-family="sans-serif">Load unpacked</text>
+                  <rect x="60" y="130" width="300" height="110" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+                  <text x="80" y="155" fill="#64748b" font-size="11" font-weight="600" font-family="sans-serif">Action bar unlocks below:</text>
+                  <rect x="80" y="175" width="115" height="32" rx="6" fill="#2563eb" stroke="#1d4ed8" stroke-width="1"/>
+                  <text x="92" y="195" fill="#ffffff" font-size="11" font-weight="bold" font-family="sans-serif">Load unpacked</text>
                   
-                  <rect x="195" y="175" width="90" height="32" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1"/>
-                  <text x="207" y="195" fill="#94a3b8" font-size="11" font-family="sans-serif">Pack extension</text>
+                  <rect x="205" y="175" width="95" height="32" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+                  <text x="215" y="195" fill="#475569" font-size="11" font-family="sans-serif">Pack extension</text>
                 </svg>
               </div>
             </div>
@@ -515,10 +515,10 @@ const faqs = [
             </span>
           </div>
 
-          <!-- Pro Tip -->
-          <div class="p-4 bg-slate-900 rounded-xl text-white text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
-            <span class="text-emerald-400 font-bold shrink-0">Pro-Tip:</span>
-            <span class="text-slate-300 leading-relaxed">{installSteps[2].proTip}</span>
+          <!-- Soft Pro Tip Card -->
+          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
+            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
+            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[2].proTip}</span>
           </div>
         </div>
 
@@ -538,7 +538,7 @@ const faqs = [
             </p>
           </div>
 
-          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+          <ul class="space-y-2.5 text-xs sm:text-slate-600 pl-1 max-w-3xl">
             {installSteps[3].details.map((item) => (
               <li class="flex items-start gap-2.5">
                 <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -547,48 +547,48 @@ const faqs = [
             ))}
           </ul>
 
-          <!-- Figure 04 SVG Illustration -->
+          <!-- Figure 04 Light SVG Illustration -->
           <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-2xs relative flex flex-col">
+            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
               <!-- Mockup Header -->
-              <div class="h-8 bg-slate-800/80 px-3 flex items-center justify-between border-b border-slate-700/60 shrink-0">
-                <span class="text-[11px] text-slate-400 font-mono">Select Unpacked Directory Dialog</span>
-                <span class="text-[10px] text-slate-400 font-mono">Step 04</span>
+              <div class="h-8 bg-white/80 px-3 flex items-center justify-between border-b border-slate-200/80 shrink-0">
+                <span class="text-[11px] text-slate-500 font-mono font-medium">Select Unpacked Directory Dialog</span>
+                <span class="text-[10px] text-blue-600 font-mono font-semibold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">Step 04</span>
               </div>
 
               <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-slate-950/60">
+              <div class="flex-1 flex items-center justify-center p-6 bg-slate-50/50">
                 <svg viewBox="0 0 700 320" class="w-full h-full max-h-72" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Main Page Background -->
-                  <rect x="20" y="30" width="660" height="260" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                  <rect x="20" y="30" width="660" height="260" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
 
                   <!-- Button Row Top -->
-                  <rect x="45" y="55" width="120" height="34" rx="6" fill="#2563eb" stroke="#60a5fa" stroke-width="1.5" />
+                  <rect x="45" y="55" width="120" height="34" rx="6" fill="#2563eb" stroke="#1d4ed8" stroke-width="1" />
                   <text x="60" y="77" fill="#ffffff" font-size="12" font-weight="bold" font-family="sans-serif">Load unpacked</text>
 
-                  <rect x="175" y="55" width="105" height="34" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
-                  <text x="190" y="77" fill="#94a3b8" font-size="12" font-family="sans-serif">Pack extension</text>
+                  <rect x="175" y="55" width="105" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
+                  <text x="190" y="77" fill="#64748b" font-size="12" font-family="sans-serif">Pack extension</text>
 
-                  <rect x="290" y="55" width="70" height="34" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
-                  <text x="305" y="77" fill="#94a3b8" font-size="12" font-family="sans-serif">Update</text>
+                  <rect x="290" y="55" width="70" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
+                  <text x="305" y="77" fill="#64748b" font-size="12" font-family="sans-serif">Update</text>
 
                   <!-- File Picker Dialog Overlay -->
-                  <rect x="120" y="110" width="460" height="160" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5" />
+                  <rect x="120" y="110" width="460" height="160" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5" />
                   
-                  <rect x="120" y="110" width="460" height="30" rx="10" fill="#334155" />
-                  <text x="140" y="130" fill="#f8fafc" font-size="11" font-weight="bold" font-family="sans-serif">Select Extension Directory</text>
+                  <rect x="120" y="110" width="460" height="30" rx="10" fill="#f1f5f9" />
+                  <text x="140" y="130" fill="#0f172a" font-size="11" font-weight="bold" font-family="sans-serif">Select Extension Directory</text>
 
                   <!-- Selected Folder Highlight -->
-                  <rect x="140" y="150" width="420" height="34" rx="6" fill="#1e3a8a" fill-opacity="0.4" stroke="#60a5fa" stroke-width="1"/>
-                  <text x="160" y="172" fill="#93c5fd" font-size="12" font-family="monospace">📁 deep-summarize-ai (contains manifest.json)</text>
-                  <text x="500" y="172" fill="#34d399" font-size="10" font-weight="bold" font-family="sans-serif">Selected ✓</text>
+                  <rect x="140" y="150" width="420" height="34" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+                  <text x="160" y="172" fill="#1e40af" font-size="12" font-family="monospace font-bold">📁 deep-summarize-ai (contains manifest.json)</text>
+                  <text x="500" y="172" fill="#16a34a" font-size="10" font-weight="bold" font-family="sans-serif">Selected ✓</text>
 
                   <!-- Dialog Action Buttons -->
                   <rect x="420" y="225" width="95" height="30" rx="6" fill="#2563eb" />
                   <text x="435" y="244" fill="#ffffff" font-size="11" font-weight="bold" font-family="sans-serif">Select Folder</text>
 
-                  <rect x="525" y="225" width="45" height="30" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1"/>
-                  <text x="535" y="244" fill="#94a3b8" font-size="11" font-family="sans-serif">Cancel</text>
+                  <rect x="525" y="225" width="45" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                  <text x="535" y="244" fill="#64748b" font-size="11" font-family="sans-serif">Cancel</text>
                 </svg>
               </div>
             </div>
@@ -597,50 +597,55 @@ const faqs = [
             </span>
           </div>
 
-          <!-- Pro Tip -->
-          <div class="p-4 bg-slate-900 rounded-xl text-white text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
-            <span class="text-emerald-400 font-bold shrink-0">Pro-Tip:</span>
-            <span class="text-slate-300 leading-relaxed">{installSteps[3].proTip}</span>
+          <!-- Soft Pro Tip Card -->
+          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
+            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
+            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[3].proTip}</span>
           </div>
         </div>
 
       </section>
 
-      <!-- 4. Pinning Pro-Tip: "Where is my Extension?" -->
+      <!-- 4. Pinning Pro-Tip: Soft #f0f4f9 card with white pill elements -->
       <section class="space-y-6">
-        <div class="p-6 bg-slate-900 text-white rounded-2xl shadow-2xs space-y-4">
-          <div class="flex items-center gap-2 text-emerald-400">
-            <Pin class="w-5 h-5" />
-            <h3 class="text-base font-bold text-white tracking-tight">
-              Bonus Tip: Pin the Extension for 1-Click Access
-            </h3>
+        <div class="p-6 sm:p-7 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="inline-flex items-center gap-2 bg-white border border-slate-200/90 rounded-full px-3 py-1 shadow-2xs">
+              <Pin class="w-3.5 h-3.5 text-blue-600" />
+              <span class="text-xs font-bold text-slate-800">Toolbar Quick Access</span>
+            </div>
+            <span class="text-xs text-slate-500 font-medium">Recommended</span>
           </div>
 
-          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+          <h3 class="text-base font-bold text-slate-900 tracking-tight">
+            Bonus Tip: Pin the Extension for 1-Click Access
+          </h3>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
             Modern browsers automatically hide newly installed extensions inside the extensions menu. To keep your extension visible in your main browser toolbar:
           </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-            <div class="p-4 bg-slate-800/80 rounded-xl border border-slate-700 space-y-1.5">
-              <span class="text-xs font-mono font-bold text-blue-400">01. Puzzle Icon</span>
-              <h4 class="text-xs font-bold text-white">Click Extensions Menu</h4>
-              <p class="text-[11px] text-slate-400 leading-relaxed">
+            <div class="p-4 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-600">01. Puzzle Icon</span>
+              <h4 class="text-xs font-bold text-slate-900">Click Extensions Menu</h4>
+              <p class="text-[11px] text-slate-600 leading-relaxed">
                 Click the small jigsaw puzzle piece icon (🧩) to the right of your address bar.
               </p>
             </div>
 
-            <div class="p-4 bg-slate-800/80 rounded-xl border border-slate-700 space-y-1.5">
-              <span class="text-xs font-mono font-bold text-emerald-400">02. Find Extension</span>
-              <h4 class="text-xs font-bold text-white">Locate Your Utility</h4>
-              <p class="text-[11px] text-slate-400 leading-relaxed">
+            <div class="p-4 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-600">02. Find Extension</span>
+              <h4 class="text-xs font-bold text-slate-900">Locate Your Utility</h4>
+              <p class="text-[11px] text-slate-600 leading-relaxed">
                 Scroll through the dropdown list to locate your freshly installed extension.
               </p>
             </div>
 
-            <div class="p-4 bg-slate-800/80 rounded-xl border border-slate-700 space-y-1.5">
-              <span class="text-xs font-mono font-bold text-blue-400">03. Click Pin (📌)</span>
-              <h4 class="text-xs font-bold text-white">Pin to Toolbar</h4>
-              <p class="text-[11px] text-slate-400 leading-relaxed">
+            <div class="p-4 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-600">03. Click Pin (📌)</span>
+              <h4 class="text-xs font-bold text-slate-900">Pin to Toolbar</h4>
+              <p class="text-[11px] text-slate-600 leading-relaxed">
                 Click the pin icon. Its button turns blue and the extension icon remains permanently accessible!
               </p>
             </div>
@@ -678,7 +683,7 @@ const faqs = [
       </section>
 
       <!-- 6. Bottom Clean CTA Strip -->
-      <section class="p-8 bg-slate-100 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+      <section class="p-8 bg-[#f0f4f9] rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
         <div class="space-y-1">
           <h3 class="text-lg font-bold text-slate-900 tracking-tight">
             Ready to discover verified extensions?
@@ -744,10 +749,10 @@ const faqs = [
             try {
               await navigator.clipboard.writeText(urlToCopy);
               if (copyBtnText) copyBtnText.textContent = 'Copied!';
-              copyBtn.classList.add('bg-emerald-700', 'border-emerald-600');
+              copyBtn.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-300');
               setTimeout(() => {
                 if (copyBtnText) copyBtnText.textContent = 'Copy URL';
-                copyBtn.classList.remove('bg-emerald-700', 'border-emerald-600');
+                copyBtn.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-300');
               }, 2000);
             } catch (err) {
               // Fallback
