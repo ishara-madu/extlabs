@@ -1,0 +1,741 @@
+---
+// src/pages/admin/index.astro
+import "../../styles/global.css";
+import AdminNavbar from "../../components/AdminNavbar.astro";
+import Footer from "../../components/Footer.astro";
+import { EXTENSIONS } from "../../data/extensions";
+import { 
+  ShieldCheck, 
+  Check, 
+  X, 
+  AlertTriangle, 
+  Search, 
+  Star, 
+  Download, 
+  ArrowRight, 
+  Eye, 
+  RefreshCw, 
+  FileCode, 
+  Trash2, 
+  BadgeCheck, 
+  Clock, 
+  Sparkles, 
+  Layers, 
+  ExternalLink, 
+  AlertCircle,
+  CheckCircle2,
+  FolderOpen,
+  Filter
+} from '@lucide/astro';
+
+// Pending submissions queue
+const pendingQueue = [
+  {
+    id: "api-quick-tester",
+    name: "API Quick Tester & Header Inspector",
+    version: "v1.2.0",
+    developer: "dev-craft-tools",
+    category: "Developer Tools",
+    submittedAt: "2 hours ago",
+    packageSize: "840 KB",
+    auditStatus: "clean",
+    auditSummary: "100% Virus-Free • Static Scan OK",
+    permissions: ["storage", "webRequest"],
+    riskScore: "Low (0.02)"
+  },
+  {
+    id: "cookie-sentinel-pro",
+    name: "Cookie Sentinel & Tracker Blocker",
+    version: "v2.1.0 (Update)",
+    developer: "privacy-guard-labs",
+    category: "Privacy & Security",
+    submittedAt: "4 hours ago",
+    packageSize: "1.1 MB",
+    auditStatus: "clean",
+    auditSummary: "100% Virus-Free • MV3 Compliant",
+    permissions: ["cookies", "activeTab"],
+    riskScore: "Low (0.01)"
+  },
+  {
+    id: "markdown-web-clipper",
+    name: "Markdown Web Clipper & Note Sync",
+    version: "v1.3.2",
+    developer: "obsidian-helpers",
+    category: "Productivity",
+    submittedAt: "6 hours ago",
+    packageSize: "620 KB",
+    auditStatus: "clean",
+    auditSummary: "100% Virus-Free • Client-Side Only",
+    permissions: ["storage", "contextMenus"],
+    riskScore: "Low (0.00)"
+  },
+  {
+    id: "web3-crypto-watcher",
+    name: "Web3 Key & Contract Watcher",
+    version: "v0.9.1 (Beta)",
+    developer: "indie-chain-dev",
+    category: "Workflow & Utilities",
+    submittedAt: "12 hours ago",
+    packageSize: "2.4 MB",
+    auditStatus: "warning",
+    auditSummary: "Requires Review: Remote Code Call detected",
+    permissions: ["clipboardRead", "tabs", "storage"],
+    riskScore: "Medium (0.42)"
+  }
+];
+
+// Open moderation reports
+const userReports = [
+  {
+    id: "rep-101",
+    extensionId: "tab-suspender-eco",
+    extensionName: "TabSuspender: Smart Memory Saver",
+    reporter: "alex_researcher",
+    reason: "Package ZIP contains duplicate nested directory structure causing extraction confusion on macOS.",
+    reportedAt: "1 day ago",
+    severity: "Low"
+  },
+  {
+    id: "rep-102",
+    extensionId: "shield-guard-privacy",
+    extensionName: "ShieldGuard: Client-Side Privacy Suite",
+    reporter: "security_auditor_9",
+    reason: "Developer updated Monetag direct link domain without matching publisher signature.",
+    reportedAt: "2 days ago",
+    severity: "Medium"
+  }
+];
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Moderation Console — ExtLabs</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Admin Topbar -->
+    <AdminNavbar />
+
+    <!-- Main Admin Dashboard Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-12">
+      
+      <!-- Page Header & Session Welcome -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-6">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-mono">
+              Staff Portal • Production
+            </span>
+            <span class="text-xs text-slate-400 font-medium">
+              Real-Time Moderation Queue
+            </span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Extension Review & Directory Controls
+          </h1>
+
+          <p class="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Audit newly submitted .zip packages, enforce security standards, manage directory listings, and triage user reports.
+          </p>
+        </div>
+
+        <!-- Quick Status Pills -->
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            id="refresh-data-btn"
+            class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 hover:border-slate-300 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          >
+            <RefreshCw class="w-3.5 h-3.5 text-slate-500" id="refresh-icon" />
+            <span>Sync Telemetry</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. Key Operational Metrics (Soft #f0f4f9 Cards) -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Metric 1: Pending Queue -->
+        <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600">Pending Review</span>
+            <span class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+              4 Submissions
+            </span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+            4
+          </div>
+          <span class="text-[11px] text-slate-500 block leading-tight">
+            3 automated pass • 1 manual triage
+          </span>
+        </div>
+
+        <!-- Metric 2: Live Packages -->
+        <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600">Active in Directory</span>
+            <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+              100% Live
+            </span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+            {EXTENSIONS.length}
+          </div>
+          <span class="text-[11px] text-slate-500 block leading-tight">
+            All Chromium & MV3 verified
+          </span>
+        </div>
+
+        <!-- Metric 3: User Abuse Reports -->
+        <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600">Flagged Reports</span>
+            <span class="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
+              2 Open
+            </span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+            2
+          </div>
+          <span class="text-[11px] text-slate-500 block leading-tight">
+            1 extraction issue • 1 sponsor link review
+          </span>
+        </div>
+
+        <!-- Metric 4: Platform 24h Installs -->
+        <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600">Network Downloads (24h)</span>
+            <span class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+              +18.4%
+            </span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+            142.8K
+          </div>
+          <span class="text-[11px] text-slate-500 block leading-tight">
+            Direct .zip package deliveries
+          </span>
+        </div>
+
+      </section>
+
+      <!-- 2. Submissions Review Queue (Primary Moderator Workstation) -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Pending Review Queue</span>
+              <span class="text-xs font-normal text-slate-400">({pendingQueue.length} packages awaiting action)</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Packages pass automated static code analysis before entering this human moderator verification queue.
+            </p>
+          </div>
+        </div>
+
+        <!-- Review Queue Card Container -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-[#f0f4f9] border-b border-slate-200/90 text-slate-700 font-semibold uppercase text-[10px] tracking-wider">
+                  <th class="py-3.5 px-4 sm:px-6">Extension Package</th>
+                  <th class="py-3.5 px-4">Publisher</th>
+                  <th class="py-3.5 px-4">Category</th>
+                  <th class="py-3.5 px-4">Automated Security Audit</th>
+                  <th class="py-3.5 px-4">Submitted</th>
+                  <th class="py-3.5 px-4 sm:px-6 text-right">Moderator Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100" id="queue-table-body">
+                {pendingQueue.map((item) => (
+                  <tr class="hover:bg-slate-50/70 transition-colors queue-row" id={`row-${item.id}`}>
+                    <!-- Extension Info -->
+                    <td class="py-4 px-4 sm:px-6">
+                      <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-xs shrink-0">
+                          {item.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-900 leading-tight">
+                            {item.name}
+                          </div>
+                          <div class="text-[11px] text-slate-400 font-mono">
+                            {item.version} • {item.packageSize}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Publisher -->
+                    <td class="py-4 px-4 font-mono text-slate-600">
+                      @{item.developer}
+                    </td>
+
+                    <!-- Category -->
+                    <td class="py-4 px-4">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                        {item.category}
+                      </span>
+                    </td>
+
+                    <!-- Security Audit Result -->
+                    <td class="py-4 px-4">
+                      {item.auditStatus === 'clean' ? (
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <ShieldCheck class="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{item.auditSummary}</span>
+                        </div>
+                      ) : (
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-amber-50 text-amber-900 border border-amber-200">
+                          <AlertTriangle class="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <span>{item.auditSummary}</span>
+                        </div>
+                      )}
+                    </td>
+
+                    <!-- Submitted Time -->
+                    <td class="py-4 px-4 text-slate-500 text-[11px]">
+                      {item.submittedAt}
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="py-4 px-4 sm:px-6 text-right">
+                      <div class="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          data-action="approve"
+                          data-id={item.id}
+                          data-name={item.name}
+                          class="action-btn px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer shadow-2xs"
+                        >
+                          Approve & Publish
+                        </button>
+                        <button
+                          type="button"
+                          data-action="reject"
+                          data-id={item.id}
+                          data-name={item.name}
+                          class="action-btn px-2.5 py-1.5 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[11px] font-medium rounded-lg border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Live Directory Management Table -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 tracking-tight">
+              Live Directory Management
+            </h2>
+            <p class="text-xs text-slate-500">
+              Control production listings, toggle homepage features, and inspect active packages.
+            </p>
+          </div>
+
+          <!-- Search Filter -->
+          <div class="relative w-full sm:w-64">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <Search class="w-3.5 h-3.5" />
+            </div>
+            <input
+              type="text"
+              id="admin-search-input"
+              placeholder="Search published extensions..."
+              class="w-full pl-8 pr-3 py-1.5 text-xs bg-white text-slate-900 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 placeholder:text-slate-400"
+            />
+          </div>
+        </div>
+
+        <!-- Live Directory Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-[#f0f4f9] border-b border-slate-200/90 text-slate-700 font-semibold uppercase text-[10px] tracking-wider">
+                  <th class="py-3.5 px-4 sm:px-6">Published Extension</th>
+                  <th class="py-3.5 px-4">Downloads</th>
+                  <th class="py-3.5 px-4">Rating</th>
+                  <th class="py-3.5 px-4">Verification</th>
+                  <th class="py-3.5 px-4">Store State</th>
+                  <th class="py-3.5 px-4 sm:px-6 text-right">Listing Controls</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100" id="live-table-body">
+                {EXTENSIONS.map((ext) => (
+                  <tr class="hover:bg-slate-50/70 transition-colors live-row" data-name={ext.name.toLowerCase()}>
+                    <!-- Extension -->
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                          {ext.name.charAt(0)}
+                        </div>
+                        <div>
+                          <a
+                            href={`/extension/${ext.id}`}
+                            target="_blank"
+                            class="font-bold text-slate-900 hover:text-blue-600 transition-colors flex items-center gap-1 leading-tight"
+                          >
+                            <span>{ext.name}</span>
+                            <ExternalLink class="w-3 h-3 text-slate-400" />
+                          </a>
+                          <span class="text-[11px] text-slate-400 font-mono">
+                            v{ext.version} • {ext.categoryLabel}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Downloads -->
+                    <td class="py-3.5 px-4 font-mono font-medium text-slate-700">
+                      {ext.userCount}
+                    </td>
+
+                    <!-- Rating -->
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-1 font-medium text-slate-700">
+                        <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                        <span>{ext.rating.toFixed(1)}</span>
+                      </div>
+                    </td>
+
+                    <!-- Verification Badge -->
+                    <td class="py-3.5 px-4">
+                      {ext.isVerified ? (
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                          <BadgeCheck class="w-3 h-3 text-blue-600" />
+                          <span>Verified</span>
+                        </span>
+                      ) : (
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500">
+                          Standard
+                        </span>
+                      )}
+                    </td>
+
+                    <!-- State -->
+                    <td class="py-3.5 px-4">
+                      {ext.featured ? (
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 status-pill">
+                          <Sparkles class="w-3 h-3 text-emerald-600" />
+                          <span>Featured</span>
+                        </span>
+                      ) : (
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 status-pill">
+                          Live
+                        </span>
+                      )}
+                    </td>
+
+                    <!-- Controls -->
+                    <td class="py-3.5 px-4 sm:px-6 text-right">
+                      <div class="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          class="toggle-feature-btn px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-medium rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
+                          data-id={ext.id}
+                        >
+                          {ext.featured ? "Unfeature" : "Feature"}
+                        </button>
+                        <button
+                          type="button"
+                          class="suspend-btn px-2.5 py-1 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[11px] font-medium rounded-lg border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer"
+                          data-id={ext.id}
+                          data-name={ext.name}
+                        >
+                          Suspend
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. User Abuse Reports & Quality Triage (Soft #f0f4f9 Cards) -->
+      <section class="space-y-4">
+        <div class="space-y-1">
+          <h2 class="text-lg font-bold text-slate-900 tracking-tight">
+            User Quality & Security Reports
+          </h2>
+          <p class="text-xs text-slate-500">
+            Tickets submitted by platform users and automated monitoring alerts.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {userReports.map((report) => (
+            <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-3" id={report.id}>
+              <div class="flex items-center justify-between">
+                <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full px-2.5 py-0.5 shadow-2xs">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                  <span class="text-[10px] font-semibold text-slate-700">{report.severity} Severity</span>
+                </div>
+                <span class="text-[11px] text-slate-400 font-medium">{report.reportedAt}</span>
+              </div>
+
+              <div class="space-y-1">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-900">
+                  {report.extensionName}
+                </h3>
+                <p class="text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-200/80">
+                  "{report.reason}"
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[11px] text-slate-400 font-mono">
+                  Reported by: @{report.reporter}
+                </span>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="dismiss-report-btn px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-medium rounded-lg border border-slate-200 cursor-pointer transition-colors shadow-2xs"
+                    data-report-id={report.id}
+                  >
+                    Dismiss
+                  </button>
+                  <button
+                    type="button"
+                    class="resolve-report-btn px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-[11px] font-semibold rounded-lg cursor-pointer transition-colors shadow-2xs"
+                    data-report-id={report.id}
+                  >
+                    Mark Resolved
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Minimalist Floating Admin Toast -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <div
+        id="admin-toast"
+        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl"
+      >
+        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span id="admin-toast-text">Action completed successfully.</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Admin Interactive Logic & Auth Guard -->
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', () => {
+        // 1. Auth Guard: Verify Admin Session
+        const hasAdminSession = localStorage.getItem('extlabs_admin_session') === 'true';
+        if (!hasAdminSession) {
+          window.location.href = '/admin/login?auth_required=true';
+          return;
+        }
+
+        // Set logged-in user email if saved
+        const adminUser = localStorage.getItem('extlabs_admin_user');
+        if (adminUser) {
+          try {
+            const parsed = JSON.parse(adminUser);
+            const userDisplay = document.getElementById('admin-user-display');
+            if (userDisplay && parsed.email) {
+              userDisplay.textContent = parsed.email;
+            }
+          } catch (e) {}
+        }
+
+        // 2. Toast Helper
+        const toast = document.getElementById('admin-toast');
+        const toastText = document.getElementById('admin-toast-text');
+        let toastTimer = null;
+
+        function showAdminToast(msg) {
+          if (toastTimer) clearTimeout(toastTimer);
+          if (toast && toastText) {
+            toastText.textContent = msg;
+            toast.classList.remove('hidden');
+            toastTimer = setTimeout(() => {
+              toast.classList.add('hidden');
+            }, 3000);
+          }
+        }
+
+        // 3. Log Out Action
+        const logoutBtn = document.getElementById('admin-logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('extlabs_admin_session');
+            localStorage.removeItem('extlabs_admin_user');
+            window.location.href = '/admin/login';
+          });
+        }
+
+        // 4. Review Queue Action Handlers (Approve / Reject)
+        const actionButtons = document.querySelectorAll('.action-btn');
+        actionButtons.forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            const action = btn.getAttribute('data-action');
+            const id = btn.getAttribute('data-id');
+            const name = btn.getAttribute('data-name');
+            const row = document.getElementById(`row-${id}`);
+
+            if (action === 'approve') {
+              if (row) {
+                row.classList.add('bg-emerald-50/50');
+                const actionCell = row.querySelector('td:last-child');
+                if (actionCell) {
+                  actionCell.innerHTML = `
+                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                      <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span>Approved & Live</span>
+                    </span>
+                  `;
+                }
+              }
+              showAdminToast(`Approved "${name}" — published to Live Directory.`);
+            } else if (action === 'reject') {
+              if (row) {
+                row.classList.add('bg-rose-50/50');
+                const actionCell = row.querySelector('td:last-child');
+                if (actionCell) {
+                  actionCell.innerHTML = `
+                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg">
+                      <span>Rejected</span>
+                    </span>
+                  `;
+                }
+              }
+              showAdminToast(`Rejected "${name}". Notification sent to developer.`);
+            }
+          });
+        });
+
+        // 5. Live Table Feature Toggle & Suspend
+        const featureButtons = document.querySelectorAll('.toggle-feature-btn');
+        featureButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const isFeatured = btn.textContent.trim() === 'Unfeature';
+            btn.textContent = isFeatured ? 'Feature' : 'Unfeature';
+            const row = btn.closest('tr');
+            const pill = row ? row.querySelector('.status-pill') : null;
+            if (pill) {
+              if (isFeatured) {
+                pill.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 status-pill';
+                pill.textContent = 'Live';
+                showAdminToast('Listing removed from Featured shelf.');
+              } else {
+                pill.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 status-pill';
+                pill.innerHTML = '<span>Featured</span>';
+                showAdminToast('Listing promoted to Featured shelf.');
+              }
+            }
+          });
+        });
+
+        const suspendButtons = document.querySelectorAll('.suspend-btn');
+        suspendButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const name = btn.getAttribute('data-name');
+            const row = btn.closest('tr');
+            if (btn.textContent.trim() === 'Suspend') {
+              btn.textContent = 'Restore';
+              btn.classList.add('bg-slate-900', 'text-white');
+              btn.classList.remove('text-slate-600');
+              if (row) row.classList.add('opacity-50');
+              showAdminToast(`Suspended "${name}" from directory.`);
+            } else {
+              btn.textContent = 'Suspend';
+              btn.classList.remove('bg-slate-900', 'text-white');
+              btn.classList.add('text-slate-600');
+              if (row) row.classList.remove('opacity-50');
+              showAdminToast(`Restored "${name}" to Live Directory.`);
+            }
+          });
+        });
+
+        // 6. User Reports Dismiss & Resolve
+        const dismissButtons = document.querySelectorAll('.dismiss-report-btn');
+        dismissButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const reportId = btn.getAttribute('data-report-id');
+            const card = document.getElementById(reportId);
+            if (card) {
+              card.style.display = 'none';
+              showAdminToast('Ticket dismissed.');
+            }
+          });
+        });
+
+        const resolveButtons = document.querySelectorAll('.resolve-report-btn');
+        resolveButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const reportId = btn.getAttribute('data-report-id');
+            const card = document.getElementById(reportId);
+            if (card) {
+              card.style.display = 'none';
+              showAdminToast('Ticket marked as Resolved.');
+            }
+          });
+        });
+
+        // 7. Live Table Search Filter
+        const searchInput = document.getElementById('admin-search-input');
+        const rows = document.querySelectorAll('.live-row');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            rows.forEach((row) => {
+              const name = row.getAttribute('data-name') || '';
+              if (!query || name.includes(query)) {
+                row.style.display = '';
+              } else {
+                row.style.display = 'none';
+              }
+            });
+          });
+        }
+
+        // 8. Sync Telemetry Mock Action
+        const syncBtn = document.getElementById('refresh-data-btn');
+        const syncIcon = document.getElementById('refresh-icon');
+        if (syncBtn && syncIcon) {
+          syncBtn.addEventListener('click', () => {
+            syncIcon.classList.add('animate-spin');
+            setTimeout(() => {
+              syncIcon.classList.remove('animate-spin');
+              showAdminToast('All telemetry data synchronized with ExtLabs nodes.');
+            }, 600);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
