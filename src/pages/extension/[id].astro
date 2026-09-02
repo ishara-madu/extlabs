@@ -762,6 +762,126 @@ const jsonLdSchema = {
       </form>
     </dialog>
 
+    <!-- Post-Download Quick Install Modal (Hybrid Flow) -->
+    <dialog id="post-download-modal" class="modal">
+      <div class="modal-box max-w-lg p-0 bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xl">
+        
+        <!-- Modal Top Header in Soft #f0f4f9 Palette -->
+        <div class="p-5 bg-[#f0f4f9] border-b border-slate-200/80 flex items-start justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-white border border-slate-200/80 flex items-center justify-center text-emerald-600 shadow-2xs shrink-0">
+              <CheckCircle2 class="w-5 h-5" />
+            </div>
+            <div>
+              <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full px-2.5 py-0.5 shadow-2xs mb-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="text-[11px] font-semibold text-slate-700">Download Started</span>
+              </div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                How to Install {ext.name}
+              </h3>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="close-post-download-modal"
+            class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white/80 transition-colors cursor-pointer"
+            aria-label="Close dialog"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <!-- Modal Body: 3 Quick Steps -->
+        <div class="p-5 space-y-4">
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Follow these 3 quick steps to activate your extension in Chrome, Brave, Edge, or Opera:
+          </p>
+
+          <div class="space-y-2.5">
+            <!-- Step 1: Unzip -->
+            <div class="p-3.5 bg-[#f0f4f9] border border-slate-200/90 rounded-xl flex items-start gap-3">
+              <span class="w-6 h-6 rounded-full bg-white border border-slate-200 text-blue-600 font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                1
+              </span>
+              <div class="space-y-0.5 flex-1">
+                <h4 class="text-xs font-bold text-slate-900">Extract Downloaded .ZIP</h4>
+                <p class="text-[11px] text-slate-600 leading-relaxed">
+                  Open your Downloads folder and extract the zip file to a permanent folder.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 2: Open Extensions & Enable Developer Mode -->
+            <div class="p-3.5 bg-[#f0f4f9] border border-slate-200/90 rounded-xl space-y-2">
+              <div class="flex items-start gap-3">
+                <span class="w-6 h-6 rounded-full bg-white border border-slate-200 text-blue-600 font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  2
+                </span>
+                <div class="space-y-0.5 flex-1">
+                  <h4 class="text-xs font-bold text-slate-900">Open Extensions & Enable Developer Mode</h4>
+                  <p class="text-[11px] text-slate-600 leading-relaxed">
+                    Paste the URL below into your address bar and turn ON the <strong>Developer mode</strong> toggle at the top right.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Quick URL Copy row inside step 2 -->
+              <div class="ml-9 p-2 bg-white border border-slate-200 rounded-lg flex items-center justify-between gap-2 shadow-2xs">
+                <span class="text-xs font-mono text-blue-700 font-semibold truncate select-all" id="modal-ext-url">chrome://extensions</span>
+                <button
+                  type="button"
+                  id="modal-copy-ext-url-btn"
+                  class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded border border-slate-200 cursor-pointer shrink-0 transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3: Load Unpacked -->
+            <div class="p-3.5 bg-[#f0f4f9] border border-slate-200/90 rounded-xl flex items-start gap-3">
+              <span class="w-6 h-6 rounded-full bg-white border border-slate-200 text-blue-600 font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                3
+              </span>
+              <div class="space-y-0.5 flex-1">
+                <h4 class="text-xs font-bold text-slate-900">Click 'Load Unpacked'</h4>
+                <p class="text-[11px] text-slate-600 leading-relaxed">
+                  Click the <strong>Load unpacked</strong> button and choose your extracted folder. The extension is now active!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer action & link to full guide -->
+          <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <a
+              href="/how-to-install"
+              target="_blank"
+              class="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+            >
+              <span>Need screenshots & step-by-step visuals?</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </a>
+
+            <button
+              type="button"
+              id="modal-got-it-btn"
+              class="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-black text-white font-medium rounded-lg shadow-2xs cursor-pointer transition-colors"
+            >
+              Got it!
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
     <!-- Minimalist Toast Notification -->
     <div class="fixed bottom-6 right-6 z-50">
       <div
@@ -852,6 +972,43 @@ const jsonLdSchema = {
             downloadBtn.className = 'w-full sm:w-auto px-6 py-3 bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors';
 
             showToast(`Downloading ${extName}. Follow the install guide below if needed.`);
+
+            // 4. Open Post-Download Install Quick Guide Modal
+            const postDownloadModal = document.getElementById('post-download-modal') as HTMLDialogElement | null;
+            if (postDownloadModal && typeof postDownloadModal.showModal === 'function') {
+              postDownloadModal.showModal();
+            }
+          });
+        }
+
+        // Post-Download Modal Event Handlers
+        const postDownloadModal = document.getElementById('post-download-modal') as HTMLDialogElement | null;
+        const closePostModalBtn = document.getElementById('close-post-download-modal');
+        const gotItPostModalBtn = document.getElementById('modal-got-it-btn');
+        const modalCopyBtn = document.getElementById('modal-copy-ext-url-btn');
+        const modalUrlEl = document.getElementById('modal-ext-url');
+
+        if (closePostModalBtn && postDownloadModal) {
+          closePostModalBtn.addEventListener('click', () => postDownloadModal.close());
+        }
+        if (gotItPostModalBtn && postDownloadModal) {
+          gotItPostModalBtn.addEventListener('click', () => postDownloadModal.close());
+        }
+        if (modalCopyBtn && modalUrlEl) {
+          modalCopyBtn.addEventListener('click', async () => {
+            const url = modalUrlEl.textContent || 'chrome://extensions';
+            try {
+              await navigator.clipboard.writeText(url);
+              modalCopyBtn.textContent = 'Copied!';
+              setTimeout(() => {
+                modalCopyBtn.textContent = 'Copy';
+              }, 2000);
+            } catch {
+              modalCopyBtn.textContent = 'Copied!';
+              setTimeout(() => {
+                modalCopyBtn.textContent = 'Copy';
+              }, 2000);
+            }
           });
         }
 
