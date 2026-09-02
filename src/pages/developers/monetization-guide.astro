@@ -199,10 +199,10 @@ const payoutMethods = [
     
     <Navbar />
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-20">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10">
       
       <!-- 1. Top Breadcrumbs & Page Header (Clean & Typographic) -->
-      <header class="space-y-4 border-b border-slate-200 pb-8">
+      <header class="space-y-4 border-b border-slate-200 pb-12">
         <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium" aria-label="Breadcrumb">
           <a href="/developers" class="hover:text-blue-600 transition-colors">Developer Portal</a>
           <span class="text-slate-300">/</span>
@@ -256,10 +256,10 @@ const payoutMethods = [
         </div>
       </header>
 
-      <!-- 2. How Monetization Works Architecture (Open Typographic Section) -->
-      <section class="space-y-6">
+      <!-- 2. How Monetization Works Architecture (Dedicated Padded Section) -->
+      <section class="py-14 border-b border-slate-200 space-y-8">
         <div class="space-y-1">
-          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             How Monetization Works on ExtLabs
           </h2>
           <p class="text-xs sm:text-sm text-slate-500">
@@ -307,12 +307,10 @@ const payoutMethods = [
         </div>
       </section>
 
-      <hr class="border-slate-200" />
-
-      <!-- 3. Step-by-Step Walkthrough with Dedicated Image Areas (Clean Spacing & Dividers) -->
-      <section class="space-y-8">
+      <!-- 3. Step-by-Step Walkthrough with Dedicated Image Areas (Dedicated Padded Section) -->
+      <section class="py-14 border-b border-slate-200 space-y-10">
         <div class="space-y-1">
-          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Step-by-Step Setup Walkthrough
           </h2>
           <p class="text-xs sm:text-sm text-slate-500">
@@ -380,32 +378,30 @@ const payoutMethods = [
         </div>
       </section>
 
-      <hr class="border-slate-200" />
-
-      <!-- 4. Payout Channels & Minimum Thresholds (Open Typographic Grid) -->
-      <section class="space-y-6">
-        <div class="space-y-1">
-          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+      <!-- 4. Payout Channels & Minimum Thresholds (Dedicated Padded Section) -->
+      <section class="py-14 border-b border-slate-200 space-y-8">
+        <div class="space-y-1.5">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Payout Channels & Withdrawal Terms
           </h2>
-          <p class="text-xs sm:text-sm text-slate-500">
-            <span class="text-emerald-700 font-semibold">Monetag</span> processes automated weekly payouts across a wide range of global payment providers.
+          <p class="text-xs sm:text-sm text-slate-500 max-w-2xl">
+            <span class="text-emerald-700 font-semibold">Monetag</span> processes automated weekly payouts across a wide range of trusted global payment providers.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
           {payoutMethods.map((m) => (
-            <div class="space-y-2 border-b sm:border-b-0 border-slate-200 pb-4 sm:pb-0">
+            <div class="p-5 bg-slate-50/60 rounded-xl border border-slate-200/80 space-y-3 shadow-2xs">
               <div class="flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900">
                   {m.name}
                 </h3>
-                <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md">
                   Min: {m.threshold}
                 </span>
               </div>
 
-              <div class="space-y-0.5 text-xs text-slate-500">
+              <div class="space-y-1 text-xs text-slate-500 pt-0.5">
                 <div class="flex items-center justify-between">
                   <span>Processing Speed:</span>
                   <span class="font-medium text-slate-700">{m.speed}</span>
@@ -416,7 +412,7 @@ const payoutMethods = [
                 </div>
               </div>
 
-              <p class="text-xs text-slate-600 leading-relaxed pt-1">
+              <p class="text-xs text-slate-600 leading-relaxed pt-2 border-t border-slate-200/60">
                 {m.bestFor}
               </p>
             </div>
@@ -424,12 +420,10 @@ const payoutMethods = [
         </div>
       </section>
 
-      <hr class="border-slate-200" />
-
-      <!-- 5. Developer Best Practices (Open 3-Column Layout) -->
-      <section class="space-y-6">
+      <!-- 5. Developer Best Practices (Dedicated Padded Section) -->
+      <section class="py-14 border-b border-slate-200 space-y-8">
         <div class="space-y-1">
-          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Best Practices for Maximum Retention & Revenue
           </h2>
           <p class="text-xs sm:text-sm text-slate-500">
@@ -461,12 +455,10 @@ const payoutMethods = [
         </div>
       </section>
 
-      <hr class="border-slate-200" />
-
-      <!-- 6. Frequently Asked Questions (Open Typographic Accordion) -->
-      <section class="space-y-6">
+      <!-- 6. Frequently Asked Questions (Dedicated Padded Section) -->
+      <section class="py-14 border-b border-slate-200 space-y-8">
         <div class="space-y-1">
-          <h2 class="text-xl font-bold text-slate-900 tracking-tight">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Frequently Asked Questions
           </h2>
           <p class="text-xs sm:text-sm text-slate-500">
@@ -489,35 +481,37 @@ const payoutMethods = [
         </div>
       </section>
 
-      <!-- 7. Dark CTA Notification Card -->
-      <section class="p-8 bg-slate-900 rounded-2xl text-white space-y-5 shadow-2xs">
-        <div class="space-y-1">
-          <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
-            Ready to monetize your browser extension?
-          </h2>
-          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-            Publish your open-source or custom extension on ExtLabs today. Keep 100% of your earnings with instant weekly payouts directly from <span class="text-emerald-400 font-semibold">Monetag</span>.
-          </p>
-        </div>
+      <!-- 7. Dark CTA Notification Card (Clean Padded Section) -->
+      <section class="py-14 space-y-6">
+        <div class="p-8 bg-slate-900 rounded-2xl text-white space-y-5 shadow-2xs">
+          <div class="space-y-1">
+            <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+              Ready to monetize your browser extension?
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+              Publish your open-source or custom extension on ExtLabs today. Keep 100% of your earnings with instant weekly payouts directly from <span class="text-emerald-400 font-semibold">Monetag</span>.
+            </p>
+          </div>
 
-        <div class="flex flex-wrap items-center gap-3 pt-2">
-          <a
-            href="/developers/new"
-            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-          >
-            <span>Submit Extension in Console</span>
-            <ArrowRight class="w-3.5 h-3.5" />
-          </a>
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <a
+              href="/developers/new"
+              class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            >
+              <span>Submit Extension in Console</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </a>
 
-          <a
-            href="https://monetag.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
-          >
-            <span>Create Free Monetag Account</span>
-            <ExternalLink class="w-3.5 h-3.5" />
-          </a>
+            <a
+              href="https://monetag.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
+            >
+              <span>Create Free Monetag Account</span>
+              <ExternalLink class="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       </section>
 
