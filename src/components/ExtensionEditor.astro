@@ -1,0 +1,2969 @@
+---
+// src/components/ExtensionEditor.astro
+import { 
+  ArrowLeft, 
+  Save, 
+  Box, 
+  Zap, 
+  ExternalLink, 
+  Globe, 
+  FileText, 
+  Sparkles, 
+  ShieldCheck, 
+  Image as ImageIcon,
+  Check,
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Code,
+  Quote,
+  WrapText,
+  Plus,
+  Trash2,
+  Cpu,
+  Layers,
+  Scale,
+  HelpCircle,
+  CheckCircle2,
+  Lock,
+  Compass,
+  Mail,
+  UploadCloud,
+  Upload,
+  Video,
+  Play,
+  FileImage,
+  AlertCircle,
+  X,
+  ArrowRight
+} from '@lucide/astro';
+
+export interface FeatureData {
+  title: string;
+  description: string;
+}
+
+export interface WorkflowStageData {
+  step?: number;
+  title: string;
+  description: string;
+}
+
+export interface ComparisonItem {
+  feature: string;
+  current: string;
+  others: string;
+}
+
+export interface FAQItem {
+  q: string;
+  a: string;
+}
+
+interface ExtensionData {
+  id?: string;
+  name?: string;
+  version?: string;
+  category?: string;
+  tagline?: string;
+  description?: string;
+  githubUrl?: string;
+  downloadUrl?: string;
+  docsUrl?: string;
+  supportEmail?: string;
+  developerWebsite?: string;
+  monetagUrl?: string;
+  frequency?: string;
+  manifestVersion?: string;
+  license?: string;
+  supportedBrowsers?: string[];
+  privacyPolicyUrl?: string;
+  iconUrl?: string;
+  promoTileUrl?: string;
+  screenshots?: string[];
+  youtubeVideoUrl?: string;
+  screenshot1?: string;
+  screenshot2?: string;
+  features?: (FeatureData | string)[];
+  workflow?: (WorkflowStageData | string)[];
+  comparison?: ComparisonItem[];
+  faqs?: FAQItem[];
+  permissions?: string;
+  status?: string;
+}
+
+interface Props {
+  isEdit?: boolean;
+  initialData?: ExtensionData;
+}
+
+const { isEdit = false, initialData = {} } = Astro.props;
+
+// Normalize features into { title, description } format
+const rawFeatures = initialData.features || [
+  {
+    title: "Instant 1-Click AI Summaries",
+    description: "Extract concise bullet summaries and key takeaways from articles, PDFs, and docs in under 2 seconds."
+  },
+  {
+    title: "YouTube Video Transcript Parsing",
+    description: "Automatically extracts video timestamps and generates time-stamped TL;DR outlines without watching the entire video."
+  },
+  {
+    title: "100% Client-Side Privacy",
+    description: "Operates fully with local Manifest V3 background workers with zero user data logging and private API key support."
+  }
+];
+
+const normalizedFeatures: FeatureData[] = rawFeatures.map((item) => {
+  if (typeof item === 'string') {
+    return {
+      title: item.split(':')[0] || item,
+      description: item.split(':')[1]?.trim() || item
+    };
+  }
+  return item;
+});
+
+// Normalize workflow stages into { step, title, description } format
+const rawWorkflow = initialData.workflow || [
+  {
+    step: 1,
+    title: "Client-Side DOM Ingestion & Parsing",
+    description: "The lightweight content script intercepts page text, strips boilerplate scripts and ads, and packages clean semantic text in memory."
+  },
+  {
+    step: 2,
+    title: "Privacy-Preserving Execution Pipeline",
+    description: "Processes text through high-speed on-device models or private encrypted cloud endpoints without storing user telemetry."
+  },
+  {
+    step: 3,
+    title: "Structured Markdown Output Rendering",
+    description: "Streams executive summaries, bullet points, and actionable takeaways directly into a clean non-intrusive floating sidebar."
+  }
+];
+
+const normalizedWorkflow: WorkflowStageData[] = rawWorkflow.map((item, idx) => {
+  if (typeof item === 'string') {
+    return {
+      step: idx + 1,
+      title: item.split(':')[0] || item,
+      description: item.split(':')[1]?.trim() || item
+    };
+  }
+  return { ...item, step: idx + 1 };
+});
+
+// Normalize comparison matrix
+const rawComparison: ComparisonItem[] = initialData.comparison || [
+  {
+    feature: "Privacy & Data Storage",
+    current: "100% Client-side RAM execution, zero telemetry logging",
+    others: "Third-party cloud storage with marketing trackers"
+  },
+  {
+    feature: "Execution Latency",
+    current: "Sub-2-second streaming summaries on any active webpage",
+    others: "Slow 8-15 second external API roundtrips"
+  },
+  {
+    feature: "Pricing & Access",
+    current: "100% Free & Open Source without locked paywalls",
+    others: "Freemium with strict daily request paywalls ($19/mo)"
+  }
+];
+
+// Normalize FAQs (SEO Schema.org FAQPage)
+const rawFaqs: FAQItem[] = initialData.faqs || [
+  {
+    q: "How does this extension protect my browsing privacy?",
+    a: "All page text parsing and tokenization run entirely within your local browser memory using Manifest V3 background workers. No browsing history or prompt contents are ever logged or sent to third-party ad brokers."
+  },
+  {
+    q: "Can I use my own OpenAI, Anthropic, or Gemini API keys?",
+    a: "Yes. You can switch to Direct Custom Key Mode inside the settings popup, allowing unlimited high-speed summaries directly billed to your own private developer account."
+  },
+  {
+    q: "Does this work on YouTube video transcripts and PDF files?",
+    a: "Yes. The extension automatically detects embedded video captions and local PDF documents, extracting timestamped outlines and key takeaways in under two seconds."
+  }
+];
+
+// Screenshots normalization
+const initialScreenshots: string[] = initialData.screenshots || [
+  initialData.screenshot1 || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
+  initialData.screenshot2 || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80"
+].filter(Boolean);
+
+const allAvailableBrowsers = [
+  { id: "chrome", name: "Chrome", checkedByDefault: true },
+  { id: "brave", name: "Brave", checkedByDefault: true },
+  { id: "edge", name: "Edge", checkedByDefault: true },
+  { id: "firefox", name: "Firefox", checkedByDefault: true },
+  { id: "arc", name: "Arc", checkedByDefault: true },
+  { id: "opera", name: "Opera", checkedByDefault: true },
+  { id: "safari", name: "Safari", checkedByDefault: false }
+];
+
+const data = {
+  id: initialData.id || "",
+  name: initialData.name || "",
+  version: initialData.version || "1.0.0",
+  category: initialData.category || "AI & Machine Learning",
+  tagline: initialData.tagline || "",
+  description: initialData.description || "",
+  githubUrl: initialData.githubUrl || (isEdit && initialData.id ? `https://github.com/neural-labs/${initialData.id}` : ""),
+  downloadUrl: initialData.downloadUrl || "",
+  docsUrl: initialData.docsUrl || "",
+  supportEmail: initialData.supportEmail || "support@neurallabs.dev",
+  developerWebsite: initialData.developerWebsite || "https://neurallabs.dev",
+  monetagUrl: initialData.monetagUrl || (isEdit && initialData.id ? `https://monetag.com/direct/${initialData.id.replace(/-/g, '_')}_live_8912` : "https://monetag.com/direct/54829103"),
+  frequency: initialData.frequency || "24h",
+  manifestVersion: initialData.manifestVersion || "v3",
+  license: initialData.license || "MIT",
+  supportedBrowsers: initialData.supportedBrowsers || ["chrome", "brave", "edge", "firefox", "arc", "opera"],
+  privacyPolicyUrl: initialData.privacyPolicyUrl || (isEdit && initialData.id ? `https://github.com/neural-labs/${initialData.id}/blob/main/PRIVACY.md` : ""),
+  iconUrl: initialData.iconUrl || (isEdit ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80" : ""),
+  promoTileUrl: initialData.promoTileUrl || (isEdit ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80" : ""),
+  screenshots: isEdit ? initialScreenshots : [],
+  youtubeVideoUrl: initialData.youtubeVideoUrl || (isEdit ? "https://www.youtube.com/watch?v=dQw4w9WgXcQ" : ""),
+  features: normalizedFeatures,
+  workflow: normalizedWorkflow,
+  comparison: rawComparison,
+  faqs: rawFaqs,
+  permissions: initialData.permissions || "activeTab, storage",
+  status: initialData.status || "Production"
+};
+---
+
+<!-- Extension Editor Workspace -->
+<div class="space-y-6">
+
+  <!-- Top Page Header & Main Actions -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          {isEdit ? `Edit: ${data.name || 'Details'}` : "Submit New Extension"}
+        </h1>
+        <span class={`text-xs font-semibold ${isEdit ? 'text-blue-600' : 'text-emerald-600'}`}>
+          • {isEdit ? "Active Listing" : "Quick Draft"}
+        </span>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-500">
+        {isEdit 
+          ? "Manage your extension metadata, media assets, and connected Monetag direct stream." 
+          : "Publish a new browser extension in under 60 seconds with our Smart Auto-Import."
+        }
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3 shrink-0">
+      <a
+        href={isEdit && data.id ? `/developers/manage/${data.id}` : "/developers/dashboard"}
+        class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
+      >
+        Cancel
+      </a>
+
+      <button
+        type="button"
+        id="top-save-btn"
+        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+      >
+        <Save class="w-3.5 h-3.5 text-white" />
+        <span>{isEdit ? "Save Changes" : "Publish Extension"}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 🌟 1-CLICK MAGIC GITHUB AUTO-IMPORT BAR (Frictionless Onboarding) -->
+  <div class="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-2.5 shadow-2xs">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div>
+        <span class="text-xs font-bold text-slate-900 block">Magic Auto-Fill from GitHub</span>
+        <span class="text-[11px] text-slate-500">Paste your repository URL to instantly populate 85% of your store listing from manifest.json & README.</span>
+      </div>
+      <span id="magic-status-text" class="text-[11px] font-mono text-blue-600 font-medium hidden sm:block">
+        Instant Manifest & Repo Sync
+      </span>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-2">
+      <div class="relative flex-1">
+        <input
+          id="magic-github-input"
+          type="url"
+          value={data.githubUrl || ""}
+          placeholder="https://github.com/username/my-awesome-extension"
+          class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none text-slate-900 font-mono shadow-2xs"
+        />
+      </div>
+
+      <button
+        type="button"
+        id="magic-import-btn"
+        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-2xs"
+      >
+        <span>Fetch & Auto-Fill</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 📑 4-TAB MINIMALIST NAVIGATION HEADER -->
+  <div class="border-b border-slate-200">
+    <nav class="flex items-center space-x-1 sm:space-x-4 overflow-x-auto no-scrollbar" aria-label="Editor Tabs">
+      
+      <!-- Tab 1: Essentials -->
+      <button
+        type="button"
+        class="tab-btn py-3 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-2 shrink-0 border-blue-600 text-blue-600"
+        data-tab="1"
+      >
+        <Box class="w-4 h-4" />
+        <span>1. Basic & Source</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-600 tab-dot"></span>
+      </button>
+
+      <!-- Tab 2: Visual Media -->
+      <button
+        type="button"
+        class="tab-btn py-3 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-2 shrink-0 border-transparent text-slate-500 hover:text-slate-800"
+        data-tab="2"
+      >
+        <ImageIcon class="w-4 h-4" />
+        <span>2. Visual Media</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-transparent tab-dot"></span>
+      </button>
+
+      <!-- Tab 3: Store Story & SEO -->
+      <button
+        type="button"
+        class="tab-btn py-3 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-2 shrink-0 border-transparent text-slate-500 hover:text-slate-800"
+        data-tab="3"
+      >
+        <FileText class="w-4 h-4" />
+        <span>3. Store Story & SEO</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-transparent tab-dot"></span>
+      </button>
+
+      <!-- Tab 4: Monetization & Specs -->
+      <button
+        type="button"
+        class="tab-btn py-3 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-2 shrink-0 border-transparent text-slate-500 hover:text-slate-800"
+        data-tab="4"
+      >
+        <Zap class="w-4 h-4" />
+        <span>4. Monetization & Specs</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-transparent tab-dot"></span>
+      </button>
+
+    </nav>
+  </div>
+
+  <!-- Extension Editor Form Body -->
+  <form id="extension-editor-form">
+
+    <!-- ========================================================================= -->
+    <!-- TAB PANE 1: ESSENTIALS & SOURCE CODE -->
+    <!-- ========================================================================= -->
+    <div id="tab-pane-1" class="tab-pane space-y-8">
+      
+      <!-- General Identity Section -->
+      <section class="space-y-5">
+        <div class="space-y-0.5">
+          <h2 class="text-sm font-bold text-slate-900 tracking-tight">
+            Extension Identity & Category
+          </h2>
+          <p class="text-xs text-slate-500">
+            Basic naming, unique slug, and store categorization.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <!-- Name -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="ext-name-input" class="block text-xs font-semibold text-slate-700">
+                Extension Display Name <span class="text-red-500">*</span>
+              </label>
+              <span id="name-char-counter" class="text-[10px] font-mono text-slate-400">
+                {data.name.length} / 50
+              </span>
+            </div>
+            <input
+              id="ext-name-input"
+              type="text"
+              required
+              maxlength="50"
+              value={data.name}
+              placeholder="e.g. Deep Summarize AI"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-medium"
+            />
+          </div>
+
+          <!-- Directory Slug -->
+          <div class="space-y-1.5">
+            <label for="ext-slug-input" class="block text-xs font-semibold text-slate-700">
+              Directory URL Slug <span class="text-red-500">*</span>
+            </label>
+            <div class="flex items-center">
+              <span class="px-3 py-2 text-xs bg-slate-50 border border-r-0 border-slate-200 rounded-l-lg text-slate-400 font-mono select-none">
+                extlabs.io/extension/
+              </span>
+              <input
+                id="ext-slug-input"
+                type="text"
+                required
+                value={data.id}
+                placeholder="deep-summarize-ai"
+                class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-r-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+              />
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="space-y-1.5">
+            <label for="ext-category-input" class="block text-xs font-semibold text-slate-700">
+              Primary Store Category <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="ext-category-input"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+            >
+              <option value="AI & Machine Learning" selected={data.category.includes("AI")}>AI & Machine Learning</option>
+              <option value="Developer Tools" selected={data.category.includes("Dev")}>Developer Tools</option>
+              <option value="Productivity" selected={data.category.includes("Productivity")}>Productivity</option>
+              <option value="Privacy & Security" selected={data.category.includes("Privacy")}>Privacy & Security</option>
+              <option value="Workflow & Utilities" selected={data.category.includes("Utilities")}>Workflow & Utilities</option>
+            </select>
+          </div>
+
+          <!-- Version -->
+          <div class="space-y-1.5">
+            <label for="ext-version-input" class="block text-xs font-semibold text-slate-700">
+              Release Version <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="ext-version-input"
+              type="text"
+              required
+              value={data.version}
+              placeholder="e.g. 1.0.0"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+            />
+          </div>
+
+          <!-- Tagline -->
+          <div class="sm:col-span-2 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="ext-tagline-input" class="block text-xs font-semibold text-slate-700">
+                Catchy Tagline <span class="text-red-500">*</span>
+              </label>
+              <span id="tagline-char-counter" class="text-[10px] font-mono text-slate-400">
+                {data.tagline.length} / 120
+              </span>
+            </div>
+            <input
+              id="ext-tagline-input"
+              type="text"
+              required
+              maxlength="120"
+              value={data.tagline}
+              placeholder="e.g. Instant AI summaries for research papers, articles, and video transcripts."
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900"
+            />
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- Package & Support Section -->
+      <section class="space-y-5">
+        <div class="space-y-0.5">
+          <h2 class="text-sm font-bold text-slate-900 tracking-tight">
+            Repository, Package Source & Support
+          </h2>
+          <p class="text-xs text-slate-500">
+            Source repository, release package asset, and developer support channels.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <!-- GitHub Repo -->
+          <div class="space-y-1.5">
+            <label for="ext-github-input" class="block text-xs font-semibold text-slate-700">
+              GitHub Repository URL <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="ext-github-input"
+              type="url"
+              required
+              value={data.githubUrl}
+              placeholder="https://github.com/your-username/your-extension"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+            />
+          </div>
+
+          <!-- Direct ZIP Asset -->
+          <div class="space-y-1.5">
+            <label for="ext-download-input" class="block text-xs font-semibold text-slate-700">
+              Direct Package (.zip / .crx) Release Asset
+            </label>
+            <input
+              id="ext-download-input"
+              type="url"
+              value={data.downloadUrl}
+              placeholder="https://github.com/your-username/repo/releases/latest/download/extension.zip"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+            />
+          </div>
+
+          <!-- Support Email -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="ext-support-email-input" class="block text-xs font-semibold text-slate-700">
+                Support Center Email <span class="text-red-500">*</span>
+              </label>
+              <span id="support-email-source-badge" class="text-[10px] font-mono text-blue-600 font-medium">
+                Auto-filled from Settings
+              </span>
+            </div>
+            <input
+              id="ext-support-email-input"
+              type="email"
+              required
+              value={data.supportEmail}
+              placeholder="support@yourdomain.com"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+            />
+          </div>
+
+          <!-- Developer Website -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="ext-dev-website-input" class="block text-xs font-semibold text-slate-700">
+                Developer / Studio Website <span class="text-red-500">*</span>
+              </label>
+              <span id="dev-website-source-badge" class="text-[10px] font-mono text-blue-600 font-medium">
+                Auto-filled from Settings
+              </span>
+            </div>
+            <input
+              id="ext-dev-website-input"
+              type="url"
+              required
+              value={data.developerWebsite}
+              placeholder="https://yourdomain.com"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+            />
+          </div>
+
+          <!-- Docs URL -->
+          <div class="sm:col-span-2 space-y-1.5">
+            <label for="ext-docs-input" class="block text-xs font-semibold text-slate-700">
+              Documentation / Product Homepage URL (Optional)
+            </label>
+            <input
+              id="ext-docs-input"
+              type="url"
+              value={data.docsUrl}
+              placeholder="https://neurallabs.dev/docs/deep-summarize"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Step Navigation Footer -->
+      <div class="flex items-center justify-end pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          data-next="2"
+        >
+          <span>Next: Visual Media</span>
+          <ArrowRight class="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB PANE 2: VISUAL MEDIA & SHOWCASE -->
+    <!-- ========================================================================= -->
+    <div id="tab-pane-2" class="tab-pane space-y-8 hidden">
+      
+      <div class="space-y-0.5">
+        <h2 class="text-sm font-bold text-slate-900 tracking-tight">
+          Visual Media & Store Assets
+        </h2>
+        <p class="text-xs text-slate-500">
+          Upload your extension icon, promotional shelf banner, store screenshots, and link a YouTube demo.
+        </p>
+      </div>
+
+      <!-- Icon & Promo Banner Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        
+        <!-- Extension Icon / Logo (Required *) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-semibold text-slate-700">
+              Extension Logo / Icon <span class="text-red-500">*</span>
+            </label>
+            <span class="text-[10px] font-mono text-slate-400">
+              128x128 or 512x512
+            </span>
+          </div>
+
+          <input
+            type="file"
+            id="ext-icon-file-input"
+            accept="image/png,image/webp,image/svg+xml,image/jpeg"
+            class="hidden"
+          />
+          <input type="hidden" id="ext-icon-url-val" value={data.iconUrl} />
+
+          <div
+            id="icon-upload-dropzone"
+            class="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-xl p-4 transition-colors cursor-pointer bg-white group flex flex-col items-center justify-center text-center min-h-[140px] relative"
+          >
+            <div id="icon-empty-state" class={`flex flex-col items-center gap-2 ${data.iconUrl ? 'hidden' : ''}`}>
+              <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+                <UploadCloud class="w-5 h-5" />
+              </div>
+              <div class="space-y-0.5">
+                <span class="text-xs font-semibold text-slate-800 block">Click to upload or drag & drop</span>
+                <span class="text-[10px] text-slate-400 block">Square transparent icon (Max 2MB)</span>
+              </div>
+            </div>
+
+            <div id="icon-preview-state" class={`flex items-center gap-3.5 w-full ${!data.iconUrl ? 'hidden' : ''}`}>
+              <img
+                id="icon-preview-img"
+                src={data.iconUrl || ""}
+                alt="Icon Preview"
+                class="w-14 h-14 rounded-xl border border-slate-200 object-cover shrink-0 shadow-2xs"
+              />
+              <div class="flex-1 text-left min-w-0 space-y-0.5">
+                <span id="icon-file-name" class="text-xs font-bold text-slate-800 truncate block">
+                  {data.iconUrl ? "Current Store Icon" : "icon.png"}
+                </span>
+                <span id="icon-file-size" class="text-[10px] font-mono text-slate-400 block">
+                  {data.iconUrl ? "Direct Stored Asset" : "PNG File"}
+                </span>
+                <span class="text-[10px] text-blue-600 hover:underline font-semibold block cursor-pointer">
+                  Change Icon
+                </span>
+              </div>
+              <button
+                type="button"
+                id="remove-icon-btn"
+                class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+                title="Remove Icon"
+              >
+                <Trash2 class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Promotional Shelf Banner (Required *) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-semibold text-slate-700">
+              Promotional Shelf Banner <span class="text-red-500">*</span>
+            </label>
+            <span class="text-[10px] font-mono text-slate-400">
+              440x280 (16:9 / 4:3 Shelf Tile)
+            </span>
+          </div>
+
+          <input
+            type="file"
+            id="ext-promo-file-input"
+            accept="image/png,image/webp,image/jpeg"
+            class="hidden"
+          />
+          <input type="hidden" id="ext-promo-url-val" value={data.promoTileUrl} />
+
+          <div
+            id="promo-upload-dropzone"
+            class="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-xl p-4 transition-colors cursor-pointer bg-white group flex flex-col items-center justify-center text-center min-h-[140px] relative"
+          >
+            <div id="promo-empty-state" class={`flex flex-col items-center gap-2 ${data.promoTileUrl ? 'hidden' : ''}`}>
+              <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+                <FileImage class="w-5 h-5" />
+              </div>
+              <div class="space-y-0.5">
+                <span class="text-xs font-semibold text-slate-800 block">Click to upload promotional tile</span>
+                <span class="text-[10px] text-slate-400 block">Featured on homepage & shelf cards with punchy text (Max 3MB)</span>
+              </div>
+            </div>
+
+            <div id="promo-preview-state" class={`flex items-center gap-3.5 w-full ${!data.promoTileUrl ? 'hidden' : ''}`}>
+              <img
+                id="promo-preview-img"
+                src={data.promoTileUrl || ""}
+                alt="Promo Banner Preview"
+                class="w-24 h-14 rounded-lg border border-slate-200 object-cover shrink-0 shadow-2xs"
+              />
+              <div class="flex-1 text-left min-w-0 space-y-0.5">
+                <span id="promo-file-name" class="text-xs font-bold text-slate-800 truncate block">
+                  {data.promoTileUrl ? "Current Promo Tile" : "promo-card.png"}
+                </span>
+                <span id="promo-file-size" class="text-[10px] font-mono text-slate-400 block">
+                  {data.promoTileUrl ? "Featured Banner" : "Banner Image"}
+                </span>
+                <span class="text-[10px] text-blue-600 hover:underline font-semibold block cursor-pointer">
+                  Change Banner
+                </span>
+              </div>
+              <button
+                type="button"
+                id="remove-promo-btn"
+                class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+                title="Remove Banner"
+              >
+                <Trash2 class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Store Showcase Screenshots Gallery (Min: 2, Max: 5) -->
+      <div class="space-y-4 pt-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+          <div class="space-y-0.5">
+            <label class="block text-xs font-bold text-slate-800">
+              Store Showcase Screenshots <span class="text-red-500">*</span>
+            </label>
+            <p class="text-[11px] text-slate-500">
+              High-resolution screenshots (1280x800 recommended). Upload 2 to 5 screenshots demonstrating your extension.
+            </p>
+          </div>
+          <span id="screenshots-count-badge" class="text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto">
+            {data.screenshots.length} / 5 Screenshots (Min: 2)
+          </span>
+        </div>
+
+        <input
+          type="file"
+          id="ext-screenshots-file-input"
+          accept="image/png,image/webp,image/jpeg"
+          multiple
+          class="hidden"
+        />
+
+        <!-- Dynamic Screenshots Grid Container -->
+        <div id="screenshots-grid-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {data.screenshots.map((src, idx) => (
+            <div class="screenshot-card p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs relative group" data-index={idx}>
+              <div class="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                <img
+                  src={src}
+                  alt={`Screenshot #${idx + 1}`}
+                  class="w-full h-full object-cover screenshot-preview-img"
+                />
+                <button
+                  type="button"
+                  class="remove-screenshot-btn absolute top-2 right-2 p-1.5 bg-slate-900/80 hover:bg-red-600 text-white rounded-lg transition-colors cursor-pointer shadow-sm"
+                  title="Remove Screenshot"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-slate-800 screenshot-number-label">
+                  Screenshot #{idx + 1}
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">1280x800</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <!-- Add Screenshots Upload Dropzone -->
+        <div
+          id="add-screenshots-dropzone"
+          class="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-xl p-5 transition-colors cursor-pointer bg-slate-50/50 hover:bg-white text-center flex flex-col items-center justify-center gap-1.5 group"
+        >
+          <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors shadow-2xs">
+            <Plus class="w-4 h-4" />
+          </div>
+          <span class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors cursor-pointer">
+            Click to upload screenshots or drag & drop (Min: 2, Max: 5)
+          </span>
+          <span class="text-[10px] text-slate-400">Supports PNG, WebP, JPG up to 5MB each</span>
+        </div>
+      </div>
+
+      <!-- YouTube Demo Video (Optional) -->
+      <div class="space-y-3 pt-2">
+        <div class="space-y-0.5">
+          <label for="ext-youtube-input" class="block text-xs font-bold text-slate-800 inline-flex items-center gap-1.5">
+            <Video class="w-3.5 h-3.5 text-red-600" />
+            <span>Product Demo / Walkthrough Video (YouTube URL)</span>
+            <span class="text-slate-400 font-normal text-[11px]">(Optional)</span>
+          </label>
+          <p class="text-[11px] text-slate-500">
+            Provide a YouTube video link showcasing your extension in action.
+          </p>
+        </div>
+
+        <div class="flex items-center">
+          <span class="px-3 py-2 text-xs bg-slate-50 border border-r-0 border-slate-200 rounded-l-lg text-slate-400 font-mono select-none flex items-center gap-1">
+            <Play class="w-3 h-3 text-red-500" />
+            <span>youtube.com/</span>
+          </span>
+          <input
+            id="ext-youtube-input"
+            type="url"
+            value={data.youtubeVideoUrl}
+            placeholder="https://www.youtube.com/watch?v=your-video-id or https://youtu.be/your-video-id"
+            class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-r-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+          />
+        </div>
+
+        <!-- YouTube Live Video Preview Embed Container -->
+        <div id="youtube-preview-container" class={`p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 ${!data.youtubeVideoUrl ? 'hidden' : ''}`}>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <CheckCircle2 class="w-3.5 h-3.5 text-emerald-600" />
+              <span>Connected YouTube Preview</span>
+            </span>
+            <span id="youtube-video-id-badge" class="text-[10px] font-mono text-slate-400">
+              Detected Video ID
+            </span>
+          </div>
+          <div class="aspect-video max-w-md rounded-lg overflow-hidden border border-slate-200 bg-black">
+            <iframe
+              id="youtube-preview-iframe"
+              class="w-full h-full"
+              src=""
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step Navigation Footer -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
+          data-prev="1"
+        >
+          ← Basic & Source
+        </button>
+
+        <button
+          type="button"
+          class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          data-next="3"
+        >
+          <span>Next: Store Story & SEO</span>
+          <ArrowRight class="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB PANE 3: STORE STORY, FEATURES & SEO -->
+    <!-- ========================================================================= -->
+    <div id="tab-pane-3" class="tab-pane space-y-8 hidden">
+      
+      <!-- Overview Description with Markdown Toolbar -->
+      <section class="space-y-4">
+        <div class="space-y-0.5">
+          <h2 class="text-sm font-bold text-slate-900 tracking-tight">
+            Full Overview Description
+          </h2>
+          <p class="text-xs text-slate-500">
+            Explain what your extension does, who it is for, and how it improves browsing workflows.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="ext-desc-input" class="block text-xs font-semibold text-slate-700">
+              Markdown Overview Description <span class="text-red-500">*</span>
+            </label>
+            <span id="desc-char-counter" class="text-[11px] font-mono font-medium text-slate-500">
+              0 / 2,500 characters (Min: 100)
+            </span>
+          </div>
+
+          <!-- Markdown Formatting Helper Toolbar -->
+          <div class="flex items-center flex-wrap gap-1 p-1.5 bg-slate-50 border border-slate-200 rounded-t-lg border-b-0 text-xs">
+            <button
+              type="button"
+              class="md-format-btn px-2 py-1 hover:bg-white hover:text-slate-900 rounded text-slate-600 transition-colors inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+              data-action="bold"
+              title="Bold text"
+            >
+              <Bold class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Bold</span>
+            </button>
+
+            <button
+              type="button"
+              class="md-format-btn px-2 py-1 hover:bg-white hover:text-slate-900 rounded text-slate-600 transition-colors inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+              data-action="italic"
+              title="Italic text"
+            >
+              <Italic class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Italic</span>
+            </button>
+
+            <div class="w-px h-4 bg-slate-300 mx-1"></div>
+
+            <button
+              type="button"
+              class="md-format-btn px-2 py-1 hover:bg-white hover:text-slate-900 rounded text-slate-600 transition-colors inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+              data-action="bullet"
+              title="Bullet point"
+            >
+              <List class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Bullet</span>
+            </button>
+
+            <button
+              type="button"
+              class="md-format-btn px-2 py-1 hover:bg-white hover:text-slate-900 rounded text-slate-600 transition-colors inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+              data-action="numbered"
+              title="Numbered list"
+            >
+              <ListOrdered class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Numbered</span>
+            </button>
+
+            <div class="w-px h-4 bg-slate-300 mx-1"></div>
+
+            <button
+              type="button"
+              class="md-format-btn px-2 py-1 hover:bg-white hover:text-slate-900 rounded text-slate-600 transition-colors inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+              data-action="paragraph"
+              title="Paragraph break"
+            >
+              <WrapText class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Paragraph</span>
+            </button>
+
+            <button
+              type="button"
+              class="md-format-btn px-2 py-1 hover:bg-white hover:text-slate-900 rounded text-slate-600 transition-colors inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+              data-action="quote"
+              title="Quote block"
+            >
+              <Quote class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Quote</span>
+            </button>
+
+            <button
+              type="button"
+              class="md-format-btn px-2 py-1 hover:bg-white hover:text-slate-900 rounded text-slate-600 transition-colors inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-slate-200 shadow-2xs"
+              data-action="code"
+              title="Inline code"
+            >
+              <Code class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Code</span>
+            </button>
+          </div>
+
+          <textarea
+            id="ext-desc-input"
+            rows="6"
+            required
+            minlength="100"
+            maxlength="2500"
+            placeholder="Describe what your extension does, who it is for, and how it improves their browsing workflow (Minimum 100 characters required)..."
+            class="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-200 rounded-b-lg focus:border-blue-400 focus:outline-none text-slate-900 leading-relaxed font-normal shadow-2xs"
+          >{data.description}</textarea>
+
+          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+            <span>Standard Markdown syntax supported. Clean semantic structure for SEO.</span>
+            <span id="char-status-badge" class="font-medium text-amber-600">Min 100 characters needed</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- KEY FEATURE HIGHLIGHTS (Min 3, Max 6) -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+          <div class="space-y-0.5">
+            <label class="block text-xs font-bold text-slate-800">
+              Key Feature Highlights <span class="text-red-500">*</span>
+            </label>
+            <p class="text-[11px] text-slate-500">
+              Define distinct feature pairs (Title & Description). Search engines prioritize 3 to 6 high-impact features.
+            </p>
+          </div>
+          <span id="features-count-badge" class="text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto">
+            {data.features.length} / 6 Features (Min: 3)
+          </span>
+        </div>
+
+        <div id="features-list-container" class="space-y-3">
+          {data.features.map((feat, idx) => (
+            <div class="feature-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs" data-index={idx}>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-slate-900 text-white font-mono text-[10px] flex items-center justify-center font-bold feature-index-num">
+                    {idx + 1}
+                  </span>
+                  <span class="text-xs font-bold text-slate-800 feature-number-label">
+                    Feature #{idx + 1}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="remove-feature-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                  title="Remove Feature"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-1 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700">
+                      Feature Title <span class="text-red-500">*</span>
+                    </label>
+                    <span class="feature-title-count text-[10px] font-mono text-slate-400">
+                      {feat.title.length} / 60
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="60"
+                    minlength="4"
+                    value={feat.title}
+                    placeholder="e.g. Instant 1-Click AI Summaries"
+                    class="feature-title-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+                  />
+                </div>
+
+                <div class="sm:col-span-2 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700">
+                      Feature Description & Value <span class="text-red-500">*</span>
+                    </label>
+                    <span class="feature-desc-count text-[10px] font-mono text-slate-400">
+                      {feat.description.length} / 180
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="180"
+                    minlength="15"
+                    value={feat.description}
+                    placeholder="e.g. Extract concise bullet summaries and key takeaways in under 2 seconds without leaving your current tab."
+                    class="feature-desc-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div class="pt-1">
+          <button
+            type="button"
+            id="add-feature-btn"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors py-1 cursor-pointer"
+          >
+            <Plus class="w-3.5 h-3.5 text-blue-600" />
+            <span>Add another feature (Min: 3, Max: 6)</span>
+          </button>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- INTERNAL EXECUTION WORKFLOW (Min 3, Max 5 Stages) -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+          <div class="space-y-0.5">
+            <label class="block text-xs font-bold text-slate-900 tracking-tight">
+              Internal Execution Workflow (How It Works)
+            </label>
+            <p class="text-[11px] text-slate-500">
+              Step-by-step internal execution pipeline (3 to 5 stages).
+            </p>
+          </div>
+          <span id="workflow-count-badge" class="text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto">
+            {data.workflow.length} / 5 Stages (Min: 3)
+          </span>
+        </div>
+
+        <div id="workflow-list-container" class="space-y-3.5">
+          {data.workflow.map((wf, idx) => (
+            <div class="workflow-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs" data-index={idx}>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-blue-600 text-white font-mono text-[10px] flex items-center justify-center font-bold workflow-index-num">
+                    {idx + 1}
+                  </span>
+                  <span class="text-xs font-bold text-slate-900 workflow-number-label">
+                    Stage {idx + 1}: Execution Phase
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="remove-workflow-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                  title="Remove Stage"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-1 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700">
+                      Stage Headline <span class="text-red-500">*</span>
+                    </label>
+                    <span class="workflow-title-count text-[10px] font-mono text-slate-400">
+                      {wf.title.length} / 60
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="60"
+                    minlength="4"
+                    value={wf.title}
+                    placeholder="e.g. Client-Side DOM Ingestion"
+                    class="workflow-title-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+                  />
+                </div>
+
+                <div class="sm:col-span-2 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700">
+                      Execution Details <span class="text-red-500">*</span>
+                    </label>
+                    <span class="workflow-desc-count text-[10px] font-mono text-slate-400">
+                      {wf.description.length} / 200
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="200"
+                    minlength="20"
+                    value={wf.description}
+                    placeholder="e.g. Content script parses the active webpage, strips boilerplates, and passes clean payload to service worker."
+                    class="workflow-desc-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div class="pt-1">
+          <button
+            type="button"
+            id="add-workflow-btn"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors py-1 cursor-pointer"
+          >
+            <Plus class="w-3.5 h-3.5 text-blue-600" />
+            <span>Add another stage (Min: 3, Max: 5)</span>
+          </button>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- COMPARISON OVERVIEW MATRIX (Min 3, Max 5 Rows) -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+          <div class="space-y-0.5">
+            <label class="block text-xs font-bold text-slate-900 tracking-tight">
+              Comparison Overview (vs Alternatives)
+            </label>
+            <p class="text-[11px] text-slate-500">
+              Highlight architectural advantages over generic competitor tools.
+            </p>
+          </div>
+          <span id="comparison-count-badge" class="text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto">
+            {data.comparison.length} / 5 Rows (Min: 3)
+          </span>
+        </div>
+
+        <div id="comparison-list-container" class="space-y-3.5">
+          {data.comparison.map((row, idx) => (
+            <div class="comparison-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs" data-index={idx}>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-slate-900 text-white font-mono text-[10px] flex items-center justify-center font-bold comparison-index-num">
+                    {idx + 1}
+                  </span>
+                  <span class="text-xs font-bold text-slate-900 comparison-number-label">
+                    Comparison #{idx + 1}: Capability Matrix
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="remove-comparison-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                  title="Remove Row"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+                <div class="lg:col-span-4 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700">
+                      Capability / Metric <span class="text-red-500">*</span>
+                    </label>
+                    <span class="comp-feature-count text-[10px] font-mono text-slate-400">
+                      {row.feature.length} / 40
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="40"
+                    minlength="3"
+                    value={row.feature}
+                    placeholder="e.g. Privacy Architecture"
+                    class="comp-feature-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+                  />
+                </div>
+
+                <div class="lg:col-span-4 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700 inline-flex items-center gap-1.5">
+                      <span>Your Extension</span>
+                      <span class="text-emerald-600 font-semibold text-[11px]">✓ Advantage</span>
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <span class="comp-current-count text-[10px] font-mono text-slate-400">
+                      {row.current.length} / 100
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="100"
+                    minlength="10"
+                    value={row.current}
+                    placeholder="e.g. 100% Client-side RAM execution, zero telemetry"
+                    class="comp-current-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+                  />
+                </div>
+
+                <div class="lg:col-span-4 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700 inline-flex items-center gap-1.5">
+                      <span>Other Tools</span>
+                      <span class="text-slate-400 font-medium text-[11px]">✕ Alternative</span>
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <span class="comp-others-count text-[10px] font-mono text-slate-400">
+                      {row.others.length} / 100
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="100"
+                    minlength="10"
+                    value={row.others}
+                    placeholder="e.g. Third-party cloud storage with marketing trackers"
+                    class="comp-others-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div class="pt-1">
+          <button
+            type="button"
+            id="add-comparison-btn"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors py-1 cursor-pointer"
+          >
+            <Plus class="w-3.5 h-3.5 text-blue-600" />
+            <span>Add another comparison row (Min: 3, Max: 5)</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step Navigation Footer -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
+          data-prev="2"
+        >
+          ← Visual Media
+        </button>
+
+        <button
+          type="button"
+          class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          data-next="4"
+        >
+          <span>Next: Monetization & Specs</span>
+          <ArrowRight class="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- TAB PANE 4: MONETIZATION, FAQS & COMPLIANCE -->
+    <!-- ========================================================================= -->
+    <div id="tab-pane-4" class="tab-pane space-y-8 hidden">
+      
+      <!-- Monetag Monetization Section -->
+      <section class="space-y-5">
+        <div class="space-y-0.5">
+          <h2 class="text-sm font-bold text-slate-900 tracking-tight">
+            Monetag Monetization Stream
+          </h2>
+          <p class="text-xs text-slate-500">
+            Direct link monetizing extension download traffic. 100% of revenue is credited to your Monetag account.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <div class="space-y-1.5">
+            <label for="ext-monetag-input" class="block text-xs font-semibold text-slate-700">
+              Monetag Direct Link URL <span class="text-red-500">*</span>
+            </label>
+            <div class="flex gap-2">
+              <input
+                id="ext-monetag-input"
+                type="url"
+                required
+                value={data.monetagUrl}
+                placeholder="https://monetag.com/direct/your-direct-link-id"
+                class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono font-medium"
+              />
+              <button
+                type="button"
+                id="test-editor-link-btn"
+                class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-medium transition-colors cursor-pointer shrink-0"
+              >
+                Test Link
+              </button>
+            </div>
+            <span class="text-[11px] text-slate-400 block">
+              Obtain this direct link from your <a href="https://monetag.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-medium">Monetag Publisher Hub</a>.
+            </span>
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="ext-freq-input" class="block text-xs font-semibold text-slate-700">
+              Ad Tab Trigger Frequency
+            </label>
+            <select
+              id="ext-freq-input"
+              class="w-full sm:w-96 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+            >
+              <option value="24h" selected={data.frequency === "24h"}>Once every 24 hours per user (Recommended)</option>
+              <option value="download" selected={data.frequency === "download"}>On every download event (Max Monetization)</option>
+              <option value="12h" selected={data.frequency === "12h"}>Twice every 24 hours (12h cooldown)</option>
+              <option value="session" selected={data.frequency === "session"}>Once per browser session startup</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- Frequently Asked Questions (Min 3, Max 6) -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+          <div class="space-y-0.5">
+            <label class="block text-xs font-bold text-slate-900 tracking-tight">
+              Frequently Asked Questions (FAQs)
+            </label>
+            <p class="text-[11px] text-slate-500">
+              Answer common user, security, and setup queries. Generates Google Schema.org FAQPage rich results.
+            </p>
+          </div>
+          <span id="faqs-count-badge" class="text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto">
+            {data.faqs.length} / 6 Questions (Min: 3)
+          </span>
+        </div>
+
+        <div id="faqs-list-container" class="space-y-3.5">
+          {data.faqs.map((faq, idx) => (
+            <div class="faq-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs" data-index={idx}>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-slate-900 text-white font-mono text-[10px] flex items-center justify-center font-bold faq-index-num">
+                    {idx + 1}
+                  </span>
+                  <span class="text-xs font-bold text-slate-900 faq-number-label">
+                    FAQ #{idx + 1}: Query & Answer
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="remove-faq-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                  title="Remove FAQ"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div class="space-y-3">
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700">
+                      Question <span class="text-red-500">*</span>
+                    </label>
+                    <span class="faq-q-count text-[10px] font-mono text-slate-400">
+                      {faq.q.length} / 100
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxlength="100"
+                    minlength="10"
+                    value={faq.q}
+                    placeholder="e.g. Is Deep Summarize AI completely free to use?"
+                    class="faq-q-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+                  />
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-semibold text-slate-700">
+                      Answer & Explanation <span class="text-red-500">*</span>
+                    </label>
+                    <span class="faq-a-count text-[10px] font-mono text-slate-400">
+                      {faq.a.length} / 300
+                    </span>
+                  </div>
+                  <textarea
+                    rows="2"
+                    required
+                    maxlength="300"
+                    minlength="20"
+                    placeholder="e.g. Yes, the core extension is 100% open-source and free forever with zero hidden paywalls."
+                    class="faq-a-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400 leading-relaxed font-normal"
+                  >{faq.a}</textarea>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div class="pt-1">
+          <button
+            type="button"
+            id="add-faq-btn"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors py-1 cursor-pointer"
+          >
+            <Plus class="w-3.5 h-3.5 text-blue-600" />
+            <span>Add another FAQ (Min: 3, Max: 6)</span>
+          </button>
+        </div>
+      </section>
+
+      <hr class="border-slate-200" />
+
+      <!-- Technical Specifications & Privacy Compliance -->
+      <section class="space-y-5">
+        <div class="space-y-0.5">
+          <h2 class="text-sm font-bold text-slate-900 tracking-tight">
+            Technical Specifications & Privacy Compliance
+          </h2>
+          <p class="text-xs text-slate-500">
+            Standard compliance, open-source licensing, multi-browser compatibility, and privacy disclosures.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <!-- Manifest Standard -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="ext-manifest-input" class="block text-xs font-semibold text-slate-700">
+                Extension Standard (Manifest) <span class="text-red-500">*</span>
+              </label>
+              <span class="text-[10px] font-mono text-emerald-600 font-medium">
+                Auto-detected
+              </span>
+            </div>
+            <select
+              id="ext-manifest-input"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+            >
+              <option value="v3" selected={data.manifestVersion === "v3"}>Manifest V3 (Modern Standard - Chrome 88+, Firefox 109+, Edge)</option>
+              <option value="v2" selected={data.manifestVersion === "v2"}>Manifest V2 (Legacy Extension Standard)</option>
+            </select>
+          </div>
+
+          <!-- Software License -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="ext-license-input" class="block text-xs font-semibold text-slate-700">
+                Software License <span class="text-red-500">*</span>
+              </label>
+              <span class="text-[10px] font-mono text-slate-400 font-medium">
+                Default: MIT
+              </span>
+            </div>
+            <select
+              id="ext-license-input"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+            >
+              <option value="MIT" selected={data.license === "MIT"}>MIT License (Permissive & Open Source)</option>
+              <option value="Apache-2.0" selected={data.license === "Apache-2.0"}>Apache 2.0 (Permissive with Patent Grant)</option>
+              <option value="GPL-3.0" selected={data.license === "GPL-3.0"}>GNU GPLv3 (Copyleft Open Source)</option>
+              <option value="BSD-3-Clause" selected={data.license === "BSD-3-Clause"}>BSD 3-Clause (Permissive)</option>
+              <option value="MPL-2.0" selected={data.license === "MPL-2.0"}>Mozilla Public License 2.0</option>
+              <option value="Proprietary" selected={data.license === "Proprietary"}>Proprietary / Closed Source</option>
+            </select>
+          </div>
+
+          <!-- Supported Browsers -->
+          <div class="sm:col-span-2 space-y-2">
+            <label class="block text-xs font-semibold text-slate-700">
+              Supported Browsers & Compatibility <span class="text-red-500">*</span>
+            </label>
+            
+            <div class="flex items-center flex-wrap gap-2.5 p-3 bg-slate-50/80 border border-slate-200 rounded-xl">
+              {allAvailableBrowsers.map((b) => {
+                const isChecked = data.supportedBrowsers.includes(b.id) || (!isEdit && b.checkedByDefault);
+                return (
+                  <label class="browser-checkbox-label inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg border border-slate-200 hover:border-slate-300 text-xs font-medium text-slate-700 cursor-pointer select-none transition-colors shadow-2xs">
+                    <input
+                      type="checkbox"
+                      name="supported-browsers"
+                      value={b.id}
+                      checked={isChecked}
+                      class="rounded border-slate-300 text-blue-600 focus:ring-0 cursor-pointer"
+                    />
+                    <span>{b.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <!-- Privacy Policy URL -->
+          <div class="sm:col-span-2 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="ext-privacy-input" class="block text-xs font-semibold text-slate-700">
+                Privacy Policy URL / Disclosure Statement
+              </label>
+              <span class="text-[10px] text-slate-400">
+                GitHub PRIVACY.md supported
+              </span>
+            </div>
+            <input
+              id="ext-privacy-input"
+              type="url"
+              value={data.privacyPolicyUrl}
+              placeholder="https://github.com/your-username/repo/blob/main/PRIVACY.md or https://yourdomain.com/privacy"
+              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Step Navigation Footer -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
+          data-prev="3"
+        >
+          ← Store Story & SEO
+        </button>
+
+        <button
+          type="submit"
+          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+        >
+          <Save class="w-3.5 h-3.5 text-white" />
+          <span>{isEdit ? "Save All Changes" : "Publish Extension to Directory"}</span>
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('extension-editor-form') as HTMLFormElement | null;
+    const topSaveBtn = document.getElementById('top-save-btn');
+    const testBtn = document.getElementById('test-editor-link-btn');
+    const monetagInput = document.getElementById('ext-monetag-input') as HTMLInputElement | null;
+    
+    // Top Save Button triggers form submission
+    topSaveBtn?.addEventListener('click', () => {
+      form?.requestSubmit();
+    });
+
+    // 1. Tab Switching Logic
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    const nextTabBtns = document.querySelectorAll('.next-tab-btn');
+    const prevTabBtns = document.querySelectorAll('.prev-tab-btn');
+
+    function switchTab(targetIndex: number) {
+      tabBtns.forEach((btn) => {
+        const tabIdx = parseInt(btn.getAttribute('data-tab') || '1', 10);
+        const dot = btn.querySelector('.tab-dot');
+        if (tabIdx === targetIndex) {
+          btn.className = 'tab-btn py-3 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-2 shrink-0 border-blue-600 text-blue-600';
+          if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-blue-600 tab-dot';
+        } else {
+          btn.className = 'tab-btn py-3 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer inline-flex items-center gap-2 shrink-0 border-transparent text-slate-500 hover:text-slate-800';
+          if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-transparent tab-dot';
+        }
+      });
+
+      tabPanes.forEach((pane) => {
+        const paneId = pane.id;
+        if (paneId === `tab-pane-${targetIndex}`) {
+          pane.classList.remove('hidden');
+        } else {
+          pane.classList.add('hidden');
+        }
+      });
+
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-tab') || '1', 10);
+        switchTab(idx);
+      });
+    });
+
+    nextTabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const nextIdx = parseInt(btn.getAttribute('data-next') || '1', 10);
+        switchTab(nextIdx);
+      });
+    });
+
+    prevTabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const prevIdx = parseInt(btn.getAttribute('data-prev') || '1', 10);
+        switchTab(prevIdx);
+      });
+    });
+
+    // 2. 🌟 MAGIC GITHUB AUTO-IMPORT ACTION
+    const magicInput = document.getElementById('magic-github-input') as HTMLInputElement | null;
+    const magicBtn = document.getElementById('magic-import-btn') as HTMLButtonElement | null;
+    const magicStatus = document.getElementById('magic-status-text');
+
+    magicBtn?.addEventListener('click', async () => {
+      const url = magicInput?.value.trim() || '';
+      if (!url || !url.includes('github.com')) {
+        alert('Please enter a valid GitHub repository URL (e.g. https://github.com/username/extension-repo)');
+        magicInput?.focus();
+        return;
+      }
+
+      // Visual feedback loading
+      const originalText = magicBtn.innerHTML;
+      magicBtn.innerHTML = `<span>Fetching Details...</span>`;
+      magicBtn.disabled = true;
+
+      // Extract username and repo
+      const parts = url.replace('https://github.com/', '').replace('.git', '').split('/');
+      const repoOwner = parts[0] || 'developer';
+      const repoName = parts[1] || 'extension';
+      
+      const cleanName = repoName
+        .split('-')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+
+      setTimeout(() => {
+        // Auto-fill Name & Slug
+        const nameInput = document.getElementById('ext-name-input') as HTMLInputElement | null;
+        const slugInput = document.getElementById('ext-slug-input') as HTMLInputElement | null;
+        const githubInput = document.getElementById('ext-github-input') as HTMLInputElement | null;
+        const downloadInput = document.getElementById('ext-download-input') as HTMLInputElement | null;
+        const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
+        const descInput = document.getElementById('ext-desc-input') as HTMLTextAreaElement | null;
+        const privacyInput = document.getElementById('ext-privacy-input') as HTMLInputElement | null;
+
+        if (nameInput) {
+          nameInput.value = cleanName.includes('Extension') ? cleanName : `${cleanName} Extension`;
+          nameInput.dispatchEvent(new Event('input'));
+        }
+        if (slugInput) {
+          slugInput.value = repoName.toLowerCase();
+        }
+        if (githubInput) {
+          githubInput.value = url;
+        }
+        if (downloadInput) {
+          downloadInput.value = `https://github.com/${repoOwner}/${repoName}/releases/latest/download/${repoName}.zip`;
+        }
+        if (taglineInput && (!taglineInput.value || taglineInput.value.length < 5)) {
+          taglineInput.value = `Lightweight, privacy-friendly browser extension for high-performance productivity.`;
+          taglineInput.dispatchEvent(new Event('input'));
+        }
+        if (descInput && (!descInput.value || descInput.value.length < 50)) {
+          descInput.value = `### Overview\n\n**${cleanName}** is an open-source Manifest V3 extension designed to streamline your web workflow directly within your browser.\n\n### Key Highlights\n- **Zero-Telemetry Privacy**: Executes locally without external data logging.\n- **Instant Performance**: Sub-second responsiveness on modern Chromium browsers.\n- **Open Source**: Full source code available and auditable on GitHub.`;
+          descInput.dispatchEvent(new Event('input'));
+        }
+        if (privacyInput) {
+          privacyInput.value = `https://github.com/${repoOwner}/${repoName}/blob/main/PRIVACY.md`;
+        }
+
+        // Reset button
+        magicBtn.innerHTML = `<span>Auto-Filled Successfully</span>`;
+        magicBtn.disabled = false;
+
+        if (magicStatus) {
+          magicStatus.textContent = `✓ Synced with @${repoOwner}/${repoName}`;
+          magicStatus.className = 'text-[11px] font-mono text-emerald-600 font-semibold hidden sm:block';
+        }
+
+        setTimeout(() => {
+          magicBtn.innerHTML = originalText;
+        }, 2500);
+      }, 750);
+    });
+
+    // 3. Tagline & Name Counters
+    const nameInput = document.getElementById('ext-name-input') as HTMLInputElement | null;
+    const nameCounter = document.getElementById('name-char-counter');
+    const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
+    const taglineCounter = document.getElementById('tagline-char-counter');
+
+    nameInput?.addEventListener('input', () => {
+      if (nameCounter && nameInput) {
+        nameCounter.textContent = `${nameInput.value.length} / 50`;
+      }
+    });
+
+    taglineInput?.addEventListener('input', () => {
+      if (taglineCounter && taglineInput) {
+        taglineCounter.textContent = `${taglineInput.value.length} / 120`;
+      }
+    });
+
+    // Support Center Email & Developer Website
+    const emailInput = document.getElementById('ext-support-email-input') as HTMLInputElement | null;
+    const emailBadge = document.getElementById('support-email-source-badge');
+    const websiteInput = document.getElementById('ext-dev-website-input') as HTMLInputElement | null;
+    const websiteBadge = document.getElementById('dev-website-source-badge');
+
+    const savedSettings = localStorage.getItem('extlabs_dev_profile');
+    if (savedSettings) {
+      try {
+        const profile = JSON.parse(savedSettings);
+        if (emailInput && (!emailInput.value || emailInput.value === 'support@neurallabs.dev') && profile.email) {
+          emailInput.value = profile.email;
+        }
+        if (websiteInput && (!websiteInput.value || websiteInput.value === 'https://neurallabs.dev') && profile.website) {
+          websiteInput.value = profile.website;
+        }
+      } catch (e) {}
+    }
+
+    function syncSupportBadges() {
+      if (emailInput && emailBadge) {
+        if (emailInput.value.trim().length > 0) {
+          emailBadge.textContent = 'Auto-filled from Settings';
+          emailBadge.className = 'text-[10px] font-mono text-blue-600 font-medium';
+        } else {
+          emailBadge.textContent = 'Manual entry required';
+          emailBadge.className = 'text-[10px] font-mono text-amber-600 font-medium';
+        }
+      }
+
+      if (websiteInput && websiteBadge) {
+        if (websiteInput.value.trim().length > 0) {
+          websiteBadge.textContent = 'Auto-filled from Settings';
+          websiteBadge.className = 'text-[10px] font-mono text-blue-600 font-medium';
+        } else {
+          websiteBadge.textContent = 'Manual entry required';
+          websiteBadge.className = 'text-[10px] font-mono text-amber-600 font-medium';
+        }
+      }
+    }
+
+    emailInput?.addEventListener('input', syncSupportBadges);
+    websiteInput?.addEventListener('input', syncSupportBadges);
+    syncSupportBadges();
+
+    // 4. Overview Description & Markdown Toolbar
+    const descTextarea = document.getElementById('ext-desc-input') as HTMLTextAreaElement | null;
+    const charCounter = document.getElementById('desc-char-counter');
+    const statusBadge = document.getElementById('char-status-badge');
+    const formatBtns = document.querySelectorAll('.md-format-btn');
+
+    function updateCharCount() {
+      if (!descTextarea || !charCounter || !statusBadge) return;
+      const len = descTextarea.value.length;
+      charCounter.textContent = `${len.toLocaleString()} / 2,500 characters (Min: 100)`;
+
+      if (len === 0) {
+        charCounter.className = 'text-[11px] font-mono font-medium text-slate-500';
+        statusBadge.textContent = 'Min 100 characters needed';
+        statusBadge.className = 'font-medium text-amber-600';
+      } else if (len < 100) {
+        charCounter.className = 'text-[11px] font-mono font-medium text-amber-600';
+        statusBadge.textContent = `Need ${100 - len} more chars`;
+        statusBadge.className = 'font-medium text-amber-600';
+      } else if (len > 2500) {
+        charCounter.className = 'text-[11px] font-mono font-bold text-red-600';
+        statusBadge.textContent = `Exceeded by ${len - 2500} chars`;
+        statusBadge.className = 'font-bold text-red-600';
+      } else {
+        charCounter.className = 'text-[11px] font-mono font-medium text-emerald-600';
+        statusBadge.textContent = '✓ Optimal length for SEO';
+        statusBadge.className = 'font-medium text-emerald-600';
+      }
+    }
+
+    descTextarea?.addEventListener('input', updateCharCount);
+    updateCharCount();
+
+    formatBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!descTextarea) return;
+        const action = btn.getAttribute('data-action');
+        const start = descTextarea.selectionStart;
+        const end = descTextarea.selectionEnd;
+        const val = descTextarea.value;
+        const selected = val.substring(start, end);
+
+        let replacement = '';
+        switch (action) {
+          case 'bold':
+            replacement = selected ? `**${selected}**` : `**bold text**`;
+            break;
+          case 'italic':
+            replacement = selected ? `*${selected}*` : `*italic text*`;
+            break;
+          case 'bullet':
+            replacement = selected ? `\n- ${selected}` : `\n- Bullet point item`;
+            break;
+          case 'numbered':
+            replacement = selected ? `\n1. ${selected}` : `\n1. Numbered item`;
+            break;
+          case 'paragraph':
+            replacement = `\n\n`;
+            break;
+          case 'quote':
+            replacement = selected ? `\n> ${selected}` : `\n> Highlighted quote or feature note`;
+            break;
+          case 'code':
+            replacement = selected ? `\`${selected}\`` : `\`code\``;
+            break;
+        }
+
+        descTextarea.setRangeText(replacement, start, end, 'end');
+        descTextarea.focus();
+        updateCharCount();
+      });
+    });
+
+    // 5. Dynamic Key Features (Min 3, Max 6)
+    const MIN_FEATURES = 3;
+    const MAX_FEATURES = 6;
+    const featuresContainer = document.getElementById('features-list-container');
+    const addFeatureBtn = document.getElementById('add-feature-btn') as HTMLButtonElement | null;
+    const featuresBadge = document.getElementById('features-count-badge');
+
+    function updateFeatureCounters(card: Element) {
+      const titleInput = card.querySelector('.feature-title-input') as HTMLInputElement | null;
+      const titleCount = card.querySelector('.feature-title-count');
+      const descInput = card.querySelector('.feature-desc-input') as HTMLInputElement | null;
+      const descCount = card.querySelector('.feature-desc-count');
+
+      if (titleInput && titleCount) {
+        titleCount.textContent = `${titleInput.value.length} / 60`;
+        titleCount.className = titleInput.value.length >= 55 ? 'feature-title-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-title-count text-[10px] font-mono text-slate-400';
+      }
+
+      if (descInput && descCount) {
+        descCount.textContent = `${descInput.value.length} / 180`;
+        descCount.className = descInput.value.length >= 165 ? 'feature-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-desc-count text-[10px] font-mono text-slate-400';
+      }
+    }
+
+    function refreshFeaturesUI() {
+      if (!featuresContainer) return;
+      const cards = featuresContainer.querySelectorAll('.feature-card');
+      const count = cards.length;
+
+      if (featuresBadge) {
+        featuresBadge.textContent = `${count} / ${MAX_FEATURES} Features (Min: ${MIN_FEATURES})`;
+        featuresBadge.className = (count >= MIN_FEATURES && count <= MAX_FEATURES) 
+          ? 'text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto' 
+          : 'text-xs font-mono font-medium text-amber-600 self-start sm:self-auto';
+      }
+
+      if (addFeatureBtn) {
+        addFeatureBtn.classList.toggle('opacity-50', count >= MAX_FEATURES);
+        addFeatureBtn.disabled = count >= MAX_FEATURES;
+      }
+
+      cards.forEach((card, index) => {
+        const numLabel = card.querySelector('.feature-index-num');
+        const textLabel = card.querySelector('.feature-number-label');
+        const removeBtn = card.querySelector('.remove-feature-btn') as HTMLButtonElement | null;
+
+        if (numLabel) numLabel.textContent = `${index + 1}`;
+        if (textLabel) textLabel.textContent = `Feature #${index + 1}`;
+
+        if (removeBtn) {
+          removeBtn.classList.toggle('opacity-30', count <= MIN_FEATURES);
+          removeBtn.disabled = count <= MIN_FEATURES;
+        }
+
+        updateFeatureCounters(card);
+      });
+    }
+
+    function attachFeatureInputEvents() {
+      if (!featuresContainer) return;
+      featuresContainer.querySelectorAll('.feature-card').forEach((card) => {
+        const titleInput = card.querySelector('.feature-title-input');
+        const descInput = card.querySelector('.feature-desc-input');
+
+        titleInput?.addEventListener('input', () => updateFeatureCounters(card));
+        descInput?.addEventListener('input', () => updateFeatureCounters(card));
+      });
+    }
+
+    function attachRemoveEvents() {
+      if (!featuresContainer) return;
+      featuresContainer.querySelectorAll('.remove-feature-btn').forEach((btn) => {
+        btn.replaceWith(btn.cloneNode(true));
+      });
+
+      featuresContainer.querySelectorAll('.remove-feature-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const cards = featuresContainer.querySelectorAll('.feature-card');
+          if (cards.length > MIN_FEATURES) {
+            const card = (e.target as HTMLElement).closest('.feature-card');
+            card?.remove();
+            refreshFeaturesUI();
+            attachRemoveEvents();
+            attachFeatureInputEvents();
+          } else {
+            alert(`A minimum of ${MIN_FEATURES} key features is required for store SEO.`);
+          }
+        });
+      });
+    }
+
+    addFeatureBtn?.addEventListener('click', () => {
+      if (!featuresContainer) return;
+      const currentCount = featuresContainer.querySelectorAll('.feature-card').length;
+      if (currentCount >= MAX_FEATURES) return;
+
+      const nextNum = currentCount + 1;
+      const newCard = document.createElement('div');
+      newCard.className = 'feature-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs';
+      newCard.setAttribute('data-index', `${currentCount}`);
+      newCard.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-slate-900 text-white font-mono text-[10px] flex items-center justify-center font-bold feature-index-num">
+              ${nextNum}
+            </span>
+            <span class="text-xs font-bold text-slate-800 feature-number-label">
+              Feature #${nextNum}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="remove-feature-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+            title="Remove Feature"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-1 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700">
+                Feature Title <span class="text-red-500">*</span>
+              </label>
+              <span class="feature-title-count text-[10px] font-mono text-slate-400">0 / 60</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="60"
+              minlength="4"
+              placeholder="e.g. New Feature Title"
+              class="feature-title-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+            />
+          </div>
+
+          <div class="sm:col-span-2 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700">
+                Feature Description & Value <span class="text-red-500">*</span>
+              </label>
+              <span class="feature-desc-count text-[10px] font-mono text-slate-400">0 / 180</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="180"
+              minlength="15"
+              placeholder="e.g. Describe the clear workflow improvement or capability provided to the user."
+              class="feature-desc-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+            />
+          </div>
+        </div>
+      `;
+
+      featuresContainer.appendChild(newCard);
+      refreshFeaturesUI();
+      attachRemoveEvents();
+      attachFeatureInputEvents();
+    });
+
+    attachRemoveEvents();
+    attachFeatureInputEvents();
+    refreshFeaturesUI();
+
+    // 6. Dynamic Internal Workflow (Min 3, Max 5 Stages)
+    const MIN_WORKFLOW = 3;
+    const MAX_WORKFLOW = 5;
+    const workflowContainer = document.getElementById('workflow-list-container');
+    const addWorkflowBtn = document.getElementById('add-workflow-btn') as HTMLButtonElement | null;
+    const workflowBadge = document.getElementById('workflow-count-badge');
+
+    function updateWorkflowCounters(card: Element) {
+      const titleInput = card.querySelector('.workflow-title-input') as HTMLInputElement | null;
+      const titleCount = card.querySelector('.workflow-title-count');
+      const descInput = card.querySelector('.workflow-desc-input') as HTMLInputElement | null;
+      const descCount = card.querySelector('.workflow-desc-count');
+
+      if (titleInput && titleCount) {
+        titleCount.textContent = `${titleInput.value.length} / 60`;
+        titleCount.className = titleInput.value.length >= 55 ? 'workflow-title-count text-[10px] font-mono text-amber-600 font-semibold' : 'workflow-title-count text-[10px] font-mono text-slate-400';
+      }
+
+      if (descInput && descCount) {
+        descCount.textContent = `${descInput.value.length} / 200`;
+        descCount.className = descInput.value.length >= 185 ? 'workflow-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'workflow-desc-count text-[10px] font-mono text-slate-400';
+      }
+    }
+
+    function refreshWorkflowUI() {
+      if (!workflowContainer) return;
+      const cards = workflowContainer.querySelectorAll('.workflow-card');
+      const count = cards.length;
+
+      if (workflowBadge) {
+        workflowBadge.textContent = `${count} / ${MAX_WORKFLOW} Stages (Min: ${MIN_WORKFLOW})`;
+        workflowBadge.className = (count >= MIN_WORKFLOW && count <= MAX_WORKFLOW)
+          ? 'text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto'
+          : 'text-xs font-mono font-medium text-amber-600 self-start sm:self-auto';
+      }
+
+      if (addWorkflowBtn) {
+        addWorkflowBtn.classList.toggle('opacity-50', count >= MAX_WORKFLOW);
+        addWorkflowBtn.disabled = count >= MAX_WORKFLOW;
+      }
+
+      cards.forEach((card, index) => {
+        const numLabel = card.querySelector('.workflow-index-num');
+        const textLabel = card.querySelector('.workflow-number-label');
+        const removeBtn = card.querySelector('.remove-workflow-btn') as HTMLButtonElement | null;
+
+        if (numLabel) numLabel.textContent = `${index + 1}`;
+        if (textLabel) textLabel.textContent = `Stage ${index + 1}: Execution Phase`;
+
+        if (removeBtn) {
+          removeBtn.classList.toggle('opacity-30', count <= MIN_WORKFLOW);
+          removeBtn.disabled = count <= MIN_WORKFLOW;
+        }
+
+        updateWorkflowCounters(card);
+      });
+    }
+
+    function attachWorkflowInputEvents() {
+      if (!workflowContainer) return;
+      workflowContainer.querySelectorAll('.workflow-card').forEach((card) => {
+        const titleInput = card.querySelector('.workflow-title-input');
+        const descInput = card.querySelector('.workflow-desc-input');
+
+        titleInput?.addEventListener('input', () => updateWorkflowCounters(card));
+        descInput?.addEventListener('input', () => updateWorkflowCounters(card));
+      });
+    }
+
+    function attachWorkflowRemoveEvents() {
+      if (!workflowContainer) return;
+      workflowContainer.querySelectorAll('.remove-workflow-btn').forEach((btn) => {
+        btn.replaceWith(btn.cloneNode(true));
+      });
+
+      workflowContainer.querySelectorAll('.remove-workflow-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const cards = workflowContainer.querySelectorAll('.workflow-card');
+          if (cards.length > MIN_WORKFLOW) {
+            const card = (e.target as HTMLElement).closest('.workflow-card');
+            card?.remove();
+            refreshWorkflowUI();
+            attachWorkflowRemoveEvents();
+            attachWorkflowInputEvents();
+          } else {
+            alert(`A minimum of ${MIN_WORKFLOW} execution workflow stages is required for store SEO.`);
+          }
+        });
+      });
+    }
+
+    addWorkflowBtn?.addEventListener('click', () => {
+      if (!workflowContainer) return;
+      const currentCount = workflowContainer.querySelectorAll('.workflow-card').length;
+      if (currentCount >= MAX_WORKFLOW) return;
+
+      const nextNum = currentCount + 1;
+      const newCard = document.createElement('div');
+      newCard.className = 'workflow-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs';
+      newCard.setAttribute('data-index', `${currentCount}`);
+      newCard.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-blue-600 text-white font-mono text-[10px] flex items-center justify-center font-bold workflow-index-num">
+              ${nextNum}
+            </span>
+            <span class="text-xs font-bold text-slate-900 workflow-number-label">
+              Stage ${nextNum}: Execution Phase
+            </span>
+          </div>
+          <button
+            type="button"
+            class="remove-workflow-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+            title="Remove Stage"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-1 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700">
+                Stage Headline <span class="text-red-500">*</span>
+              </label>
+              <span class="workflow-title-count text-[10px] font-mono text-slate-400">0 / 60</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="60"
+              minlength="4"
+              placeholder="e.g. Next Execution Step"
+              class="workflow-title-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+            />
+          </div>
+
+          <div class="sm:col-span-2 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700">
+                Execution Details <span class="text-red-500">*</span>
+              </label>
+              <span class="workflow-desc-count text-[10px] font-mono text-slate-400">0 / 200</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="200"
+              minlength="20"
+              placeholder="e.g. Describe the technical or functional operations executed during this phase."
+              class="workflow-desc-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+            />
+          </div>
+        </div>
+      `;
+
+      workflowContainer.appendChild(newCard);
+      refreshWorkflowUI();
+      attachWorkflowRemoveEvents();
+      attachWorkflowInputEvents();
+    });
+
+    attachWorkflowRemoveEvents();
+    attachWorkflowInputEvents();
+    refreshWorkflowUI();
+
+    // 7. Dynamic Comparison Matrix (Min 3, Max 5 Rows)
+    const MIN_COMPARISON = 3;
+    const MAX_COMPARISON = 5;
+    const comparisonContainer = document.getElementById('comparison-list-container');
+    const addComparisonBtn = document.getElementById('add-comparison-btn') as HTMLButtonElement | null;
+    const comparisonBadge = document.getElementById('comparison-count-badge');
+
+    function updateComparisonCounters(card: Element) {
+      const featInput = card.querySelector('.comp-feature-input') as HTMLInputElement | null;
+      const featCount = card.querySelector('.comp-feature-count');
+      const currInput = card.querySelector('.comp-current-input') as HTMLInputElement | null;
+      const currCount = card.querySelector('.comp-current-count');
+      const otherInput = card.querySelector('.comp-others-input') as HTMLInputElement | null;
+      const otherCount = card.querySelector('.comp-others-count');
+
+      if (featInput && featCount) {
+        featCount.textContent = `${featInput.value.length} / 40`;
+        featCount.className = featInput.value.length >= 35 ? 'comp-feature-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-feature-count text-[10px] font-mono text-slate-400';
+      }
+
+      if (currInput && currCount) {
+        currCount.textContent = `${currInput.value.length} / 100`;
+        currCount.className = currInput.value.length >= 90 ? 'comp-current-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-current-count text-[10px] font-mono text-slate-400';
+      }
+
+      if (otherInput && otherCount) {
+        otherCount.textContent = `${otherInput.value.length} / 100`;
+        otherCount.className = otherInput.value.length >= 90 ? 'comp-others-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-others-count text-[10px] font-mono text-slate-400';
+      }
+    }
+
+    function refreshComparisonUI() {
+      if (!comparisonContainer) return;
+      const cards = comparisonContainer.querySelectorAll('.comparison-card');
+      const count = cards.length;
+
+      if (comparisonBadge) {
+        comparisonBadge.textContent = `${count} / ${MAX_COMPARISON} Rows (Min: ${MIN_COMPARISON})`;
+        comparisonBadge.className = (count >= MIN_COMPARISON && count <= MAX_COMPARISON)
+          ? 'text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto'
+          : 'text-xs font-mono font-medium text-amber-600 self-start sm:self-auto';
+      }
+
+      if (addComparisonBtn) {
+        addComparisonBtn.classList.toggle('opacity-50', count >= MAX_COMPARISON);
+        addComparisonBtn.disabled = count >= MAX_COMPARISON;
+      }
+
+      cards.forEach((card, index) => {
+        const numLabel = card.querySelector('.comparison-index-num');
+        const textLabel = card.querySelector('.comparison-number-label');
+        const removeBtn = card.querySelector('.remove-comparison-btn') as HTMLButtonElement | null;
+
+        if (numLabel) numLabel.textContent = `${index + 1}`;
+        if (textLabel) textLabel.textContent = `Comparison #${index + 1}: Capability Matrix`;
+
+        if (removeBtn) {
+          removeBtn.classList.toggle('opacity-30', count <= MIN_COMPARISON);
+          removeBtn.disabled = count <= MIN_COMPARISON;
+        }
+
+        updateComparisonCounters(card);
+      });
+    }
+
+    function attachComparisonInputEvents() {
+      if (!comparisonContainer) return;
+      comparisonContainer.querySelectorAll('.comparison-card').forEach((card) => {
+        const featInput = card.querySelector('.comp-feature-input');
+        const currInput = card.querySelector('.comp-current-input');
+        const otherInput = card.querySelector('.comp-others-input');
+
+        featInput?.addEventListener('input', () => updateComparisonCounters(card));
+        currInput?.addEventListener('input', () => updateComparisonCounters(card));
+        otherInput?.addEventListener('input', () => updateComparisonCounters(card));
+      });
+    }
+
+    function attachComparisonRemoveEvents() {
+      if (!comparisonContainer) return;
+      comparisonContainer.querySelectorAll('.remove-comparison-btn').forEach((btn) => {
+        btn.replaceWith(btn.cloneNode(true));
+      });
+
+      comparisonContainer.querySelectorAll('.remove-comparison-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const cards = comparisonContainer.querySelectorAll('.comparison-card');
+          if (cards.length > MIN_COMPARISON) {
+            const card = (e.target as HTMLElement).closest('.comparison-card');
+            card?.remove();
+            refreshComparisonUI();
+            attachComparisonRemoveEvents();
+            attachComparisonInputEvents();
+          } else {
+            alert(`A minimum of ${MIN_COMPARISON} comparison rows is required for store SEO.`);
+          }
+        });
+      });
+    }
+
+    addComparisonBtn?.addEventListener('click', () => {
+      if (!comparisonContainer) return;
+      const currentCount = comparisonContainer.querySelectorAll('.comparison-card').length;
+      if (currentCount >= MAX_COMPARISON) return;
+
+      const nextNum = currentCount + 1;
+      const newCard = document.createElement('div');
+      newCard.className = 'comparison-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs';
+      newCard.setAttribute('data-index', `${currentCount}`);
+      newCard.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-slate-900 text-white font-mono text-[10px] flex items-center justify-center font-bold comparison-index-num">
+              ${nextNum}
+            </span>
+            <span class="text-xs font-bold text-slate-900 comparison-number-label">
+              Comparison #${nextNum}: Capability Matrix
+            </span>
+          </div>
+          <button
+            type="button"
+            class="remove-comparison-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+            title="Remove Row"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+          <div class="lg:col-span-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700">
+                Capability / Metric <span class="text-red-500">*</span>
+              </label>
+              <span class="comp-feature-count text-[10px] font-mono text-slate-400">0 / 40</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="40"
+              minlength="3"
+              placeholder="e.g. Offline Execution"
+              class="comp-feature-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+            />
+          </div>
+
+          <div class="lg:col-span-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700 inline-flex items-center gap-1.5">
+                <span>Your Extension</span>
+                <span class="text-emerald-600 font-semibold text-[11px]">✓ Advantage</span>
+                <span class="text-red-500">*</span>
+              </label>
+              <span class="comp-current-count text-[10px] font-mono text-slate-400">0 / 100</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="100"
+              minlength="10"
+              placeholder="e.g. Fully functional offline with local cache"
+              class="comp-current-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+            />
+          </div>
+
+          <div class="lg:col-span-4 space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700 inline-flex items-center gap-1.5">
+                <span>Other Tools</span>
+                <span class="text-slate-400 font-medium text-[11px]">✕ Alternative</span>
+                <span class="text-red-500">*</span>
+              </label>
+              <span class="comp-others-count text-[10px] font-mono text-slate-400">0 / 100</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="100"
+              minlength="10"
+              placeholder="e.g. Completely fails when network disconnects"
+              class="comp-others-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
+            />
+          </div>
+        </div>
+      `;
+
+      comparisonContainer.appendChild(newCard);
+      refreshComparisonUI();
+      attachComparisonRemoveEvents();
+      attachComparisonInputEvents();
+    });
+
+    attachComparisonRemoveEvents();
+    attachComparisonInputEvents();
+    refreshComparisonUI();
+
+    // 8. Dynamic FAQs (Min 3, Max 6)
+    const MIN_FAQS = 3;
+    const MAX_FAQS = 6;
+    const faqsContainer = document.getElementById('faqs-list-container');
+    const addFaqBtn = document.getElementById('add-faq-btn') as HTMLButtonElement | null;
+    const faqsBadge = document.getElementById('faqs-count-badge');
+
+    function updateFaqCounters(card: Element) {
+      const qInput = card.querySelector('.faq-q-input') as HTMLInputElement | null;
+      const qCount = card.querySelector('.faq-q-count');
+      const aInput = card.querySelector('.faq-a-input') as HTMLTextAreaElement | null;
+      const aCount = card.querySelector('.faq-a-count');
+
+      if (qInput && qCount) {
+        qCount.textContent = `${qInput.value.length} / 100`;
+        qCount.className = qInput.value.length >= 90 ? 'faq-q-count text-[10px] font-mono text-amber-600 font-semibold' : 'faq-q-count text-[10px] font-mono text-slate-400';
+      }
+
+      if (aInput && aCount) {
+        aCount.textContent = `${aInput.value.length} / 300`;
+        aCount.className = aInput.value.length >= 280 ? 'faq-a-count text-[10px] font-mono text-amber-600 font-semibold' : 'faq-a-count text-[10px] font-mono text-slate-400';
+      }
+    }
+
+    function refreshFaqsUI() {
+      if (!faqsContainer) return;
+      const cards = faqsContainer.querySelectorAll('.faq-card');
+      const count = cards.length;
+
+      if (faqsBadge) {
+        faqsBadge.textContent = `${count} / ${MAX_FAQS} Questions (Min: ${MIN_FAQS})`;
+        faqsBadge.className = (count >= MIN_FAQS && count <= MAX_FAQS)
+          ? 'text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto'
+          : 'text-xs font-mono font-medium text-amber-600 self-start sm:self-auto';
+      }
+
+      if (addFaqBtn) {
+        addFaqBtn.classList.toggle('opacity-50', count >= MAX_FAQS);
+        addFaqBtn.disabled = count >= MAX_FAQS;
+      }
+
+      cards.forEach((card, index) => {
+        const numLabel = card.querySelector('.faq-index-num');
+        const textLabel = card.querySelector('.faq-number-label');
+        const removeBtn = card.querySelector('.remove-faq-btn') as HTMLButtonElement | null;
+
+        if (numLabel) numLabel.textContent = `${index + 1}`;
+        if (textLabel) textLabel.textContent = `FAQ #${index + 1}: Query & Answer`;
+
+        if (removeBtn) {
+          removeBtn.classList.toggle('opacity-30', count <= MIN_FAQS);
+          removeBtn.disabled = count <= MIN_FAQS;
+        }
+
+        updateFaqCounters(card);
+      });
+    }
+
+    function attachFaqInputEvents() {
+      if (!faqsContainer) return;
+      faqsContainer.querySelectorAll('.faq-card').forEach((card) => {
+        const qInput = card.querySelector('.faq-q-input');
+        const aInput = card.querySelector('.faq-a-input');
+
+        qInput?.addEventListener('input', () => updateFaqCounters(card));
+        aInput?.addEventListener('input', () => updateFaqCounters(card));
+      });
+    }
+
+    function attachFaqRemoveEvents() {
+      if (!faqsContainer) return;
+      faqsContainer.querySelectorAll('.remove-faq-btn').forEach((btn) => {
+        btn.replaceWith(btn.cloneNode(true));
+      });
+
+      faqsContainer.querySelectorAll('.remove-faq-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const cards = faqsContainer.querySelectorAll('.faq-card');
+          if (cards.length > MIN_FAQS) {
+            const card = (e.target as HTMLElement).closest('.faq-card');
+            card?.remove();
+            refreshFaqsUI();
+            attachFaqRemoveEvents();
+            attachFaqInputEvents();
+          } else {
+            alert(`A minimum of ${MIN_FAQS} FAQs is required for store SEO and Schema.org rich results.`);
+          }
+        });
+      });
+    }
+
+    addFaqBtn?.addEventListener('click', () => {
+      if (!faqsContainer) return;
+      const currentCount = faqsContainer.querySelectorAll('.faq-card').length;
+      if (currentCount >= MAX_FAQS) return;
+
+      const nextNum = currentCount + 1;
+      const newCard = document.createElement('div');
+      newCard.className = 'faq-card p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3 shadow-2xs';
+      newCard.setAttribute('data-index', `${currentCount}`);
+      newCard.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-slate-900 text-white font-mono text-[10px] flex items-center justify-center font-bold faq-index-num">
+              ${nextNum}
+            </span>
+            <span class="text-xs font-bold text-slate-900 faq-number-label">
+              FAQ #${nextNum}: Query & Answer
+            </span>
+          </div>
+          <button
+            type="button"
+            class="remove-faq-btn text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer"
+            title="Remove FAQ"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700">
+                Question <span class="text-red-500">*</span>
+              </label>
+              <span class="faq-q-count text-[10px] font-mono text-slate-400">0 / 100</span>
+            </div>
+            <input
+              type="text"
+              required
+              maxlength="100"
+              minlength="10"
+              placeholder="e.g. Does this extension store any user browsing data?"
+              class="faq-q-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-[11px] font-semibold text-slate-700">
+                Answer & Explanation <span class="text-red-500">*</span>
+              </label>
+              <span class="faq-a-count text-[10px] font-mono text-slate-400">0 / 300</span>
+            </div>
+            <textarea
+              rows="2"
+              required
+              maxlength="300"
+              minlength="20"
+              placeholder="e.g. No, all processing occurs locally in memory with zero cloud telemetry or data retention."
+              class="faq-a-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400 leading-relaxed font-normal"
+            ></textarea>
+          </div>
+        </div>
+      `;
+
+      faqsContainer.appendChild(newCard);
+      refreshFaqsUI();
+      attachFaqRemoveEvents();
+      attachFaqInputEvents();
+    });
+
+    attachFaqRemoveEvents();
+    attachFaqInputEvents();
+    refreshFaqsUI();
+
+    // 9. Visual Media Direct File Uploads & Live Previews
+    // 9.1 Extension Icon Upload
+    const iconFileInput = document.getElementById('ext-icon-file-input') as HTMLInputElement | null;
+    const iconDropzone = document.getElementById('icon-upload-dropzone');
+    const iconEmptyState = document.getElementById('icon-empty-state');
+    const iconPreviewState = document.getElementById('icon-preview-state');
+    const iconPreviewImg = document.getElementById('icon-preview-img') as HTMLImageElement | null;
+    const iconFileName = document.getElementById('icon-file-name');
+    const iconFileSize = document.getElementById('icon-file-size');
+    const iconUrlVal = document.getElementById('ext-icon-url-val') as HTMLInputElement | null;
+    const removeIconBtn = document.getElementById('remove-icon-btn');
+
+    iconDropzone?.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('#remove-icon-btn')) return;
+      iconFileInput?.click();
+    });
+
+    iconDropzone?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      iconDropzone.classList.add('border-blue-500', 'bg-blue-50/20');
+    });
+
+    iconDropzone?.addEventListener('dragleave', () => {
+      iconDropzone.classList.remove('border-blue-500', 'bg-blue-50/20');
+    });
+
+    iconDropzone?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      iconDropzone.classList.remove('border-blue-500', 'bg-blue-50/20');
+      if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        handleIconFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    iconFileInput?.addEventListener('change', () => {
+      if (iconFileInput.files && iconFileInput.files.length > 0) {
+        handleIconFile(iconFileInput.files[0]);
+      }
+    });
+
+    function handleIconFile(file: File) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file (PNG, WebP, SVG, JPG).');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Icon image file size must not exceed 2MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        if (iconPreviewImg) iconPreviewImg.src = result;
+        if (iconFileName) iconFileName.textContent = file.name;
+        if (iconFileSize) iconFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+        if (iconUrlVal) iconUrlVal.value = result;
+
+        iconEmptyState?.classList.add('hidden');
+        iconPreviewState?.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removeIconBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (iconFileInput) iconFileInput.value = '';
+      if (iconUrlVal) iconUrlVal.value = '';
+      if (iconPreviewImg) iconPreviewImg.src = '';
+      iconPreviewState?.classList.add('hidden');
+      iconEmptyState?.classList.remove('hidden');
+    });
+
+    // 9.2 Promo Banner Upload
+    const promoFileInput = document.getElementById('ext-promo-file-input') as HTMLInputElement | null;
+    const promoDropzone = document.getElementById('promo-upload-dropzone');
+    const promoEmptyState = document.getElementById('promo-empty-state');
+    const promoPreviewState = document.getElementById('promo-preview-state');
+    const promoPreviewImg = document.getElementById('promo-preview-img') as HTMLImageElement | null;
+    const promoFileName = document.getElementById('promo-file-name');
+    const promoFileSize = document.getElementById('promo-file-size');
+    const promoUrlVal = document.getElementById('ext-promo-url-val') as HTMLInputElement | null;
+    const removePromoBtn = document.getElementById('remove-promo-btn');
+
+    promoDropzone?.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('#remove-promo-btn')) return;
+      promoFileInput?.click();
+    });
+
+    promoDropzone?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      promoDropzone.classList.add('border-blue-500', 'bg-blue-50/20');
+    });
+
+    promoDropzone?.addEventListener('dragleave', () => {
+      promoDropzone.classList.remove('border-blue-500', 'bg-blue-50/20');
+    });
+
+    promoDropzone?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      promoDropzone.classList.remove('border-blue-500', 'bg-blue-50/20');
+      if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        handlePromoFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    promoFileInput?.addEventListener('change', () => {
+      if (promoFileInput.files && promoFileInput.files.length > 0) {
+        handlePromoFile(promoFileInput.files[0]);
+      }
+    });
+
+    function handlePromoFile(file: File) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file (PNG, WebP, JPG).');
+        return;
+      }
+      if (file.size > 3 * 1024 * 1024) {
+        alert('Promotional banner file size must not exceed 3MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        if (promoPreviewImg) promoPreviewImg.src = result;
+        if (promoFileName) promoFileName.textContent = file.name;
+        if (promoFileSize) promoFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+        if (promoUrlVal) promoUrlVal.value = result;
+
+        promoEmptyState?.classList.add('hidden');
+        promoPreviewState?.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removePromoBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (promoFileInput) promoFileInput.value = '';
+      if (promoUrlVal) promoUrlVal.value = '';
+      if (promoPreviewImg) promoPreviewImg.src = '';
+      promoPreviewState?.classList.add('hidden');
+      promoEmptyState?.classList.remove('hidden');
+    });
+
+    // 9.3 Store Screenshots Management
+    const MIN_SCREENSHOTS = 2;
+    const MAX_SCREENSHOTS = 5;
+    const screenshotsFileInput = document.getElementById('ext-screenshots-file-input') as HTMLInputElement | null;
+    const screenshotsDropzone = document.getElementById('add-screenshots-dropzone');
+    const screenshotsContainer = document.getElementById('screenshots-grid-container');
+    const screenshotsBadge = document.getElementById('screenshots-count-badge');
+
+    function refreshScreenshotsUI() {
+      if (!screenshotsContainer) return;
+      const cards = screenshotsContainer.querySelectorAll('.screenshot-card');
+      const count = cards.length;
+
+      if (screenshotsBadge) {
+        screenshotsBadge.textContent = `${count} / ${MAX_SCREENSHOTS} Screenshots (Min: ${MIN_SCREENSHOTS})`;
+        screenshotsBadge.className = (count >= MIN_SCREENSHOTS && count <= MAX_SCREENSHOTS)
+          ? 'text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto'
+          : 'text-xs font-mono font-medium text-amber-600 self-start sm:self-auto';
+      }
+
+      if (screenshotsDropzone) {
+        screenshotsDropzone.classList.toggle('opacity-50', count >= MAX_SCREENSHOTS);
+        screenshotsDropzone.classList.toggle('pointer-events-none', count >= MAX_SCREENSHOTS);
+      }
+
+      cards.forEach((card, index) => {
+        const label = card.querySelector('.screenshot-number-label');
+        if (label) label.textContent = `Screenshot #${index + 1}`;
+      });
+    }
+
+    function attachScreenshotRemoveEvents() {
+      if (!screenshotsContainer) return;
+      screenshotsContainer.querySelectorAll('.remove-screenshot-btn').forEach((btn) => {
+        btn.replaceWith(btn.cloneNode(true));
+      });
+
+      screenshotsContainer.querySelectorAll('.remove-screenshot-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const card = (e.target as HTMLElement).closest('.screenshot-card');
+          card?.remove();
+          refreshScreenshotsUI();
+          attachScreenshotRemoveEvents();
+        });
+      });
+    }
+
+    screenshotsDropzone?.addEventListener('click', () => {
+      screenshotsFileInput?.click();
+    });
+
+    screenshotsDropzone?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      screenshotsDropzone.classList.add('border-blue-500', 'bg-blue-50/20');
+    });
+
+    screenshotsDropzone?.addEventListener('dragleave', () => {
+      screenshotsDropzone.classList.remove('border-blue-500', 'bg-blue-50/20');
+    });
+
+    screenshotsDropzone?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      screenshotsDropzone.classList.remove('border-blue-500', 'bg-blue-50/20');
+      if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        handleScreenshotFiles(e.dataTransfer.files);
+      }
+    });
+
+    screenshotsFileInput?.addEventListener('change', () => {
+      if (screenshotsFileInput.files && screenshotsFileInput.files.length > 0) {
+        handleScreenshotFiles(screenshotsFileInput.files);
+      }
+    });
+
+    function handleScreenshotFiles(files: FileList) {
+      if (!screenshotsContainer) return;
+      
+      Array.from(files).forEach((file) => {
+        const total = screenshotsContainer.querySelectorAll('.screenshot-card').length;
+        if (total >= MAX_SCREENSHOTS) {
+          alert(`You can upload a maximum of ${MAX_SCREENSHOTS} screenshots.`);
+          return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+          alert(`File "${file.name}" is not a supported image.`);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          const nextIndex = screenshotsContainer.querySelectorAll('.screenshot-card').length + 1;
+          const card = document.createElement('div');
+          card.className = 'screenshot-card p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs relative group';
+          card.innerHTML = `
+            <div class="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+              <img
+                src="${result}"
+                alt="Screenshot #${nextIndex}"
+                class="w-full h-full object-cover screenshot-preview-img"
+              />
+              <button
+                type="button"
+                class="remove-screenshot-btn absolute top-2 right-2 p-1.5 bg-slate-900/80 hover:bg-red-600 text-white rounded-lg transition-colors cursor-pointer shadow-sm"
+                title="Remove Screenshot"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+              </button>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-800 screenshot-number-label">
+                Screenshot #${nextIndex}
+              </span>
+              <span class="text-[10px] font-mono text-slate-400">${(file.size / 1024).toFixed(1)} KB</span>
+            </div>
+          `;
+
+          screenshotsContainer.appendChild(card);
+          refreshScreenshotsUI();
+          attachScreenshotRemoveEvents();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    attachScreenshotRemoveEvents();
+    refreshScreenshotsUI();
+
+    // 9.4 YouTube Video Preview Handler
+    const youtubeInput = document.getElementById('ext-youtube-input') as HTMLInputElement | null;
+    const youtubePreviewContainer = document.getElementById('youtube-preview-container');
+    const youtubeIframe = document.getElementById('youtube-preview-iframe') as HTMLIFrameElement | null;
+    const youtubeBadge = document.getElementById('youtube-video-id-badge');
+
+    function extractYouTubeId(url: string): string | null {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function syncYouTubePreview() {
+      if (!youtubeInput || !youtubePreviewContainer || !youtubeIframe) return;
+      const videoId = extractYouTubeId(youtubeInput.value.trim());
+
+      if (videoId) {
+        youtubeIframe.src = `https://www.youtube.com/embed/${videoId}`;
+        if (youtubeBadge) youtubeBadge.textContent = `Video ID: ${videoId}`;
+        youtubePreviewContainer.classList.remove('hidden');
+      } else {
+        youtubeIframe.src = '';
+        youtubePreviewContainer.classList.add('hidden');
+      }
+    }
+
+    youtubeInput?.addEventListener('input', syncYouTubePreview);
+    syncYouTubePreview();
+
+    // 10. Monetag Test Link Button
+    testBtn?.addEventListener('click', () => {
+      if (monetagInput && monetagInput.value) {
+        window.open(monetagInput.value, '_blank');
+      } else {
+        alert('Please enter a Monetag direct link URL first.');
+      }
+    });
+
+    // 11. Form Submit Validation
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (descTextarea && descTextarea.value.length < 100) {
+        alert('Please provide at least 100 characters for the extension overview description.');
+        switchTab(3);
+        descTextarea.focus();
+        return;
+      }
+
+      const featureCards = featuresContainer?.querySelectorAll('.feature-card') || [];
+      if (featureCards.length < MIN_FEATURES) {
+        alert(`Please define at least ${MIN_FEATURES} key features in Tab 3.`);
+        switchTab(3);
+        return;
+      }
+
+      const workflowCards = workflowContainer?.querySelectorAll('.workflow-card') || [];
+      if (workflowCards.length < MIN_WORKFLOW) {
+        alert(`Please define at least ${MIN_WORKFLOW} internal execution workflow stages in Tab 3.`);
+        switchTab(3);
+        return;
+      }
+
+      const comparisonCards = comparisonContainer?.querySelectorAll('.comparison-card') || [];
+      if (comparisonCards.length < MIN_COMPARISON) {
+        alert(`Please define at least ${MIN_COMPARISON} comparison rows for store SEO in Tab 3.`);
+        switchTab(3);
+        return;
+      }
+
+      const faqCards = faqsContainer?.querySelectorAll('.faq-card') || [];
+      if (faqCards.length < MIN_FAQS) {
+        alert(`Please define at least ${MIN_FAQS} FAQs in Tab 4.`);
+        switchTab(4);
+        return;
+      }
+
+      const selectedBrowsers = form.querySelectorAll('input[name="supported-browsers"]:checked');
+      if (selectedBrowsers.length === 0) {
+        alert('Please select at least one supported browser in Tab 4.');
+        switchTab(4);
+        return;
+      }
+
+      const hasIcon = (iconUrlVal && iconUrlVal.value.trim().length > 0) || (iconFileInput && iconFileInput.files && iconFileInput.files.length > 0);
+      if (!hasIcon) {
+        alert('Please upload an Extension Logo / Icon image in Tab 2.');
+        switchTab(2);
+        return;
+      }
+
+      const hasPromo = (promoUrlVal && promoUrlVal.value.trim().length > 0) || (promoFileInput && promoFileInput.files && promoFileInput.files.length > 0);
+      if (!hasPromo) {
+        alert('Please upload a Promotional Shelf Banner in Tab 2.');
+        switchTab(2);
+        return;
+      }
+
+      const screenshotCards = screenshotsContainer?.querySelectorAll('.screenshot-card') || [];
+      if (screenshotCards.length < MIN_SCREENSHOTS) {
+        alert(`Please upload at least ${MIN_SCREENSHOTS} Store Showcase Screenshots in Tab 2.`);
+        switchTab(2);
+        return;
+      }
+
+      const nameVal = (document.getElementById('ext-name-input') as HTMLInputElement | null)?.value || 'Extension';
+      alert(`🎉 "${nameVal}" has been successfully saved and published!`);
+      window.location.href = '/developers/dashboard';
+    });
+  });
+</script>

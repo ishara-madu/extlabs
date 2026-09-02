@@ -1,0 +1,95 @@
+---
+// src/pages/developers/manage/[id]/edit.astro
+import "../../../../styles/global.css";
+import DeveloperNavbar from "../../../../components/DeveloperNavbar.astro";
+import Footer from "../../../../components/Footer.astro";
+import ExtensionEditor from "../../../../components/ExtensionEditor.astro";
+import { ArrowLeft } from '@lucide/astro';
+import { EXTENSIONS, getExtensionWithDefaults } from "../../../../data/extensions";
+
+export function getStaticPaths() {
+  return EXTENSIONS.map((item) => ({
+    params: { id: item.id },
+    props: { rawExtension: item },
+  }));
+}
+
+interface Props {
+  rawExtension: (typeof EXTENSIONS)[0];
+}
+
+const { rawExtension } = Astro.props;
+const ext = getExtensionWithDefaults(rawExtension);
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Edit {ext.name} — ExtLabs Developer Console</title>
+    <meta name="description" content={`Edit configuration and metadata for ${ext.name}.`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Client-side Authentication Guard -->
+    <script is:inline>
+      (function() {
+        if (typeof window !== 'undefined') {
+          var isAuth = localStorage.getItem('extlabs_dev_session');
+          if (!isAuth) {
+            window.location.href = '/developers/login?auth_required=true';
+          }
+        }
+      })();
+    </script>
+
+    <!-- Top Developer Navbar -->
+    <DeveloperNavbar />
+
+    <!-- Main Edit Workspace -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-8">
+      
+      <!-- Top Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs text-slate-500">
+        <a href="/developers/dashboard" class="hover:text-blue-600 inline-flex items-center gap-1 transition-colors font-medium">
+          <ArrowLeft class="w-3.5 h-3.5" />
+          <span>Developer Console</span>
+        </a>
+        <span class="text-slate-300">/</span>
+        <a href={`/developers/manage/${ext.id}`} class="hover:text-blue-600 transition-colors">
+          {ext.name}
+        </a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 font-medium">Edit Details</span>
+      </div>
+
+      <!-- Unified Editor Component (Prefilled with extension data) -->
+      <ExtensionEditor 
+        isEdit={true} 
+        initialData={{
+          id: ext.id,
+          name: ext.name,
+          version: ext.version || '2.4.1',
+          category: ext.category,
+          tagline: ext.tagline,
+          description: ext.description,
+          githubUrl: `https://github.com/neural-labs/${ext.id}`,
+          monetagUrl: `https://monetag.com/direct/${ext.id.replace(/-/g, '_')}_live_8912`,
+          frequency: "24h"
+        }}
+      />
+
+    </main>
+
+    <!-- Footer -->
+    <Footer />
+
+  </body>
+</html>

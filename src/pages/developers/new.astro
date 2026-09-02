@@ -1,0 +1,64 @@
+---
+// src/pages/developers/new.astro
+import "../../styles/global.css";
+import DeveloperNavbar from "../../components/DeveloperNavbar.astro";
+import Footer from "../../components/Footer.astro";
+import ExtensionEditor from "../../components/ExtensionEditor.astro";
+import { ArrowLeft } from '@lucide/astro';
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Create New Extension — ExtLabs Developer Console</title>
+    <meta name="description" content="Submit and publish a new browser extension to ExtLabs store directory." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Client-side Authentication Guard -->
+    <script is:inline>
+      (function() {
+        if (typeof window !== 'undefined') {
+          var isAuth = localStorage.getItem('extlabs_dev_session');
+          if (!isAuth) {
+            window.location.href = '/developers/login?auth_required=true';
+          }
+        }
+      })();
+    </script>
+
+    <!-- Top Developer Navbar -->
+    <DeveloperNavbar />
+
+    <!-- Main Submission Workspace -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-8">
+      
+      <!-- Top Breadcrumb -->
+      <div>
+        <a
+          href="/developers/dashboard"
+          class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors font-medium"
+        >
+          <ArrowLeft class="w-3.5 h-3.5" />
+          <span>Back to Console Dashboard</span>
+        </a>
+      </div>
+
+      <!-- Unified Editor Component (Empty with smart placeholders) -->
+      <ExtensionEditor isEdit={false} />
+
+    </main>
+
+    <!-- Footer -->
+    <Footer />
+
+  </body>
+</html>

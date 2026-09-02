@@ -46,7 +46,7 @@ import {
     <DeveloperNavbar />
 
     <!-- Main Settings Workspace (Open & Seamless Minimalist Layout) -->
-    <main class="flex-1 max-w-4xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-10">
+    <main class="flex-1 max-w-6xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-8">
       
       <!-- Top Breadcrumb & Page Header -->
       <div class="space-y-3 border-b border-slate-200 pb-6">
@@ -704,12 +704,22 @@ import {
           });
         }
 
-        // 6. Save Settings Form
+        // 6. Save Settings Form & Persist Profile to LocalStorage
         const form = document.getElementById('settings-form');
         if (form) {
           form.addEventListener('submit', (e) => {
             e.preventDefault();
-            alert('Developer settings saved successfully!');
+            const nameInput = document.getElementById('dev-name') as HTMLInputElement | null;
+            const emailInput = document.getElementById('dev-email') as HTMLInputElement | null;
+            const websiteInput = document.getElementById('dev-website') as HTMLInputElement | null;
+            
+            const profileData = {
+              name: nameInput?.value || 'NeuralLabs Studio',
+              email: emailInput?.value || '',
+              website: websiteInput?.value || ''
+            };
+            localStorage.setItem('extlabs_dev_profile', JSON.stringify(profileData));
+            alert('Developer profile & settings saved successfully!');
           });
         }
       });

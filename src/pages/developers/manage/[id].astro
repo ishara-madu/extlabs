@@ -9,7 +9,17 @@ import {
   Save, 
   Star, 
   Box, 
-  Eye
+  Eye,
+  TrendingUp,
+  Globe,
+  Laptop,
+  Pencil,
+  Copy,
+  Check,
+  X,
+  ShieldCheck,
+  Zap,
+  MessageSquare
 } from '@lucide/astro';
 import { EXTENSIONS, getExtensionWithDefaults } from "../../../data/extensions";
 
@@ -27,17 +37,30 @@ interface Props {
 const { rawExtension } = Astro.props;
 const ext = getExtensionWithDefaults(rawExtension);
 
-// Mock 30-day analytics data points for minimal SVG Chart
-const chartData = [
-  { day: "Aug 01", installs: 1200, height: "45%" },
-  { day: "Aug 04", installs: 1450, height: "55%" },
-  { day: "Aug 08", installs: 1800, height: "65%" },
-  { day: "Aug 12", installs: 1600, height: "58%" },
-  { day: "Aug 16", installs: 2100, height: "78%" },
-  { day: "Aug 20", installs: 2400, height: "88%" },
-  { day: "Aug 24", installs: 2900, height: "98%" },
-  { day: "Aug 28", installs: 2750, height: "92%" },
-  { day: "Aug 31", installs: 2850, height: "95%" }
+// Top Download Regions
+const regionalData = [
+  { country: "United States", code: "US", flag: "🇺🇸", percentage: 44, installs: "23,848", color: "bg-blue-600" },
+  { country: "Germany", code: "DE", flag: "🇩🇪", percentage: 18, installs: "9,756", color: "bg-indigo-500" },
+  { country: "United Kingdom", code: "GB", flag: "🇬🇧", percentage: 14, installs: "7,588", color: "bg-slate-700" },
+  { country: "Japan", code: "JP", flag: "🇯🇵", percentage: 12, installs: "6,504", color: "bg-emerald-600" },
+  { country: "Other Countries", code: "GLOBAL", flag: "🌐", percentage: 12, installs: "6,504", color: "bg-slate-400" },
+];
+
+// Star Rating Distribution
+const ratingsBreakdown = [
+  { stars: 5, percentage: 88, count: "1,250" },
+  { stars: 4, percentage: 8, count: "114" },
+  { stars: 3, percentage: 2, count: "28" },
+  { stars: 2, percentage: 1, count: "14" },
+  { stars: 1, percentage: 1, count: "14" },
+];
+
+// Browser Platforms Breakdown
+const browserClients = [
+  { name: "Google Chrome", share: 72, color: "bg-blue-600" },
+  { name: "Brave Browser", share: 16, color: "bg-amber-500" },
+  { name: "Microsoft Edge", share: 8, color: "bg-cyan-600" },
+  { name: "Opera / Vivaldi", share: 4, color: "bg-red-500" },
 ];
 ---
 
@@ -72,15 +95,15 @@ const chartData = [
     <!-- Dedicated Developer Console Navbar -->
     <DeveloperNavbar />
 
-    <!-- Main Manage View Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-8">
+    <!-- Main Manage View Container (Soft Shaded Borderless Google Console Theme: bg-[#f0f4f9]) -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-6">
       
-      <!-- Top Breadcrumb & Header Controls -->
+      <!-- Top Breadcrumb & Extension Header -->
       <div class="space-y-4">
         
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-xs text-slate-500">
-          <a href="/developers/dashboard" class="hover:text-blue-600 inline-flex items-center gap-1 transition-colors">
+          <a href="/developers/dashboard" class="hover:text-blue-600 inline-flex items-center gap-1 transition-colors font-medium">
             <ArrowLeft class="w-3.5 h-3.5" />
             <span>Developer Console</span>
           </a>
@@ -90,8 +113,8 @@ const chartData = [
           <span class="text-slate-900 font-medium truncate max-w-xs">{ext.name}</span>
         </div>
 
-        <!-- Extension Title Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-xl border border-slate-200 shadow-2xs">
+        <!-- Extension Title Bar (Soft Shaded Borderless Card) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-[#f0f4f9] rounded-2xl border-0 shadow-2xs">
           
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs">
@@ -100,260 +123,388 @@ const chartData = [
 
             <div class="space-y-0.5">
               <div class="flex items-center gap-2.5 flex-wrap">
-                <h1 class="text-lg font-bold text-slate-900 tracking-tight">
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight" id="display-ext-name">
                   {ext.name}
                 </h1>
-                <span class="px-2 py-0.5 text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded">
+                <span class="px-2 py-0.5 text-[10px] font-semibold text-slate-700 bg-white/80 rounded-full shadow-2xs">
                   Production
                 </span>
-                <span class="font-mono text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                <span class="font-mono text-[11px] text-slate-600 bg-white/80 px-2 py-0.5 rounded-full shadow-2xs">
                   v{ext.version || '2.4.1'}
                 </span>
               </div>
               
               <p class="text-xs text-slate-500">
-                Package: <span class="font-mono text-slate-600">io.extlabs.{ext.id.replace(/-/g, '')}</span> • Manifest V3 Verified
+                Package: <span class="font-mono text-slate-700">io.extlabs.{ext.id.replace(/-/g, '')}</span> • Manifest V3 Verified
               </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-3 shrink-0">
+          <div class="flex items-center gap-2.5 shrink-0">
             <a
               href={`/extension/${ext.id}`}
               target="_blank"
-              class="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 inline-flex items-center gap-1.5 transition-colors shadow-2xs"
+              class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-xl inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             >
-              <Eye class="w-3.5 h-3.5 text-slate-400" />
+              <Eye class="w-3.5 h-3.5 text-slate-500" />
               <span>View Store Listing</span>
             </a>
 
-            <button
-              type="button"
-              id="save-all-btn"
-              class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+            <!-- Dedicated Edit Button (Navigates to Edit Page in Blue Styling) -->
+            <a
+              href={`/developers/manage/${ext.id}/edit`}
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
             >
-              <Save class="w-3.5 h-3.5 text-white" />
-              <span>Save Changes</span>
-            </button>
+              <Pencil class="w-3.5 h-3.5 text-white" />
+              <span>Edit Details</span>
+            </a>
           </div>
 
         </div>
 
       </div>
 
-      <!-- SECTION 1: 30-Day Performance & Install Analytics Chart (Minimalist SVG) -->
-      <section class="p-6 sm:p-7 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-6">
+      <!-- 4 KPI Metrics (Soft Shaded Borderless Grid) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-          <div class="space-y-0.5">
-            <h2 class="text-sm font-bold text-slate-900">
-              30-Day Install & Acquisition Performance
-            </h2>
+        <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
+          <span class="text-xs text-slate-500 font-medium block">Total Downloads</span>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-extrabold text-slate-900 font-mono">54.2K</span>
+            <span class="text-xs text-emerald-600 font-semibold font-mono">↑ 24.5%</span>
+          </div>
+          <span class="text-[11px] text-slate-400 block">vs previous 30 days</span>
+        </div>
+
+        <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
+          <span class="text-xs text-slate-500 font-medium block">Active Weekly Users</span>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-extrabold text-slate-900 font-mono">18.4K</span>
+            <span class="text-xs text-slate-500 font-mono">34% ret.</span>
+          </div>
+          <span class="text-[11px] text-slate-400 block">Verified active devices</span>
+        </div>
+
+        <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
+          <span class="text-xs text-slate-500 font-medium block">Monetag Direct Triggers</span>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-extrabold text-slate-900 font-mono">54.2K</span>
+            <span class="text-xs text-emerald-600 font-semibold font-mono">100% split</span>
+          </div>
+          <span class="text-[11px] text-slate-400 block">All downloads monetized</span>
+        </div>
+
+        <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
+          <span class="text-xs text-slate-500 font-medium block">Store Rating</span>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-extrabold text-amber-600 font-mono">4.90 ★</span>
+            <span class="text-xs text-slate-500 font-mono">1,420</span>
+          </div>
+          <span class="text-[11px] text-slate-400 block">Verified user reviews</span>
+        </div>
+
+      </div>
+
+      <!-- SECTION 1: APEXCHARTS INTERACTIVE LINE CHART (Soft Shaded Borderless Card) -->
+      <section class="p-6 sm:p-7 bg-[#f0f4f9] rounded-2xl border-0 space-y-5">
+        
+        <!-- Chart Header & Interactive Period Filter -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                Downloads & Acquisition Performance
+              </h2>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">
+                <TrendingUp class="w-3 h-3 text-emerald-600" />
+                <span>+24.5% Growth</span>
+              </span>
+            </div>
             <p class="text-xs text-slate-500">
-              Daily verified downloads and Monetag ad tab triggers.
+              Interactive time-series telemetry showing daily verified downloads and acquisition velocity.
             </p>
           </div>
 
-          <div class="flex items-center gap-4 text-xs font-mono">
-            <div>
-              <span class="text-slate-400 block text-[10px]">Total Installs</span>
-              <span class="font-bold text-slate-900 text-sm">54,200</span>
-            </div>
-            <div class="h-6 w-px bg-slate-200"></div>
-            <div>
-              <span class="text-slate-400 block text-[10px]">Ad Tab Triggers</span>
-              <span class="font-bold text-slate-900 text-sm">54,200</span>
-            </div>
-            <div class="h-6 w-px bg-slate-200"></div>
-            <div>
-              <span class="text-slate-400 block text-[10px]">Avg Rating</span>
-              <span class="font-bold text-amber-600 text-sm">4.90 ★</span>
-            </div>
+          <!-- Time Range Selector Buttons -->
+          <div class="flex items-center gap-1 bg-white/80 p-1 rounded-xl shadow-2xs self-start sm:self-auto text-xs font-medium">
+            <button
+              type="button"
+              class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              data-range="7d"
+            >
+              7 Days
+            </button>
+            <button
+              type="button"
+              class="chart-range-btn px-3 py-1.5 bg-slate-900 text-white font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
+              data-range="30d"
+            >
+              30 Days
+            </button>
+            <button
+              type="button"
+              class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              data-range="90d"
+            >
+              90 Days
+            </button>
+            <button
+              type="button"
+              class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              data-range="1y"
+            >
+              1 Year
+            </button>
           </div>
         </div>
 
-        <!-- Minimalist CSS/SVG Bar Chart Strip -->
-        <div class="space-y-2">
-          <div class="h-44 w-full flex items-end justify-between gap-2 sm:gap-4 pt-6 px-2 bg-slate-50/60 rounded-xl border border-slate-100">
-            {chartData.map((item) => (
-              <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                <div class="text-[10px] font-mono text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  {item.installs}
+        <!-- ApexCharts Render Target Container -->
+        <div class="bg-white rounded-xl p-4 shadow-2xs">
+          <div id="downloads-apexchart" class="w-full h-72"></div>
+        </div>
+
+      </section>
+
+      <!-- SECTION 2: 2-COLUMN ANALYTICS (Geography & Rating Distribution in Soft Cards) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- 1. Top Download Regions / Geography (Soft Shaded Card) -->
+        <section class="p-6 bg-[#f0f4f9] rounded-2xl border-0 space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-1.5">
+                <Globe class="w-4 h-4 text-slate-700" />
+                <h3 class="text-sm font-bold text-slate-900">Top Download Regions</h3>
+              </div>
+              <p class="text-[11px] text-slate-500">Geographic distribution of verified installs.</p>
+            </div>
+            <span class="text-xs font-mono font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded-full">Tier-1 76%</span>
+          </div>
+
+          <div class="space-y-3.5">
+            {regionalData.map((region) => (
+              <div class="space-y-1.5 text-xs">
+                <div class="flex items-center justify-between font-medium">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm">{region.flag}</span>
+                    <span class="text-slate-800">{region.country}</span>
+                  </div>
+                  <div class="flex items-center gap-2 font-mono">
+                    <span class="text-slate-500 text-[11px]">{region.installs}</span>
+                    <span class="text-slate-900 font-bold w-9 text-right">{region.percentage}%</span>
+                  </div>
                 </div>
-                <div 
-                  class="w-full max-w-[28px] bg-slate-900 group-hover:bg-blue-600 rounded-t transition-colors cursor-pointer"
-                  style={`height: ${item.height}`}
-                  title={`${item.day}: ${item.installs} installs`}
-                ></div>
-                <span class="text-[10px] text-slate-400 font-mono pb-1">{item.day.split(' ')[1]}</span>
+                <div class="w-full bg-white rounded-full h-2 overflow-hidden shadow-2xs">
+                  <div
+                    class={`h-full rounded-full ${region.color}`}
+                    style={`width: ${region.percentage}%`}
+                  ></div>
+                </div>
               </div>
             ))}
           </div>
-          <div class="flex items-center justify-between text-[11px] text-slate-400 px-2">
-            <span>Aug 01, 2026</span>
-            <span class="text-emerald-600 font-mono font-medium">↑ +24.5% vs previous 30 days</span>
-            <span>Aug 31, 2026</span>
+        </section>
+
+        <!-- 2. Ratings Breakdown & Review Responses (Soft Shaded Card with Page Link Placed Above Platform Share) -->
+        <section class="p-6 bg-[#f0f4f9] rounded-2xl border-0 space-y-5 flex flex-col justify-between">
+          <div class="space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-1.5">
+                  <Star class="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <h3 class="text-sm font-bold text-slate-900">Ratings & Reviews Breakdown</h3>
+                </div>
+                <p class="text-[11px] text-slate-500">Verified feedback from active extension users.</p>
+              </div>
+              <span class="text-xs font-mono font-bold text-amber-600 bg-white/80 px-2 py-0.5 rounded-full">4.90 / 5.0</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+              <!-- Big Score Badge -->
+              <div class="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-2xs shrink-0 text-center w-28">
+                <span class="text-3xl font-extrabold text-slate-900 font-mono">4.90</span>
+                <div class="flex items-center gap-0.5 text-amber-500 py-1">
+                  <Star class="w-3.5 h-3.5 fill-amber-500" />
+                  <Star class="w-3.5 h-3.5 fill-amber-500" />
+                  <Star class="w-3.5 h-3.5 fill-amber-500" />
+                  <Star class="w-3.5 h-3.5 fill-amber-500" />
+                  <Star class="w-3.5 h-3.5 fill-amber-500" />
+                </div>
+                <span class="text-[10px] text-slate-500 font-mono">1,420 ratings</span>
+              </div>
+
+              <!-- Star Meter Bars -->
+              <div class="flex-1 space-y-2 text-xs">
+                {ratingsBreakdown.map((row) => (
+                  <div class="flex items-center gap-2">
+                    <span class="text-[11px] font-mono font-medium text-slate-600 w-5">{row.stars}★</span>
+                    <div class="flex-1 bg-white rounded-full h-2 overflow-hidden shadow-2xs">
+                      <div
+                        class="h-full bg-amber-500 rounded-full"
+                        style={`width: ${row.percentage}%`}
+                      ></div>
+                    </div>
+                    <span class="text-[11px] font-mono text-slate-500 w-8 text-right">{row.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <!-- Reviews Link (Clean blue text link on the right side, above Browser Platform Share) -->
+            <div class="pt-2 flex items-center justify-between text-xs">
+              <span class="text-[11px] text-slate-500">
+                <span class="font-semibold text-slate-800">18 reviews</span> awaiting reply
+              </span>
+              <a
+                href={`/developers/manage/${ext.id}/reviews`}
+                class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 group"
+              >
+                <span>See all reviews & reply</span>
+                <span class="group-hover:translate-x-0.5 transition-transform font-bold">→</span>
+              </a>
+            </div>
+
+            <!-- Browser Platform Segmented Strip (Placed below reviews link) -->
+            <div class="pt-3 border-t border-slate-200/60 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-1.5 font-medium text-slate-700">
+                  <Laptop class="w-3.5 h-3.5 text-slate-500" />
+                  <span>Browser Platform Share</span>
+                </div>
+                <span class="text-[11px] text-slate-500 font-mono">Chromium Standard</span>
+              </div>
+
+              <div class="w-full h-2.5 bg-white rounded-full overflow-hidden flex gap-0.5 shadow-2xs">
+                {browserClients.map((browser) => (
+                  <div
+                    class={`h-full ${browser.color}`}
+                    style={`width: ${browser.share}%`}
+                    title={`${browser.name}: ${browser.share}%`}
+                  ></div>
+                ))}
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+                <span>Chrome 72%</span>
+                <span>Brave 16%</span>
+                <span>Edge 8%</span>
+                <span>Opera 4%</span>
+              </div>
+            </div>
           </div>
-        </div>
 
-      </section>
+        </section>
 
-      <!-- SECTION 2: Monetag Direct Link & Monetization Setup -->
-      <section class="p-6 sm:p-7 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-6">
+      </div>
+
+      <!-- SECTION 3: VIEW-ONLY EXTENSION INFORMATION & MONETIZATION SUMMARY (Soft Shaded Card) -->
+      <section class="p-6 sm:p-7 bg-[#f0f4f9] rounded-2xl border-0 space-y-6">
         
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-sm font-bold text-slate-900">
-            Monetag Direct Link Configuration
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">
-            100% of the ad revenue generated when users download this extension is credited directly to your Monetag publisher account.
-          </p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 pb-4">
+          <div class="space-y-1">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight">
+              Extension Configuration & Monetization Overview
+            </h2>
+            <p class="text-xs text-slate-500">
+              Read-only overview of your Monetag stream, connected GitHub releases, and directory listing.
+            </p>
+          </div>
+
+          <!-- Edit Button -->
+          <a
+            href={`/developers/manage/${ext.id}/edit`}
+            class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer self-start sm:self-auto border border-slate-200"
+          >
+            <Pencil class="w-3.5 h-3.5 text-slate-600" />
+            <span>Edit Information</span>
+          </a>
         </div>
 
-        <div class="space-y-4 max-w-3xl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs">
           
-          <div class="space-y-1.5">
-            <label for="monetag-direct-url" class="block text-xs font-semibold text-slate-700">
-              Active Monetag Direct Link URL:
-            </label>
+          <!-- Monetag Stream Details -->
+          <div class="space-y-3.5 bg-white p-5 rounded-xl shadow-2xs">
             <div class="flex items-center gap-2">
-              <input
-                id="monetag-direct-url"
-                type="url"
-                value={`https://monetag.com/direct/${ext.id.replace(/-/g, '_')}_live_8912`}
-                class="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 font-mono rounded-lg focus:bg-white focus:border-blue-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                id="test-monetag-link-btn"
-                class="px-3.5 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-              >
-                <span>Test Link</span>
-                <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
-              </button>
+              <Zap class="w-4 h-4 text-emerald-600" />
+              <span class="font-bold text-slate-900">Monetag Direct Link Stream</span>
             </div>
-            <span class="text-[11px] text-slate-400 block">
-              Direct Link generated from <a href="https://monetag.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-medium underline">Monetag Publisher Dashboard</a>.
-            </span>
+
+            <div class="space-y-1.5">
+              <span class="text-slate-500 text-[11px] block">Active Direct Link URL:</span>
+              <div class="flex items-center gap-2">
+                <input
+                  type="text"
+                  readonly
+                  value={`https://monetag.com/direct/${ext.id.replace(/-/g, '_')}_live_8912`}
+                  id="view-monetag-url"
+                  class="flex-1 px-3 py-1.5 text-xs bg-slate-50 rounded-lg font-mono text-slate-700 border border-slate-200 cursor-text"
+                />
+                <button
+                  type="button"
+                  id="copy-monetag-btn"
+                  class="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1 shrink-0 shadow-2xs"
+                >
+                  <Copy class="w-3.5 h-3.5 text-slate-500" />
+                  <span id="copy-monetag-label">Copy</span>
+                </button>
+                <a
+                  href={`https://monetag.com/direct/${ext.id.replace(/-/g, '_')}_live_8912`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1 shrink-0 shadow-2xs"
+                >
+                  <span>Test</span>
+                  <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
+                </a>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 space-y-0.5">
+                <span class="text-[10px] text-slate-400 font-medium">Trigger Frequency</span>
+                <span class="text-xs font-bold text-slate-800 block">Once every 24h</span>
+              </div>
+              <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 space-y-0.5">
+                <span class="text-[10px] text-slate-400 font-medium">Direct Payout</span>
+                <span class="text-xs font-bold text-emerald-600 block">100% Direct</span>
+              </div>
+            </div>
           </div>
 
-          <!-- CPM Reference Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1 text-xs">
-              <span class="text-slate-500 block text-[11px]">Tier-1 Traffic (US, UK, EU)</span>
-              <span class="font-bold font-mono text-slate-900 text-sm">~$8.50 CPM</span>
+          <!-- Metadata & GitHub Release Details -->
+          <div class="space-y-3.5 bg-white p-5 rounded-xl shadow-2xs">
+            <div class="flex items-center gap-2">
+              <Box class="w-4 h-4 text-slate-700" />
+              <span class="font-bold text-slate-900">Repository & Listing Details</span>
             </div>
 
-            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1 text-xs">
-              <span class="text-slate-500 block text-[11px]">Tier-2 Traffic (LATAM, ME)</span>
-              <span class="font-bold font-mono text-slate-900 text-sm">~$3.20 CPM</span>
-            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Connected Repository:</span>
+                <a
+                  href={`https://github.com/neural-labs/${ext.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-mono text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
+                >
+                  <span>github.com/neural-labs/{ext.id}</span>
+                  <ExternalLink class="w-3 h-3" />
+                </a>
+              </div>
 
-            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1 text-xs">
-              <span class="text-slate-500 block text-[11px]">Platform Fee / Revenue Share</span>
-              <span class="font-bold font-mono text-slate-900 text-sm">0% Cut (100% Direct)</span>
+              <div class="flex items-center justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500">Primary Category:</span>
+                <span class="font-medium text-slate-800">{ext.category}</span>
+              </div>
+
+              <div class="py-1">
+                <span class="text-slate-500 block pb-1">Tagline:</span>
+                <p class="text-slate-800 font-medium leading-relaxed">{ext.tagline}</p>
+              </div>
             </div>
           </div>
 
         </div>
-
-      </section>
-
-      <!-- SECTION 3: Extension Metadata & GitHub Release Sync -->
-      <section class="p-6 sm:p-7 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-6">
-        
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-sm font-bold text-slate-900">
-            Extension Details & GitHub Release Sync
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Manage your extension title, tagline, categories, and connected GitHub repository releases.
-          </p>
-        </div>
-
-        <form id="edit-details-form" class="space-y-4 max-w-3xl">
-          
-          <!-- GitHub Repo -->
-          <div class="space-y-1.5">
-            <label for="edit-github-repo" class="block text-xs font-semibold text-slate-700">
-              GitHub Repository (Release Package Sync)
-            </label>
-            <input
-              id="edit-github-repo"
-              type="text"
-              value={`https://github.com/neural-labs/${ext.id}`}
-              class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none font-mono"
-            />
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Name -->
-            <div class="space-y-1.5">
-              <label for="edit-ext-name" class="block text-xs font-semibold text-slate-700">
-                Extension Name
-              </label>
-              <input
-                id="edit-ext-name"
-                type="text"
-                value={ext.name}
-                class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none"
-              />
-            </div>
-
-            <!-- Category -->
-            <div class="space-y-1.5">
-              <label for="edit-ext-category" class="block text-xs font-semibold text-slate-700">
-                Primary Category
-              </label>
-              <select
-                id="edit-ext-category"
-                class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none cursor-pointer"
-              >
-                <option value="ai" selected={ext.category.includes('AI')}>AI & Machine Learning</option>
-                <option value="dev" selected={ext.category.includes('Dev')}>Developer Tools</option>
-                <option value="productivity" selected={ext.category.includes('Productivity')}>Productivity</option>
-                <option value="privacy" selected={ext.category.includes('Privacy')}>Privacy & Security</option>
-                <option value="utilities" selected={ext.category.includes('Utilities')}>Workflow & Utilities</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Tagline -->
-          <div class="space-y-1.5">
-            <label for="edit-ext-tagline" class="block text-xs font-semibold text-slate-700">
-              Tagline (Search Summary)
-            </label>
-            <input
-              id="edit-ext-tagline"
-              type="text"
-              value={ext.tagline}
-              class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none"
-            />
-          </div>
-
-          <!-- Description -->
-          <div class="space-y-1.5">
-            <label for="edit-ext-desc" class="block text-xs font-semibold text-slate-700">
-              Overview & Key Features
-            </label>
-            <textarea
-              id="edit-ext-desc"
-              rows="4"
-              class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-slate-400 focus:outline-none leading-relaxed"
-            >{ext.description}</textarea>
-          </div>
-
-          <div class="pt-2 flex items-center justify-end">
-            <button
-              type="submit"
-              class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-            >
-              <Save class="w-3.5 h-3.5 text-white" />
-              <span>Save Configuration</span>
-            </button>
-          </div>
-
-        </form>
 
       </section>
 
@@ -362,28 +513,149 @@ const chartData = [
     <!-- Footer -->
     <Footer />
 
+    <!-- ApexCharts Client-Side Initialization & Interactive Scripts -->
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const testBtn = document.getElementById('test-monetag-link-btn');
-        const urlInput = document.getElementById('monetag-direct-url') as HTMLInputElement | null;
-        const saveAllBtn = document.getElementById('save-all-btn');
-        const editForm = document.getElementById('edit-details-form');
+      import ApexCharts from 'apexcharts';
 
-        if (testBtn && urlInput) {
-          testBtn.addEventListener('click', () => {
-            if (urlInput.value) {
-              window.open(urlInput.value, '_blank');
+      document.addEventListener('DOMContentLoaded', () => {
+        // 1. ApexCharts Data Sets (7d, 30d, 90d, 1y)
+        const datasets = {
+          '7d': {
+            dates: ['Aug 25', 'Aug 26', 'Aug 27', 'Aug 28', 'Aug 29', 'Aug 30', 'Aug 31'],
+            installs: [2150, 2240, 2410, 2680, 2750, 2890, 2980]
+          },
+          '30d': {
+            dates: [
+              'Aug 01', 'Aug 04', 'Aug 07', 'Aug 10', 'Aug 13', 
+              'Aug 16', 'Aug 19', 'Aug 22', 'Aug 25', 'Aug 28', 'Aug 31'
+            ],
+            installs: [1120, 1350, 1480, 1580, 1690, 1880, 2120, 2380, 2540, 2680, 2980]
+          },
+          '90d': {
+            dates: ['Jun W1', 'Jun W3', 'Jul W1', 'Jul W3', 'Aug W1', 'Aug W3', 'Aug W4'],
+            installs: [4800, 6200, 7900, 9400, 12100, 15800, 18400]
+          },
+          '1y': {
+            dates: ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Aug'],
+            installs: [2400, 4800, 8900, 15200, 26000, 41000, 54200]
+          }
+        };
+
+        const chartElement = document.getElementById('downloads-apexchart');
+        let chart: ApexCharts | null = null;
+
+        if (chartElement) {
+          const options: ApexCharts.ApexOptions = {
+            series: [{
+              name: 'Verified Installs',
+              data: datasets['30d'].installs
+            }],
+            chart: {
+              type: 'area',
+              height: 280,
+              toolbar: { show: false },
+              zoom: { enabled: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#2563eb'],
+            dataLabels: { enabled: false },
+            stroke: {
+              curve: 'smooth',
+              width: 2.5
+            },
+            fill: {
+              type: 'gradient',
+              gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.25,
+                opacityTo: 0.02,
+                stops: [0, 95, 100]
+              }
+            },
+            xaxis: {
+              categories: datasets['30d'].dates,
+              axisBorder: { show: false },
+              axisTicks: { show: false },
+              labels: {
+                style: {
+                  colors: '#94a3b8',
+                  fontSize: '11px',
+                  fontFamily: 'monospace'
+                }
+              }
+            },
+            yaxis: {
+              labels: {
+                style: {
+                  colors: '#94a3b8',
+                  fontSize: '11px',
+                  fontFamily: 'monospace'
+                },
+                formatter: (val) => val >= 1000 ? `${(val / 1000).toFixed(1)}k` : `${val}`
+              }
+            },
+            grid: {
+              borderColor: '#f1f5f9',
+              strokeDashArray: 3,
+              xaxis: { lines: { show: false } },
+              yaxis: { lines: { show: true } }
+            },
+            tooltip: {
+              theme: 'light',
+              x: { show: true },
+              y: {
+                formatter: (val) => `${val.toLocaleString()} installs`
+              }
+            },
+            markers: {
+              size: 4,
+              colors: ['#ffffff'],
+              strokeColors: '#2563eb',
+              strokeWidth: 2,
+              hover: { size: 6 }
+            }
+          };
+
+          chart = new ApexCharts(chartElement, options);
+          chart.render();
+        }
+
+        // 2. Chart Range Buttons Filter Handler
+        const rangeBtns = document.querySelectorAll('.chart-range-btn');
+        rangeBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const range = (btn.getAttribute('data-range') || '30d') as keyof typeof datasets;
+            
+            rangeBtns.forEach((b) => {
+              b.classList.remove('bg-slate-900', 'text-white', 'font-semibold', 'shadow-2xs');
+              b.classList.add('text-slate-600');
+            });
+            btn.classList.add('bg-slate-900', 'text-white', 'font-semibold', 'shadow-2xs');
+            btn.classList.remove('text-slate-600');
+
+            if (chart && datasets[range]) {
+              chart.updateOptions({
+                xaxis: { categories: datasets[range].dates },
+                series: [{ name: 'Verified Installs', data: datasets[range].installs }]
+              });
             }
           });
-        }
+        });
 
-        function handleSave(e?: Event) {
-          if (e) e.preventDefault();
-          alert('Configuration and Monetag Direct Link successfully saved in real-time!');
-        }
+        // 3. Copy Monetag URL
+        const copyBtn = document.getElementById('copy-monetag-btn');
+        const urlInput = document.getElementById('view-monetag-url') as HTMLInputElement | null;
+        const copyLabel = document.getElementById('copy-monetag-label');
 
-        if (saveAllBtn) saveAllBtn.addEventListener('click', () => handleSave());
-        if (editForm) editForm.addEventListener('submit', (e) => handleSave(e));
+        copyBtn?.addEventListener('click', () => {
+          if (urlInput && urlInput.value) {
+            navigator.clipboard.writeText(urlInput.value);
+            if (copyLabel) {
+              copyLabel.textContent = 'Copied!';
+              setTimeout(() => { copyLabel.textContent = 'Copy'; }, 1800);
+            }
+          }
+        });
       });
     </script>
 
