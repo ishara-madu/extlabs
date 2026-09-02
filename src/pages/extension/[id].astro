@@ -80,7 +80,7 @@ const jsonLdSchema = {
     <title>{ext.name} — Free Browser Extension | ExtLabs</title>
     <meta name="title" content={`${ext.name} — Free Browser Extension | ExtLabs`} />
     <meta name="description" content={`${ext.tagline}. ${ext.description.slice(0, 140)}...`} />
-    <meta name="keywords" content={`${ext.tags.join(', ')}, ${ext.categoryLabel}, browser extension, chrome extension, manifest v3`} />
+    <meta name="keywords" content={`${ext.tags.join(', ')}, ${ext.categoryLabel}, browser extension, chrome extension`} />
     <meta name="author" content={ext.developer} />
     <link rel="canonical" href={`https://extlabs.io/extension/${ext.id}`} />
 
@@ -141,7 +141,7 @@ const jsonLdSchema = {
 
               <span class="text-xs text-slate-500 flex items-center gap-1">
                 <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
-                <span>Manifest V3</span>
+                <span>Verified Safe</span>
               </span>
             </div>
 
