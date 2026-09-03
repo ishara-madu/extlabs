@@ -12,6 +12,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^14.2.6",
     "@astrojs/partytown": "^2.1.7",
     "@lucide/astro": "^1.38.0",
     "@tailwindcss/vite": "^4.3.3",
@@ -24,6 +25,7 @@
     "esbuild": true
   },
   "devDependencies": {
-    "daisyui": "^5.7.23"
+    "daisyui": "^5.7.23",
+    "wrangler": "^4.128.0"
   }
 }
