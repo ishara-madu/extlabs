@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "extlabs",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "extlabs-db",
+      "database_id": "fae0e8d0-884a-438f-a316-56b6ed07121d"
+    }
+  ]
+}

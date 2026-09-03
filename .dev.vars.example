@@ -1,0 +1,6 @@
+# Local Development Environment Variables for Cloudflare Workers/Pages
+# Copy this file to .dev.vars and fill in your GitHub OAuth App credentials
+
+GITHUB_CLIENT_ID=your_github_client_id_here
+GITHUB_CLIENT_SECRET=your_github_client_secret_here
+SUPER_ADMIN_GITHUB_USERNAME=ishara-madu
