@@ -1,0 +1,1028 @@
+---
+// src/pages/admin/statistics/index.astro
+import "../../../styles/global.css";
+import AdminNavbar from "../../../components/AdminNavbar.astro";
+import Footer from "../../../components/Footer.astro";
+import { EXTENSIONS } from "../../../data/extensions";
+import { DEVELOPERS_DATA } from "../../../data/developers";
+import { 
+  DAILY_TELEMETRY_DATA, 
+  DETAILED_COUNTRY_METRICS, 
+  CATEGORY_SUPPLY_DEMAND,
+  TOTAL_PAGE_VISITS,
+  TOTAL_DOWNLOADS,
+  TOTAL_DEVELOPER_CLICKS,
+  TOTAL_EXTLABS_CLICKS,
+  TOTAL_ALL_CLICKS,
+  DEVELOPER_SHARE,
+  EXTLABS_SHARE,
+  MOST_POPULAR_CATEGORY
+} from "../../../data/statistics";
+import { 
+  ShieldCheck, 
+  Check, 
+  ArrowRight, 
+  RefreshCw, 
+  Users, 
+  BarChart3, 
+  Settings, 
+  Clock, 
+  Box, 
+  TrendingUp, 
+  Globe, 
+  DollarSign, 
+  MousePointerClick, 
+  Layers, 
+  Download, 
+  Eye, 
+  Flame,
+  AlertCircle
+} from '@lucide/astro';
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Analytics & Ad Intelligence — ExtLabs Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Admin Topbar -->
+    <AdminNavbar />
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-8">
+      
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-6">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-xs font-semibold text-blue-600 font-mono">
+              Staff Portal • Telemetry
+            </span>
+            <span class="text-xs text-slate-400 font-medium">
+              Real-time Analytics Engine
+            </span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Platform Analytics & Ad Intelligence
+          </h1>
+
+          <p class="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Telemetry workstation tracking store traffic, download velocity, country demographics, and the 5:1 platform ad monetization distribution.
+          </p>
+        </div>
+
+        <!-- Timeframe Selector & Sync -->
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center bg-white border border-slate-200 rounded-xl p-1 text-xs font-medium text-slate-600 shadow-2xs">
+            <button type="button" class="timeframe-btn px-2.5 py-1 rounded-lg hover:text-slate-900 transition-colors cursor-pointer" data-range="7d">
+              7D
+            </button>
+            <button type="button" class="timeframe-btn px-2.5 py-1 rounded-lg bg-slate-900 text-white font-semibold transition-colors cursor-pointer" data-range="14d">
+              14D
+            </button>
+            <button type="button" class="timeframe-btn px-2.5 py-1 rounded-lg hover:text-slate-900 transition-colors cursor-pointer" data-range="30d">
+              30D
+            </button>
+          </div>
+
+          <button
+            type="button"
+            id="refresh-stats-btn"
+            class="p-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 hover:border-slate-300 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+            title="Sync Telemetry"
+            aria-label="Sync Telemetry"
+          >
+            <RefreshCw class="w-4 h-4 text-slate-500" id="stats-refresh-icon" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Navigation Submenu / Tabs -->
+      <div class="border-b border-slate-200 -mt-4">
+        <nav class="flex items-center gap-1 sm:gap-6 overflow-x-auto no-scrollbar text-xs sm:text-sm font-medium">
+          <!-- 1. Moderation Hub -->
+          <a
+            href="/admin"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <ShieldCheck class="w-4 h-4 text-slate-400" />
+            <span>Moderation Hub</span>
+          </a>
+
+          <!-- 2. Pending Review -->
+          <a
+            href="/admin/pending-review"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Clock class="w-4 h-4 text-slate-400" />
+            <span>Pending Review</span>
+            <span class="text-[11px] font-mono font-semibold text-amber-600">25</span>
+          </a>
+
+          <!-- 3. Live Directory -->
+          <a
+            href="/admin/directory"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Box class="w-4 h-4 text-slate-400" />
+            <span>Live Directory</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+          </a>
+
+          <!-- 4. Developers -->
+          <a
+            href="/admin/developers"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Users class="w-4 h-4 text-slate-400" />
+            <span>Developers</span>
+            <span class="text-[11px] font-mono font-semibold text-blue-600">{DEVELOPERS_DATA.length}</span>
+          </a>
+
+          <!-- 5. Statistics (Active) -->
+          <a
+            href="/admin/statistics"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-slate-900 text-slate-900 font-semibold shrink-0"
+          >
+            <BarChart3 class="w-4 h-4 text-slate-900" />
+            <span>Statistics</span>
+          </a>
+
+          <!-- 6. Reports -->
+          <a
+            href="/admin/reports"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <AlertCircle class="w-4 h-4 text-slate-400" />
+            <span>Reports</span>
+            <span class="text-[11px] font-mono font-semibold text-rose-600">2</span>
+          </a>
+
+          <!-- 7. Settings -->
+          <a
+            href="/developers/settings"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Settings class="w-4 h-4 text-slate-400" />
+            <span>Settings</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- 1. Key Performance Telemetry Indicators (#f0f4f9 Minimalist Cards) -->
+      <section class="space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 tracking-tight">Core Platform Metrics</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          
+          <!-- Metric 1: Page Visits -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Page Visits</span>
+                <span class="text-xs font-semibold text-emerald-600 font-mono">+22.4%</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {(TOTAL_PAGE_VISITS / 1000).toFixed(1)}K
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Direct storefront & details views
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Avg Daily</span>
+              <span class="font-mono font-semibold text-slate-700">56.7K / day</span>
+            </div>
+          </div>
+
+          <!-- Metric 2: Package Downloads -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Downloads</span>
+                <span class="text-xs font-semibold text-blue-600 font-mono">18.0% Rate</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {(TOTAL_DOWNLOADS / 1000).toFixed(1)}K
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Direct .zip & crx package deliveries
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Live Catalog</span>
+              <span class="font-mono font-semibold text-slate-700">{EXTENSIONS.length} Extensions</span>
+            </div>
+          </div>
+
+          <!-- Metric 3: Developer Ad Clicks -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Dev Ad Clicks</span>
+                <span class="text-xs font-semibold text-blue-600 font-mono">{DEVELOPER_SHARE}% Share</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {TOTAL_DEVELOPER_CLICKS.toLocaleString()}
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Developer Monetag clicks (5:1 priority)
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Impressions</span>
+              <span class="font-mono font-semibold text-slate-700">2,064.2K</span>
+            </div>
+          </div>
+
+          <!-- Metric 4: ExtLabs Ad Clicks -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">ExtLabs Clicks</span>
+                <span class="text-xs font-semibold text-indigo-600 font-mono">{EXTLABS_SHARE}% Share</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {TOTAL_EXTLABS_CLICKS.toLocaleString()}
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                1 platform click per 5 developer clicks
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Split Ratio</span>
+              <span class="font-mono font-semibold text-slate-700">5 : 1 Ratio</span>
+            </div>
+          </div>
+
+          <!-- Metric 5: Top User Category -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Top Category</span>
+                <span class="text-xs font-semibold text-amber-600 font-mono">#1 Most Visited</span>
+              </div>
+              <div class="text-xl font-bold text-slate-900 tracking-tight leading-tight pt-0.5">
+                {MOST_POPULAR_CATEGORY}
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Captures 38.8% of all store visitor traffic
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Total Visits</span>
+              <span class="font-mono font-semibold text-slate-700">308.4K</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 2. Interactive ApexCharts Timeline (Ad Monetization vs Traffic & Downloads) -->
+      <section class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-2xs space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Interactive Telemetry Timeline</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              High-resolution daily volume tracking powered by ApexCharts. Toggle between Monetization and Store Traffic.
+            </p>
+          </div>
+
+          <!-- Series Mode Switcher Tabs -->
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-medium text-slate-600">
+            <button
+              type="button"
+              id="mode-monetization-btn"
+              class="chart-mode-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 font-semibold shadow-2xs transition-colors cursor-pointer"
+            >
+              💰 Ad Monetization (5:1)
+            </button>
+            <button
+              type="button"
+              id="mode-traffic-btn"
+              class="chart-mode-btn px-3 py-1.5 rounded-lg hover:text-slate-900 transition-colors cursor-pointer text-slate-600"
+            >
+              📈 Traffic & Downloads
+            </button>
+          </div>
+        </div>
+
+        <!-- ApexCharts Render Target Container -->
+        <div class="w-full">
+          <div id="main-telemetry-apexchart" class="w-full min-h-[300px]"></div>
+        </div>
+
+        <!-- Summary Pacing Grid -->
+        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div>
+            <span class="text-slate-400 block text-[11px]">Daily Dev Ad Clicks</span>
+            <span class="font-mono font-bold text-slate-800">29.4K / day avg</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[11px]">Daily ExtLabs Ad Clicks</span>
+            <span class="font-mono font-bold text-slate-800">5.9K / day avg</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[11px]">Daily Store Visits</span>
+            <span class="font-mono font-bold text-slate-800">56.7K / day avg</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[11px]">Daily Package Downloads</span>
+            <span class="font-mono font-bold text-blue-600">10.2K / day avg</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Country Geographic Breakdown Section (All 4 Requested Dimensions) -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 tracking-tight">
+              Geographic Distribution by Country
+            </h2>
+            <p class="text-xs text-slate-500">
+              Country-by-country breakdown tracking Downloads, Developer Ad Clicks, ExtLabs Ad Clicks, and Page Visits.
+            </p>
+          </div>
+
+          <!-- Dimension Filter Tabs -->
+          <div class="flex items-center gap-1 overflow-x-auto no-scrollbar bg-white border border-slate-200 rounded-xl p-1 text-xs font-medium shadow-2xs">
+            <button
+              type="button"
+              class="country-metric-btn px-2.5 py-1 rounded-lg bg-slate-900 text-white font-semibold transition-colors cursor-pointer"
+              data-metric="all"
+            >
+              All Metrics
+            </button>
+            <button
+              type="button"
+              class="country-metric-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              data-metric="downloads"
+            >
+              📥 Downloads
+            </button>
+            <button
+              type="button"
+              class="country-metric-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              data-metric="visits"
+            >
+              👁️ Page Visits
+            </button>
+            <button
+              type="button"
+              class="country-metric-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              data-metric="dev-clicks"
+            >
+              🎯 Dev Clicks
+            </button>
+            <button
+              type="button"
+              class="country-metric-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              data-metric="extlabs-clicks"
+            >
+              🛡️ ExtLabs Clicks
+            </button>
+          </div>
+        </div>
+
+        <!-- Country Visual Comparison: ApexCharts Bar + Full Table -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Left: ApexCharts Country Bar Chart -->
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-3 flex flex-col justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 tracking-tight" id="country-chart-title">
+                Top Countries by Volume
+              </h3>
+              <p class="text-xs text-slate-500" id="country-chart-desc">
+                Comparative ranking across top geographic markets.
+              </p>
+            </div>
+
+            <div id="country-apexchart" class="w-full min-h-[290px]"></div>
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Top Market: United States (38%)</span>
+              <span class="font-mono text-blue-600 font-semibold">Tier 1 Majority</span>
+            </div>
+          </div>
+
+          <!-- Right: Comprehensive Country Data Table -->
+          <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-500 font-medium bg-slate-50/50">
+                    <th scope="col" class="py-3 px-4 font-semibold">Country</th>
+                    <th scope="col" class="py-3 px-3 font-semibold col-metric col-downloads">📥 Downloads</th>
+                    <th scope="col" class="py-3 px-3 font-semibold col-metric col-visits">👁️ Page Visits</th>
+                    <th scope="col" class="py-3 px-3 font-semibold col-metric col-dev-clicks">🎯 Dev Clicks (83%)</th>
+                    <th scope="col" class="py-3 px-3 font-semibold col-metric col-extlabs-clicks">🛡️ ExtLabs Clicks (17%)</th>
+                    <th scope="col" class="py-3 px-4 text-right font-semibold">Avg eCPM</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100" id="country-table-body">
+                  {DETAILED_COUNTRY_METRICS.map((c) => (
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                      <!-- Country -->
+                      <td class="py-3.5 px-4">
+                        <div class="flex items-center gap-2">
+                          <span class="text-base">{c.flag}</span>
+                          <div>
+                            <span class="font-bold text-slate-900 block leading-tight">{c.countryName}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">{c.countryCode} • {c.tier}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <!-- 1. Downloads -->
+                      <td class="py-3.5 px-3 col-metric col-downloads font-mono">
+                        <span class="font-bold text-slate-800 block">{(c.downloads / 1000).toFixed(1)}K</span>
+                        <span class="text-[10px] text-blue-600">{c.downloadsPercentage.toFixed(1)}%</span>
+                      </td>
+
+                      <!-- 2. Page Visits -->
+                      <td class="py-3.5 px-3 col-metric col-visits font-mono">
+                        <span class="font-bold text-slate-800 block">{(c.pageVisits / 1000).toFixed(1)}K</span>
+                        <span class="text-[10px] text-emerald-600">{c.pageVisitsPercentage.toFixed(1)}%</span>
+                      </td>
+
+                      <!-- 3. Dev Clicks -->
+                      <td class="py-3.5 px-3 col-metric col-dev-clicks font-mono">
+                        <span class="font-bold text-slate-800 block">{(c.developerClicks / 1000).toFixed(1)}K</span>
+                        <span class="text-[10px] text-blue-600">{c.developerPercentage.toFixed(1)}%</span>
+                      </td>
+
+                      <!-- 4. ExtLabs Clicks -->
+                      <td class="py-3.5 px-3 col-metric col-extlabs-clicks font-mono">
+                        <span class="font-bold text-slate-800 block">{(c.extlabsClicks / 1000).toFixed(1)}K</span>
+                        <span class="text-[10px] text-indigo-600">{c.extlabsPercentage.toFixed(1)}%</span>
+                      </td>
+
+                      <!-- Avg eCPM -->
+                      <td class="py-3.5 px-4 text-right font-mono font-bold text-slate-800">
+                        {c.avgEcpm}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="py-2.5 px-4 bg-slate-50/50 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+              <span>Verified CDN edge network telemetry</span>
+              <span class="font-mono text-slate-400">Sample size: 794K events</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 4. Category Breakdown: Published Supply vs User Visits Demand -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 tracking-tight">
+              Categories: Published Inventory vs User Demand
+            </h2>
+            <p class="text-xs text-slate-500">
+              Detailed comparison between the number of extensions uploaded per category and actual user traffic volume.
+            </p>
+          </div>
+
+          <div class="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+            <Flame class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span>Most Visited: Developer Tools (38.8% Traffic)</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Chart 1: Donut Chart (User Visits by Category) -->
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 tracking-tight">
+                User Traffic Share by Category (%)
+              </h3>
+              <p class="text-xs text-slate-500">
+                Where users spend the most time browsing and viewing extensions.
+              </p>
+            </div>
+
+            <div id="category-donut-apexchart" class="w-full min-h-[260px]"></div>
+          </div>
+
+          <!-- Chart 2: Dual Bar Chart (Published Packages vs Downloads) -->
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 tracking-tight">
+                Published Packages vs Direct Downloads
+              </h3>
+              <p class="text-xs text-slate-500">
+                Supply of packages vs active consumer installation demand.
+              </p>
+            </div>
+
+            <div id="category-supply-apexchart" class="w-full min-h-[260px]"></div>
+          </div>
+
+        </div>
+
+        <!-- Category Supply & Demand Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 font-medium bg-slate-50/50">
+                  <th scope="col" class="py-3 px-4 sm:px-6 font-semibold">Category Name</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Published Inventory</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">User Visits (Demand)</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Direct Downloads</th>
+                  <th scope="col" class="py-3 px-4 sm:px-6 text-right font-semibold">Market Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {CATEGORY_SUPPLY_DEMAND.map((cat) => (
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <!-- Name -->
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-900">{cat.category}</span>
+                        {cat.isMostPopular && (
+                          <span class="text-[10px] font-semibold text-amber-600 font-mono">
+                            ★ Most Popular
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    <!-- Published Count -->
+                    <td class="py-3.5 px-4 font-mono font-medium text-slate-700">
+                      {cat.publishedCount} Packages ({cat.publishedPercentage.toFixed(1)}%)
+                    </td>
+
+                    <!-- User Visits -->
+                    <td class="py-3.5 px-4 font-mono">
+                      <span class="font-bold text-slate-900">{cat.pageVisitsFormatted}</span>
+                      <span class="text-slate-400 text-[10px] block">{cat.pageVisitsPercentage.toFixed(1)}% of visits</span>
+                    </td>
+
+                    <!-- Downloads -->
+                    <td class="py-3.5 px-4 font-mono">
+                      <span class="font-bold text-blue-600">{cat.downloadsFormatted}</span>
+                      <span class="text-slate-400 text-[10px] block">{cat.downloadsPercentage.toFixed(1)}% of downloads</span>
+                    </td>
+
+                    <!-- Status -->
+                    <td class="py-3.5 px-4 sm:px-6 text-right font-medium">
+                      {cat.isMostPopular ? (
+                        <span class="text-emerald-600 font-semibold text-xs">
+                          🔥 Highest Traffic Velocity
+                        </span>
+                      ) : cat.pageVisitsPercentage > 20 ? (
+                        <span class="text-blue-600 text-xs">
+                          High Growth Demand
+                        </span>
+                      ) : (
+                        <span class="text-slate-500 text-xs">
+                          Steady Engagement
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Minimalist Floating Admin Toast -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <div
+        id="stats-toast"
+        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl"
+      >
+        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span id="stats-toast-text">Action completed successfully.</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- ApexCharts Client-Side Initialization & Interactive Scripts -->
+    <script>
+      import ApexCharts from 'apexcharts';
+      import { 
+        DAILY_TELEMETRY_DATA, 
+        DETAILED_COUNTRY_METRICS, 
+        CATEGORY_SUPPLY_DEMAND 
+      } from '../../../data/statistics';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // 1. Auth Guard
+        const adminSession = localStorage.getItem('extlabs_admin_session');
+        if (!adminSession) {
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        // 2. Dates & Series Data for Chart 1
+        const dates = DAILY_TELEMETRY_DATA.map((d) => d.dayLabel);
+        const devClicksData = DAILY_TELEMETRY_DATA.map((d) => d.developerClicks);
+        const extlabsClicksData = DAILY_TELEMETRY_DATA.map((d) => d.extlabsClicks);
+        const visitsData = DAILY_TELEMETRY_DATA.map((d) => d.pageVisits);
+        const downloadsData = DAILY_TELEMETRY_DATA.map((d) => d.downloads);
+
+        let activeChartMode = 'monetization';
+
+        // 3. Main Telemetry ApexChart Configuration
+        const mainChartElement = document.getElementById('main-telemetry-apexchart');
+        let mainChart: ApexCharts | null = null;
+
+        if (mainChartElement) {
+          const mainChartOptions: ApexCharts.ApexOptions = {
+            series: [
+              {
+                name: 'Developer Ad Clicks (83.3%)',
+                data: devClicksData
+              },
+              {
+                name: 'ExtLabs Ad Clicks (16.7%)',
+                data: extlabsClicksData
+              }
+            ],
+            chart: {
+              type: 'area',
+              height: 290,
+              toolbar: { show: false },
+              zoom: { enabled: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#2563eb', '#6366f1'],
+            dataLabels: { enabled: false },
+            stroke: {
+              curve: 'smooth',
+              width: [2.5, 2]
+            },
+            fill: {
+              type: 'gradient',
+              gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.25,
+                opacityTo: 0.02,
+                stops: [0, 95, 100]
+              }
+            },
+            xaxis: {
+              categories: dates,
+              axisBorder: { show: false },
+              axisTicks: { show: false },
+              labels: {
+                style: {
+                  colors: '#94a3b8',
+                  fontSize: '11px',
+                  fontFamily: 'monospace'
+                }
+              }
+            },
+            yaxis: {
+              labels: {
+                style: {
+                  colors: '#94a3b8',
+                  fontSize: '11px',
+                  fontFamily: 'monospace'
+                },
+                formatter: (val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : `${val}`
+              }
+            },
+            grid: {
+              borderColor: '#f1f5f9',
+              strokeDashArray: 3,
+              xaxis: { lines: { show: false } },
+              yaxis: { lines: { show: true } }
+            },
+            legend: {
+              position: 'top',
+              horizontalAlign: 'right',
+              fontSize: '12px',
+              markers: { size: 6 }
+            },
+            tooltip: {
+              theme: 'light',
+              y: {
+                formatter: (val) => `${val.toLocaleString()} events`
+              }
+            }
+          };
+
+          mainChart = new ApexCharts(mainChartElement, mainChartOptions);
+          mainChart.render();
+        }
+
+        // Switch between Monetization and Traffic Mode
+        const modeMonetizationBtn = document.getElementById('mode-monetization-btn');
+        const modeTrafficBtn = document.getElementById('mode-traffic-btn');
+
+        if (modeMonetizationBtn && modeTrafficBtn && mainChart) {
+          modeMonetizationBtn.addEventListener('click', () => {
+            activeChartMode = 'monetization';
+            modeMonetizationBtn.className = 'chart-mode-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 font-semibold shadow-2xs transition-colors cursor-pointer';
+            modeTrafficBtn.className = 'chart-mode-btn px-3 py-1.5 rounded-lg hover:text-slate-900 transition-colors cursor-pointer text-slate-600';
+
+            mainChart?.updateOptions({
+              colors: ['#2563eb', '#6366f1'],
+              series: [
+                {
+                  name: 'Developer Ad Clicks (83.3%)',
+                  data: devClicksData
+                },
+                {
+                  name: 'ExtLabs Ad Clicks (16.7%)',
+                  data: extlabsClicksData
+                }
+              ]
+            });
+          });
+
+          modeTrafficBtn.addEventListener('click', () => {
+            activeChartMode = 'traffic';
+            modeTrafficBtn.className = 'chart-mode-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 font-semibold shadow-2xs transition-colors cursor-pointer';
+            modeMonetizationBtn.className = 'chart-mode-btn px-3 py-1.5 rounded-lg hover:text-slate-900 transition-colors cursor-pointer text-slate-600';
+
+            mainChart?.updateOptions({
+              colors: ['#0f172a', '#2563eb'],
+              series: [
+                {
+                  name: 'Page Visits (Traffic)',
+                  data: visitsData
+                },
+                {
+                  name: 'Package Downloads',
+                  data: downloadsData
+                }
+              ]
+            });
+          });
+        }
+
+        // 4. Country Horizontal Bar ApexChart
+        const countryChartEl = document.getElementById('country-apexchart');
+        let countryChart: ApexCharts | null = null;
+
+        const countryLabels = DETAILED_COUNTRY_METRICS.map((c) => `${c.flag} ${c.countryName}`);
+        const countryDownloads = DETAILED_COUNTRY_METRICS.map((c) => c.downloads);
+        const countryVisits = DETAILED_COUNTRY_METRICS.map((c) => c.pageVisits);
+        const countryDevClicks = DETAILED_COUNTRY_METRICS.map((c) => c.developerClicks);
+        const countryExtlabsClicks = DETAILED_COUNTRY_METRICS.map((c) => c.extlabsClicks);
+
+        if (countryChartEl) {
+          const countryChartOptions: ApexCharts.ApexOptions = {
+            series: [{
+              name: 'Downloads',
+              data: countryDownloads
+            }],
+            chart: {
+              type: 'bar',
+              height: 290,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            plotOptions: {
+              bar: {
+                borderRadius: 4,
+                horizontal: true,
+                barHeight: '60%'
+              }
+            },
+            colors: ['#2563eb'],
+            dataLabels: { enabled: false },
+            xaxis: {
+              categories: countryLabels,
+              labels: {
+                style: { colors: '#94a3b8', fontSize: '10px' },
+                formatter: (val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : `${val}`
+              }
+            },
+            yaxis: {
+              labels: {
+                style: { colors: '#334155', fontSize: '11px', fontWeight: 600 }
+              }
+            },
+            grid: {
+              borderColor: '#f1f5f9',
+              xaxis: { lines: { show: true } },
+              yaxis: { lines: { show: false } }
+            },
+            tooltip: {
+              theme: 'light',
+              y: {
+                formatter: (val) => `${val.toLocaleString()} events`
+              }
+            }
+          };
+
+          countryChart = new ApexCharts(countryChartEl, countryChartOptions);
+          countryChart.render();
+        }
+
+        // Country Dimension Buttons
+        const countryButtons = document.querySelectorAll('.country-metric-btn');
+        const countryTitle = document.getElementById('country-chart-title');
+        const countryDesc = document.getElementById('country-chart-desc');
+        const allMetricCols = document.querySelectorAll('.col-metric');
+
+        countryButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            countryButtons.forEach((b) => {
+              b.className = 'country-metric-btn px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer';
+            });
+            btn.className = 'country-metric-btn px-2.5 py-1 rounded-lg bg-slate-900 text-white font-semibold transition-colors cursor-pointer';
+
+            const metric = btn.getAttribute('data-metric');
+
+            if (metric === 'downloads') {
+              countryChart?.updateOptions({
+                colors: ['#2563eb'],
+                series: [{ name: 'Downloads', data: countryDownloads }]
+              });
+              if (countryTitle) countryTitle.textContent = 'Downloads by Country';
+              if (countryDesc) countryDesc.textContent = 'Package distribution volume across geographic markets.';
+            } else if (metric === 'visits') {
+              countryChart?.updateOptions({
+                colors: ['#10b981'],
+                series: [{ name: 'Page Visits', data: countryVisits }]
+              });
+              if (countryTitle) countryTitle.textContent = 'Page Visits by Country';
+              if (countryDesc) countryDesc.textContent = 'Storefront visitor volume across geographic markets.';
+            } else if (metric === 'dev-clicks') {
+              countryChart?.updateOptions({
+                colors: ['#2563eb'],
+                series: [{ name: 'Developer Ad Clicks', data: countryDevClicks }]
+              });
+              if (countryTitle) countryTitle.textContent = 'Developer Ad Clicks by Country';
+              if (countryDesc) countryDesc.textContent = 'Ad click volume generated for third-party publishers.';
+            } else if (metric === 'extlabs-clicks') {
+              countryChart?.updateOptions({
+                colors: ['#6366f1'],
+                series: [{ name: 'ExtLabs Ad Clicks', data: countryExtlabsClicks }]
+              });
+              if (countryTitle) countryTitle.textContent = 'ExtLabs Ad Clicks by Country';
+              if (countryDesc) countryDesc.textContent = 'Platform 5:1 allocation ad clicks across territories.';
+            } else {
+              countryChart?.updateOptions({
+                colors: ['#0f172a'],
+                series: [{ name: 'Total Page Visits', data: countryVisits }]
+              });
+              if (countryTitle) countryTitle.textContent = 'All Metrics Overview';
+              if (countryDesc) countryDesc.textContent = 'Comparative ranking across top geographic markets.';
+            }
+          });
+        });
+
+        // 5. Category Donut ApexChart (Traffic Share)
+        const donutChartEl = document.getElementById('category-donut-apexchart');
+        if (donutChartEl) {
+          const donutOptions: ApexCharts.ApexOptions = {
+            series: CATEGORY_SUPPLY_DEMAND.map((c) => c.pageVisits),
+            labels: CATEGORY_SUPPLY_DEMAND.map((c) => c.category),
+            chart: {
+              type: 'donut',
+              height: 260,
+              fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#2563eb', '#6366f1', '#10b981', '#f59e0b', '#64748b'],
+            legend: {
+              position: 'bottom',
+              fontSize: '11px',
+              fontFamily: 'Inter, sans-serif'
+            },
+            dataLabels: { enabled: false },
+            plotOptions: {
+              pie: {
+                donut: {
+                  size: '65%',
+                  labels: {
+                    show: true,
+                    total: {
+                      show: true,
+                      label: 'Most Visited',
+                      formatter: () => 'Developer Tools'
+                    }
+                  }
+                }
+              }
+            },
+            tooltip: {
+              y: {
+                formatter: (val) => `${val.toLocaleString()} visits`
+              }
+            }
+          };
+
+          const donutChart = new ApexCharts(donutChartEl, donutOptions);
+          donutChart.render();
+        }
+
+        // 6. Category Supply vs Demand Dual Column Chart
+        const supplyChartEl = document.getElementById('category-supply-apexchart');
+        if (supplyChartEl) {
+          const supplyOptions: ApexCharts.ApexOptions = {
+            series: [
+              {
+                name: 'Published Extensions',
+                data: CATEGORY_SUPPLY_DEMAND.map((c) => c.publishedCount)
+              },
+              {
+                name: 'Downloads (Thousands)',
+                data: CATEGORY_SUPPLY_DEMAND.map((c) => Math.round(c.downloads / 1000))
+              }
+            ],
+            chart: {
+              type: 'bar',
+              height: 260,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#0f172a', '#2563eb'],
+            plotOptions: {
+              bar: {
+                horizontal: false,
+                columnWidth: '50%',
+                borderRadius: 4
+              }
+            },
+            dataLabels: { enabled: false },
+            xaxis: {
+              categories: CATEGORY_SUPPLY_DEMAND.map((c) => c.category),
+              labels: {
+                style: { colors: '#94a3b8', fontSize: '10px' }
+              }
+            },
+            yaxis: {
+              labels: {
+                style: { colors: '#94a3b8', fontSize: '10px' }
+              }
+            },
+            grid: {
+              borderColor: '#f1f5f9'
+            },
+            legend: {
+              position: 'top',
+              horizontalAlign: 'right',
+              fontSize: '11px'
+            }
+          };
+
+          const supplyChart = new ApexCharts(supplyChartEl, supplyOptions);
+          supplyChart.render();
+        }
+
+        // 7. Toast & Refresh Button Mock
+        const toast = document.getElementById('stats-toast');
+        const toastText = document.getElementById('stats-toast-text');
+        let toastTimer: any = null;
+
+        function showToast(msg: string) {
+          if (toastTimer) clearTimeout(toastTimer);
+          if (toast && toastText) {
+            toastText.textContent = msg;
+            toast.classList.remove('hidden');
+            toastTimer = setTimeout(() => {
+              toast.classList.add('hidden');
+            }, 3000);
+          }
+        }
+
+        const refreshBtn = document.getElementById('refresh-stats-btn');
+        const refreshIcon = document.getElementById('stats-refresh-icon');
+        if (refreshBtn && refreshIcon) {
+          refreshBtn.addEventListener('click', () => {
+            refreshIcon.classList.add('animate-spin');
+            setTimeout(() => {
+              refreshIcon.classList.remove('animate-spin');
+              showToast('ApexCharts telemetry synchronized with CDN logs.');
+            }, 600);
+          });
+        }
+      });
+    </script>
+
+  </body>
+</html>

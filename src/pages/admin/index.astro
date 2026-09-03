@@ -28,7 +28,8 @@ import {
   Filter,
   Users,
   BarChart3,
-  Settings
+  Settings,
+  Box
 } from '@lucide/astro';
 
 // Pending submissions queue
@@ -188,27 +189,37 @@ const userReports = [
             <span class="text-[11px] font-mono font-semibold text-amber-600">25</span>
           </a>
 
-          <!-- 3. Developers -->
+          <!-- 3. Live Directory -->
           <a
-            href="/developers/dashboard"
+            href="/admin/directory"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Box class="w-4 h-4 text-slate-400" />
+            <span>Live Directory</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+          </a>
+
+          <!-- 4. Developers -->
+          <a
+            href="/admin/developers"
             class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
           >
             <Users class="w-4 h-4 text-slate-400" />
             <span>Developers</span>
           </a>
 
-          <!-- 4. Statistics -->
+          <!-- 5. Statistics -->
           <a
-            href="#"
+            href="/admin/statistics"
             class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
           >
             <BarChart3 class="w-4 h-4 text-slate-400" />
             <span>Statistics</span>
           </a>
 
-          <!-- 5. Reports -->
+          <!-- 6. Reports -->
           <a
-            href="#"
+            href="/admin/reports"
             class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
           >
             <AlertCircle class="w-4 h-4 text-slate-400" />
@@ -216,7 +227,7 @@ const userReports = [
             <span class="text-[11px] font-mono font-semibold text-rose-600">2</span>
           </a>
 
-          <!-- 6. Settings -->
+          <!-- 7. Settings -->
           <a
             href="/developers/settings"
             class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
@@ -232,7 +243,7 @@ const userReports = [
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-bold text-slate-900 tracking-tight">Platform Telemetry Overview</h2>
           <a
-            href="#"
+            href="/admin/statistics"
             class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1"
           >
             <span>View all analytics & charts</span>
@@ -284,7 +295,7 @@ const userReports = [
               </span>
             </div>
             <a
-              href="#live-table-body"
+              href="/admin/directory"
               class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 pt-2"
             >
               <span>Manage directory</span>
@@ -309,7 +320,7 @@ const userReports = [
               </span>
             </div>
             <a
-              href="#"
+              href="/admin/reports"
               class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 pt-2"
             >
               <span>View open reports</span>
@@ -334,7 +345,7 @@ const userReports = [
               </span>
             </div>
             <a
-              href="#"
+              href="/admin/statistics"
               class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 pt-2"
             >
               <span>View telemetry charts</span>
@@ -485,7 +496,7 @@ const userReports = [
           <div class="flex items-center gap-3 w-full sm:w-auto">
             <!-- View all link -->
             <a
-              href="#"
+              href="/admin/directory"
               class="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 shrink-0"
             >
               <span>View all listings ({EXTENSIONS.length})</span>

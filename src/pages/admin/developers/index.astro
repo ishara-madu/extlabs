@@ -1,14 +1,13 @@
 ---
-// src/pages/admin/pending-review/index.astro
+// src/pages/admin/developers/index.astro
 import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
-import { PENDING_SUBMISSIONS } from "../../../data/pendingSubmissions";
+import { DEVELOPERS_DATA } from "../../../data/developers";
 import { EXTENSIONS } from "../../../data/extensions";
 import { 
   ShieldCheck, 
   Check, 
-  AlertTriangle, 
   Search, 
   ArrowRight, 
   RefreshCw, 
@@ -21,13 +20,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Filter,
   Box
 } from '@lucide/astro';
 
 const ITEMS_PER_PAGE = 20;
-const totalSubmissions = PENDING_SUBMISSIONS.length;
-const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
+const totalDevelopers = DEVELOPERS_DATA.length;
+const totalPages = Math.max(1, Math.ceil(totalDevelopers / ITEMS_PER_PAGE));
+const verifiedCount = DEVELOPERS_DATA.filter(d => d.status === 'verified').length;
+const activeCount = DEVELOPERS_DATA.filter(d => d.status === 'active').length;
 ---
 
 <html lang="en" data-theme="light">
@@ -36,7 +36,7 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pending Review Queue — ExtLabs Admin</title>
+    <title>Publisher & Developer Directory — ExtLabs Admin</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,36 +56,36 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
         <div class="space-y-1">
           <div class="inline-flex items-center gap-2">
             <span class="text-xs font-semibold text-blue-600 font-mono">
-              Staff Portal • Review Queue
+              Staff Portal • Production
             </span>
             <span class="text-xs text-slate-400 font-medium">
-              Human Moderation Workstation
+              Publisher Directory
             </span>
           </div>
 
           <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Pending Review Queue
+            Registered Publishers & Developers
           </h1>
 
           <p class="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
-            Review and verify extension packages submitted by third-party publishers before approving them for directory release.
+            Manage verified publisher accounts, audit organization identities, inspect active package distributions, and track developer performance metrics.
           </p>
         </div>
 
         <!-- Quick Telemetry & Status -->
         <div class="flex items-center gap-3 shrink-0">
           <div class="text-right hidden sm:block">
-            <span class="text-xs font-semibold text-slate-900 block font-mono">{totalSubmissions} Packages</span>
-            <span class="text-[11px] text-amber-600 font-medium">Awaiting Action</span>
+            <span class="text-xs font-semibold text-slate-900 block font-mono">{totalDevelopers} Registered</span>
+            <span class="text-[11px] text-blue-600 font-medium">{verifiedCount} Verified Partners</span>
           </div>
           <button
             type="button"
-            id="refresh-queue-btn"
+            id="refresh-devs-btn"
             class="p-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 hover:border-slate-300 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
-            title="Sync Queue"
-            aria-label="Sync Queue"
+            title="Sync Developers"
+            aria-label="Sync Developers"
           >
-            <RefreshCw class="w-4 h-4 text-slate-500" id="queue-refresh-icon" />
+            <RefreshCw class="w-4 h-4 text-slate-500" id="devs-refresh-icon" />
           </button>
         </div>
       </div>
@@ -102,14 +102,14 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
             <span>Moderation Hub</span>
           </a>
 
-          <!-- 2. Pending Review (Active) -->
+          <!-- 2. Pending Review -->
           <a
             href="/admin/pending-review"
-            class="flex items-center gap-2 py-3 px-1 border-b-2 border-slate-900 text-slate-900 font-semibold shrink-0"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
           >
-            <Clock class="w-4 h-4 text-slate-900" />
+            <Clock class="w-4 h-4 text-slate-400" />
             <span>Pending Review</span>
-            <span class="text-[11px] font-mono font-semibold text-amber-600">{totalSubmissions}</span>
+            <span class="text-[11px] font-mono font-semibold text-amber-600">25</span>
           </a>
 
           <!-- 3. Live Directory -->
@@ -122,13 +122,14 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
             <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
           </a>
 
-          <!-- 4. Developers -->
+          <!-- 4. Developers (Active) -->
           <a
             href="/admin/developers"
-            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-slate-900 text-slate-900 font-semibold shrink-0"
           >
-            <Users class="w-4 h-4 text-slate-400" />
+            <Users class="w-4 h-4 text-slate-900" />
             <span>Developers</span>
+            <span class="text-[11px] font-mono font-semibold text-blue-600">{totalDevelopers}</span>
           </a>
 
           <!-- 5. Statistics -->
@@ -150,7 +151,7 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
             <span class="text-[11px] font-mono font-semibold text-rose-600">2</span>
           </a>
 
-          <!-- 6. Settings -->
+          <!-- 7. Settings -->
           <a
             href="/developers/settings"
             class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
@@ -170,23 +171,23 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
             class="filter-tab-btn font-semibold text-slate-900 underline underline-offset-4 cursor-pointer"
             data-filter="all"
           >
-            All ({totalSubmissions})
+            All ({totalDevelopers})
           </button>
           <span class="text-slate-300">•</span>
           <button
             type="button"
             class="filter-tab-btn text-slate-500 hover:text-slate-900 cursor-pointer"
-            data-filter="clean"
+            data-filter="verified"
           >
-            Passed Scan ({PENDING_SUBMISSIONS.filter(s => s.auditStatus === 'clean').length})
+            Verified ({verifiedCount})
           </button>
           <span class="text-slate-300">•</span>
           <button
             type="button"
             class="filter-tab-btn text-slate-500 hover:text-slate-900 cursor-pointer"
-            data-filter="warning"
+            data-filter="active"
           >
-            Requires Triage ({PENDING_SUBMISSIONS.filter(s => s.auditStatus !== 'clean').length})
+            Active ({activeCount})
           </button>
         </div>
 
@@ -197,120 +198,121 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
           </div>
           <input
             type="text"
-            id="queue-search-input"
-            placeholder="Search extension or developer..."
+            id="devs-search-input"
+            placeholder="Search developer or @handle..."
             class="w-full pl-8 pr-3 py-1.5 text-xs bg-white text-slate-900 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 placeholder:text-slate-400"
           />
         </div>
       </div>
 
-      <!-- Pending Submissions Data Table Container (Developer Console Style) -->
+      <!-- Developers Data Table Container -->
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
+          <table class="w-full text-left text-xs border-collapse">
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 font-medium bg-slate-50/50">
-                <th scope="col" class="py-3 px-4 font-semibold">Extension</th>
-                <th scope="col" class="py-3 px-4 font-semibold">Publisher</th>
-                <th scope="col" class="py-3 px-4 font-semibold">Category</th>
-                <th scope="col" class="py-3 px-4 font-semibold">Security Audit</th>
-                <th scope="col" class="py-3 px-4 font-semibold">Submitted</th>
-                <th scope="col" class="py-3 px-4 text-right font-semibold">Review & Actions</th>
+                <th scope="col" class="py-3 px-4 sm:px-6 font-semibold">Developer / Publisher</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Active Extensions</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Total Installs</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Primary Focus</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Account State</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Member Since</th>
+                <th scope="col" class="py-3 px-4 sm:px-6 text-right font-semibold">Action</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100" id="pending-table-body">
-              {PENDING_SUBMISSIONS.map((item, index) => {
+            <tbody class="divide-y divide-slate-100" id="developers-table-body">
+              {DEVELOPERS_DATA.map((dev, index) => {
                 const pageNumber = Math.floor(index / ITEMS_PER_PAGE) + 1;
                 return (
                   <tr 
-                    class={`pending-item-row hover:bg-slate-50/80 transition-colors group ${pageNumber > 1 ? 'hidden' : ''}`}
+                    class={`developer-item-row hover:bg-slate-50/70 transition-colors ${pageNumber > 1 ? 'hidden' : ''}`}
                     data-page={pageNumber}
-                    data-status={item.auditStatus}
-                    data-name={item.name.toLowerCase()}
-                    data-dev={item.developer.toLowerCase()}
-                    id={`queue-item-${item.id}`}
+                    data-name={dev.name.toLowerCase()}
+                    data-username={dev.username.toLowerCase()}
+                    data-status={dev.status}
+                    id={`dev-row-${dev.id}`}
                   >
-                    <!-- Extension Info -->
-                    <td class="py-3.5 px-4">
+                    <!-- Developer Info -->
+                    <td class="py-3.5 px-4 sm:px-6">
                       <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 shrink-0">
-                          {item.name.charAt(0)}
-                        </div>
-                        <div class="space-y-0.5">
-                          <a
-                            href={`/extension/${item.id}`}
-                            target="_blank"
-                            class="font-semibold text-slate-900 hover:text-blue-600 transition-colors block text-xs"
-                          >
-                            {item.name}
-                          </a>
-                          <span class="font-mono text-[11px] text-slate-400 block">
-                            {item.version} • {item.packageSize}
-                          </span>
+                        <img 
+                          src={dev.avatar} 
+                          alt={dev.name} 
+                          class="w-8 h-8 rounded-full border border-slate-200 object-cover shrink-0" 
+                        />
+                        <div>
+                          <div class="font-bold text-slate-900 leading-tight">
+                            {dev.name}
+                          </div>
+                          <div class="flex items-center gap-1 text-[11px] text-slate-400 font-mono">
+                            <span>@{dev.username}</span>
+                            <span>•</span>
+                            <a
+                              href={dev.githubUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-blue-600 hover:underline inline-flex items-center gap-0.5"
+                            >
+                              <span>GitHub</span>
+                              <ExternalLink class="w-2.5 h-2.5" />
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </td>
 
-                    <!-- Publisher -->
-                    <td class="py-3.5 px-4 font-mono text-slate-600">
-                      @{item.developer}
+                    <!-- Published Extensions Count -->
+                    <td class="py-3.5 px-4 font-mono font-medium text-slate-700">
+                      {dev.extensionsCount} {dev.extensionsCount === 1 ? 'Package' : 'Packages'}
                     </td>
 
-                    <!-- Category -->
+                    <!-- Total Installs -->
+                    <td class="py-3.5 px-4 font-mono font-medium text-slate-700">
+                      {dev.totalDownloads}
+                    </td>
+
+                    <!-- Primary Focus -->
                     <td class="py-3.5 px-4 text-slate-600 font-medium">
-                      {item.category}
+                      {dev.primaryCategory}
                     </td>
 
-                    <!-- Security Audit Result -->
+                    <!-- Account State (Strictly typographic, no pill borders per AGENTS.md) -->
                     <td class="py-3.5 px-4">
-                      {item.auditStatus === 'clean' ? (
-                        <div class="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-                          <ShieldCheck class="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span>{item.auditSummary}</span>
-                        </div>
-                      ) : (
-                        <div class="inline-flex items-center gap-1.5 text-xs text-amber-600 font-medium">
-                          <AlertTriangle class="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                          <span>{item.auditSummary}</span>
-                        </div>
+                      {dev.status === 'verified' && (
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600">
+                          <BadgeCheck class="w-3.5 h-3.5 text-blue-600" />
+                          <span>Verified Partner</span>
+                        </span>
+                      )}
+                      {dev.status === 'active' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          <span>Active Publisher</span>
+                        </span>
+                      )}
+                      {dev.status === 'pending' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          <span>Under Review</span>
+                        </span>
                       )}
                     </td>
 
-                    <!-- Submitted Time -->
-                    <td class="py-3.5 px-4 text-slate-500 whitespace-nowrap text-xs">
-                      {item.submittedAt}
+                    <!-- Member Since -->
+                    <td class="py-3.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+                      {dev.joinedDate}
                     </td>
 
-                    <!-- Actions & Inspect Link -->
-                    <td class="py-3.5 px-4 text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          data-action="approve"
-                          data-id={item.id}
-                          data-name={item.name}
-                          class="queue-action-btn px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer shadow-2xs"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          type="button"
-                          data-action="reject"
-                          data-id={item.id}
-                          data-name={item.name}
-                          class="queue-action-btn px-2.5 py-1 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[11px] font-medium rounded-lg border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer"
-                        >
-                          Reject
-                        </button>
-                        <a
-                          href={`/extension/${item.id}`}
-                          target="_blank"
-                          class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer inline-flex items-center gap-1"
-                          title="Inspect full package & manifest details"
-                        >
-                          <ArrowRight class="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
-                        </a>
-                      </div>
+                    <!-- Action Button (Button only, inner page deliberately omitted per user instructions) -->
+                    <td class="py-3.5 px-4 sm:px-6 text-right">
+                      <a
+                        href="#"
+                        class="px-2.5 py-1 bg-white hover:bg-slate-50 text-blue-600 text-[11px] font-semibold rounded-lg border border-slate-200 hover:border-blue-200 transition-colors inline-flex items-center gap-1 shadow-2xs cursor-pointer"
+                        title={`Manage ${dev.name}`}
+                      >
+                        <span>Manage</span>
+                        <ArrowRight class="w-3 h-3" />
+                      </a>
                     </td>
                   </tr>
                 );
@@ -319,10 +321,10 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
           </table>
         </div>
 
-        <!-- Minimalist Pagination Bar (HyperUI / Vanilla) -->
+        <!-- Minimalist Pagination Bar -->
         <div class="py-3 px-4 bg-slate-50/50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
           <div id="pagination-info" class="font-normal">
-            Showing <strong class="font-semibold text-slate-900" id="page-range-start">1</strong> to <strong class="font-semibold text-slate-900" id="page-range-end">20</strong> of <strong class="font-semibold text-slate-900">{totalSubmissions}</strong> submissions
+            Showing <strong class="font-semibold text-slate-900" id="page-range-start">1</strong> to <strong class="font-semibold text-slate-900" id="page-range-end">{Math.min(ITEMS_PER_PAGE, totalDevelopers)}</strong> of <strong class="font-semibold text-slate-900">{totalDevelopers}</strong> publishers
           </div>
 
           <div class="inline-flex items-center gap-1">
@@ -355,6 +357,7 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
             <button
               type="button"
               id="next-page-btn"
+              disabled={totalPages <= 1}
               class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
             >
               <span>Next</span>
@@ -370,11 +373,11 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
     <!-- Minimalist Floating Admin Toast -->
     <div class="fixed bottom-6 right-6 z-50">
       <div
-        id="queue-toast"
+        id="devs-toast"
         class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl"
       >
         <Check class="w-4 h-4 text-emerald-400 shrink-0" />
-        <span id="queue-toast-text">Action completed successfully.</span>
+        <span id="devs-toast-text">Action completed successfully.</span>
       </div>
     </div>
 
@@ -394,20 +397,18 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
         // 2. State & Elements
         let currentPage = 1;
         const itemsPerPage = 20;
-        const totalItems = 25;
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        const rows = Array.from(document.querySelectorAll('.pending-item-row'));
+        const rows = Array.from(document.querySelectorAll('.developer-item-row'));
         const prevBtn = document.getElementById('prev-page-btn');
         const nextBtn = document.getElementById('next-page-btn');
         const pageBtns = document.querySelectorAll('.page-number-btn');
         const rangeStart = document.getElementById('page-range-start');
         const rangeEnd = document.getElementById('page-range-end');
-        const searchInput = document.getElementById('queue-search-input');
+        const searchInput = document.getElementById('devs-search-input');
         const filterBtns = document.querySelectorAll('.filter-tab-btn');
 
-        const toast = document.getElementById('queue-toast');
-        const toastText = document.getElementById('queue-toast-text');
+        const toast = document.getElementById('devs-toast');
+        const toastText = document.getElementById('devs-toast-text');
         let toastTimer = null;
 
         function showToast(msg) {
@@ -424,6 +425,10 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
         // 3. Pagination Logic
         function updatePagination() {
           const visibleRows = rows.filter((r) => r.dataset.matched !== 'false');
+          const totalPages = Math.max(1, Math.ceil(visibleRows.length / itemsPerPage));
+          
+          if (currentPage > totalPages) currentPage = totalPages;
+          
           const startIdx = (currentPage - 1) * itemsPerPage;
           const endIdx = startIdx + itemsPerPage;
 
@@ -467,10 +472,8 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
 
         if (nextBtn) {
           nextBtn.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-              currentPage++;
-              updatePagination();
-            }
+            currentPage++;
+            updatePagination();
           });
         }
 
@@ -483,23 +486,23 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
         });
 
         // 4. Search & Filter
-        let activeStatus = 'all';
+        let activeFilter = 'all';
 
         function applyFilters() {
           const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
           rows.forEach((row) => {
             const name = row.getAttribute('data-name') || '';
-            const dev = row.getAttribute('data-dev') || '';
+            const username = row.getAttribute('data-username') || '';
             const status = row.getAttribute('data-status') || '';
 
-            const matchesQuery = !query || name.includes(query) || dev.includes(query);
-            const matchesStatus =
-              activeStatus === 'all' ||
-              (activeStatus === 'clean' && status === 'clean') ||
-              (activeStatus === 'warning' && status !== 'clean');
+            const matchesQuery = !query || name.includes(query) || username.includes(query);
+            const matchesFilter =
+              activeFilter === 'all' ||
+              (activeFilter === 'verified' && status === 'verified') ||
+              (activeFilter === 'active' && status === 'active');
 
-            if (matchesQuery && matchesStatus) {
+            if (matchesQuery && matchesFilter) {
               row.dataset.matched = 'true';
             } else {
               row.dataset.matched = 'false';
@@ -521,56 +524,20 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
               b.className = 'filter-tab-btn text-slate-500 hover:text-slate-900 cursor-pointer';
             });
             btn.className = 'filter-tab-btn font-semibold text-slate-900 underline underline-offset-4 cursor-pointer';
-            activeStatus = btn.getAttribute('data-filter') || 'all';
+            activeFilter = btn.getAttribute('data-filter') || 'all';
             applyFilters();
           });
         });
 
-        // 5. Action Buttons (Approve / Reject)
-        const actionBtns = document.querySelectorAll('.queue-action-btn');
-        actionBtns.forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const action = btn.getAttribute('data-action');
-            const name = btn.getAttribute('data-name');
-            const row = btn.closest('tr');
-
-            if (action === 'approve') {
-              if (row) {
-                const actionCell = row.querySelector('td:last-child');
-                if (actionCell) {
-                  actionCell.innerHTML = `
-                    <span class="text-xs font-semibold text-emerald-600">
-                      Approved & Published
-                    </span>
-                  `;
-                }
-              }
-              showToast(`Approved "${name}". Extension published to directory.`);
-            } else if (action === 'reject') {
-              if (row) {
-                const actionCell = row.querySelector('td:last-child');
-                if (actionCell) {
-                  actionCell.innerHTML = `
-                    <span class="text-xs font-semibold text-rose-600">
-                      Rejected
-                    </span>
-                  `;
-                }
-              }
-              showToast(`Rejected "${name}". Notification sent to developer.`);
-            }
-          });
-        });
-
-        // 6. Refresh Button Mock
-        const refreshBtn = document.getElementById('refresh-queue-btn');
-        const refreshIcon = document.getElementById('queue-refresh-icon');
+        // 5. Refresh Button Mock
+        const refreshBtn = document.getElementById('refresh-devs-btn');
+        const refreshIcon = document.getElementById('devs-refresh-icon');
         if (refreshBtn && refreshIcon) {
           refreshBtn.addEventListener('click', () => {
             refreshIcon.classList.add('animate-spin');
             setTimeout(() => {
               refreshIcon.classList.remove('animate-spin');
-              showToast('Review queue synchronized with latest developer uploads.');
+              showToast('Publisher directory synchronized with organization records.');
             }, 600);
           });
         }

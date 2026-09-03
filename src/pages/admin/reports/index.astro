@@ -1,0 +1,751 @@
+---
+// src/pages/admin/reports/index.astro
+import "../../../styles/global.css";
+import AdminNavbar from "../../../components/AdminNavbar.astro";
+import Footer from "../../../components/Footer.astro";
+import { EXTENSIONS } from "../../../data/extensions";
+import { DEVELOPERS_DATA } from "../../../data/developers";
+import { 
+  ABUSE_REPORTS_DATA, 
+  OPEN_REPORTS_COUNT, 
+  INVESTIGATING_REPORTS_COUNT, 
+  RESOLVED_REPORTS_COUNT 
+} from "../../../data/reports";
+import { 
+  ShieldCheck, 
+  Check, 
+  Search, 
+  ArrowRight, 
+  RefreshCw, 
+  ExternalLink, 
+  AlertCircle,
+  AlertTriangle,
+  Users,
+  BarChart3,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Box,
+  ShieldAlert,
+  CheckCircle2,
+  XCircle,
+  UserCheck
+} from '@lucide/astro';
+
+const ITEMS_PER_PAGE = 20;
+const totalReports = ABUSE_REPORTS_DATA.length;
+const totalPages = Math.max(1, Math.ceil(totalReports / ITEMS_PER_PAGE));
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Abuse & Incident Reports — ExtLabs Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Admin Topbar -->
+    <AdminNavbar />
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-8">
+      
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-6">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-xs font-semibold text-rose-600 font-mono">
+              Staff Portal • Trust & Safety
+            </span>
+            <span class="text-xs text-slate-400 font-medium">
+              Quality & Security Incidents
+            </span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Abuse & Incident Reports
+          </h1>
+
+          <p class="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Audit user-reported defects, policy violations, automated permission escalations, and deceptive advertisement incidents across published extensions.
+          </p>
+        </div>
+
+        <!-- Quick Telemetry & Status -->
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="text-right hidden sm:block">
+            <span class="text-xs font-semibold text-slate-900 block font-mono">{OPEN_REPORTS_COUNT} Open Incidents</span>
+            <span class="text-[11px] text-rose-600 font-medium">{INVESTIGATING_REPORTS_COUNT} Under Triage</span>
+          </div>
+          <button
+            type="button"
+            id="refresh-reports-btn"
+            class="p-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 hover:border-slate-300 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+            title="Sync Reports"
+            aria-label="Sync Reports"
+          >
+            <RefreshCw class="w-4 h-4 text-slate-500" id="reports-refresh-icon" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Navigation Submenu / Tabs -->
+      <div class="border-b border-slate-200 -mt-4">
+        <nav class="flex items-center gap-1 sm:gap-6 overflow-x-auto no-scrollbar text-xs sm:text-sm font-medium">
+          <!-- 1. Moderation Hub -->
+          <a
+            href="/admin"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <ShieldCheck class="w-4 h-4 text-slate-400" />
+            <span>Moderation Hub</span>
+          </a>
+
+          <!-- 2. Pending Review -->
+          <a
+            href="/admin/pending-review"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Clock class="w-4 h-4 text-slate-400" />
+            <span>Pending Review</span>
+            <span class="text-[11px] font-mono font-semibold text-amber-600">25</span>
+          </a>
+
+          <!-- 3. Live Directory -->
+          <a
+            href="/admin/directory"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Box class="w-4 h-4 text-slate-400" />
+            <span>Live Directory</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+          </a>
+
+          <!-- 4. Developers -->
+          <a
+            href="/admin/developers"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Users class="w-4 h-4 text-slate-400" />
+            <span>Developers</span>
+            <span class="text-[11px] font-mono font-semibold text-blue-600">{DEVELOPERS_DATA.length}</span>
+          </a>
+
+          <!-- 5. Statistics -->
+          <a
+            href="/admin/statistics"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <BarChart3 class="w-4 h-4 text-slate-400" />
+            <span>Statistics</span>
+          </a>
+
+          <!-- 6. Reports (Active) -->
+          <a
+            href="/admin/reports"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-slate-900 text-slate-900 font-semibold shrink-0"
+          >
+            <AlertCircle class="w-4 h-4 text-slate-900" />
+            <span>Reports</span>
+            <span class="text-[11px] font-mono font-semibold text-rose-600">{OPEN_REPORTS_COUNT}</span>
+          </a>
+
+          <!-- 7. Settings -->
+          <a
+            href="/developers/settings"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Settings class="w-4 h-4 text-slate-400" />
+            <span>Settings</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- 1. Incident Overview KPI Cards (#f0f4f9 Minimalist Cards) -->
+      <section class="space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 tracking-tight">Incident Severity & Triage Overview</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- Metric 1: Open Incidents -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Open Incidents</span>
+                <span class="text-xs font-semibold text-rose-600 font-mono">Requires Action</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {OPEN_REPORTS_COUNT}
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                1 crash defect • 1 ad redirect triage
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Priority Level</span>
+              <span class="font-mono font-semibold text-rose-600">High Severity</span>
+            </div>
+          </div>
+
+          <!-- Metric 2: Investigating -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Under Triage</span>
+                <span class="text-xs font-semibold text-amber-600 font-mono">In Progress</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {INVESTIGATING_REPORTS_COUNT}
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Static host permission & asset check
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Assigned Team</span>
+              <span class="font-mono font-semibold text-slate-700">Trust & Safety</span>
+            </div>
+          </div>
+
+          <!-- Metric 3: Resolved -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Cleared & Resolved</span>
+                <span class="text-xs font-semibold text-emerald-600 font-mono">92% Pass Rate</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {RESOLVED_REPORTS_COUNT}
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Security audits verified & closed
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">False Positive Ratio</span>
+              <span class="font-mono font-semibold text-slate-700">12.5% Dismissed</span>
+            </div>
+          </div>
+
+          <!-- Metric 4: Resolution Velocity -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Avg Resolution Time</span>
+                <span class="text-xs font-semibold text-blue-600 font-mono">Within SLA</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                4.2h
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Maximum response target: 24.0h
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Security SLA</span>
+              <span class="font-mono font-semibold text-emerald-600">100% Compliant</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 2. Search & Filter Controls -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-slate-500 font-medium">Filter Status:</span>
+          <button
+            type="button"
+            class="filter-tab-btn font-semibold text-slate-900 underline underline-offset-4 cursor-pointer"
+            data-filter="all"
+          >
+            All Reports ({totalReports})
+          </button>
+          <span class="text-slate-300">•</span>
+          <button
+            type="button"
+            class="filter-tab-btn text-slate-500 hover:text-slate-900 cursor-pointer"
+            data-filter="open"
+          >
+            Open ({OPEN_REPORTS_COUNT})
+          </button>
+          <span class="text-slate-300">•</span>
+          <button
+            type="button"
+            class="filter-tab-btn text-slate-500 hover:text-slate-900 cursor-pointer"
+            data-filter="investigating"
+          >
+            Under Triage ({INVESTIGATING_REPORTS_COUNT})
+          </button>
+          <span class="text-slate-300">•</span>
+          <button
+            type="button"
+            class="filter-tab-btn text-slate-500 hover:text-slate-900 cursor-pointer"
+            data-filter="resolved"
+          >
+            Resolved ({RESOLVED_REPORTS_COUNT})
+          </button>
+        </div>
+
+        <!-- Search Box -->
+        <div class="relative w-full sm:w-72">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Search class="w-3.5 h-3.5" />
+          </div>
+          <input
+            type="text"
+            id="reports-search-input"
+            placeholder="Search extension, issue or reporter..."
+            class="w-full pl-8 pr-3 py-1.5 text-xs bg-white text-slate-900 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 placeholder:text-slate-400"
+          />
+        </div>
+      </div>
+
+      <!-- 3. Incident Reports Data Table -->
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 font-medium bg-slate-50/50">
+                <th scope="col" class="py-3 px-4 sm:px-6 font-semibold">Reported Extension</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Incident Details</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Severity</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Reporter Type</th>
+                <th scope="col" class="py-3 px-4 font-semibold">Status</th>
+                <th scope="col" class="py-3 px-4 sm:px-6 text-right font-semibold">Resolution</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="reports-table-body">
+              {ABUSE_REPORTS_DATA.map((rep, index) => {
+                const pageNumber = Math.floor(index / ITEMS_PER_PAGE) + 1;
+                return (
+                  <tr 
+                    class={`report-item-row hover:bg-slate-50/70 transition-colors ${pageNumber > 1 ? 'hidden' : ''}`}
+                    data-page={pageNumber}
+                    data-status={rep.status}
+                    data-name={rep.extensionName.toLowerCase()}
+                    data-title={rep.title.toLowerCase()}
+                    data-reporter={rep.reporterIdentifier.toLowerCase()}
+                    id={`report-row-${rep.id}`}
+                  >
+                    <!-- Reported Extension Info -->
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 shrink-0">
+                          {rep.extensionName.charAt(0)}
+                        </div>
+                        <div>
+                          <a
+                            href={`/extension/${rep.extensionId}`}
+                            target="_blank"
+                            class="font-bold text-slate-900 hover:text-blue-600 transition-colors inline-flex items-center gap-1 leading-tight"
+                          >
+                            <span>{rep.extensionName}</span>
+                            <ExternalLink class="w-2.5 h-2.5 text-slate-400" />
+                          </a>
+                          <span class="text-[11px] text-slate-400 font-mono block">
+                            {rep.extensionVersion} • @{rep.developer}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Incident Details -->
+                    <td class="py-3.5 px-4 max-w-xs sm:max-w-md">
+                      <div class="space-y-0.5">
+                        <div class="font-bold text-slate-900 text-xs">
+                          {rep.title}
+                        </div>
+                        <p class="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                          {rep.description}
+                        </p>
+                        <span class="text-[10px] text-slate-400 font-mono block pt-0.5">
+                          Category: {rep.type}
+                        </span>
+                      </div>
+                    </td>
+
+                    <!-- Severity (Pure text with subtle dot indicator per AGENTS.md) -->
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      {rep.severity === 'critical' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                          <span>Critical</span>
+                        </span>
+                      )}
+                      {rep.severity === 'high' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                          <span>High</span>
+                        </span>
+                      )}
+                      {rep.severity === 'medium' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          <span>Medium</span>
+                        </span>
+                      )}
+                      {rep.severity === 'low' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                          <span>Low</span>
+                        </span>
+                      )}
+                    </td>
+
+                    <!-- Reporter Type & Date -->
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <span class="text-slate-800 font-medium block">{rep.reporterType}</span>
+                      <span class="text-[11px] text-slate-400 font-mono block">
+                        {rep.reportedAt}
+                      </span>
+                    </td>
+
+                    <!-- Status (Pure text, no pill border) -->
+                    <td class="py-3.5 px-4 status-cell whitespace-nowrap">
+                      {rep.status === 'open' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                          <span>Open</span>
+                        </span>
+                      )}
+                      {rep.status === 'investigating' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          <span>In Triage</span>
+                        </span>
+                      )}
+                      {rep.status === 'resolved' && (
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                          <CheckCircle2 class="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Resolved</span>
+                        </span>
+                      )}
+                      {rep.status === 'dismissed' && (
+                        <span class="text-xs text-slate-400">
+                          Dismissed
+                        </span>
+                      )}
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
+                      <div class="flex items-center justify-end gap-1.5">
+                        {rep.status !== 'resolved' && (
+                          <button
+                            type="button"
+                            class="resolve-btn px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer shadow-2xs"
+                            data-id={rep.id}
+                            data-name={rep.extensionName}
+                          >
+                            Resolve
+                          </button>
+                        )}
+                        {rep.status !== 'dismissed' && rep.status !== 'resolved' && (
+                          <button
+                            type="button"
+                            class="dismiss-btn px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 text-[11px] font-medium rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
+                            data-id={rep.id}
+                            data-name={rep.extensionName}
+                          >
+                            Dismiss
+                          </button>
+                        )}
+                        <a
+                          href={`/extension/${rep.extensionId}`}
+                          target="_blank"
+                          class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer inline-flex items-center"
+                          title="Inspect extension manifest & code"
+                        >
+                          <ArrowRight class="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Minimalist Pagination Bar -->
+        <div class="py-3 px-4 bg-slate-50/50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+          <div id="pagination-info" class="font-normal">
+            Showing <strong class="font-semibold text-slate-900" id="page-range-start">1</strong> to <strong class="font-semibold text-slate-900" id="page-range-end">{Math.min(ITEMS_PER_PAGE, totalReports)}</strong> of <strong class="font-semibold text-slate-900">{totalReports}</strong> incident reports
+          </div>
+
+          <div class="inline-flex items-center gap-1">
+            <button
+              type="button"
+              id="prev-page-btn"
+              disabled
+              class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              <ChevronLeft class="w-3.5 h-3.5" />
+              <span>Previous</span>
+            </button>
+
+            <div class="flex items-center gap-1" id="pagination-page-numbers">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  type="button"
+                  data-page-target={pageNum}
+                  class={`page-number-btn px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                    pageNum === 1
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              id="next-page-btn"
+              disabled={totalPages <= 1}
+              class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+            >
+              <span>Next</span>
+              <ChevronRight class="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Minimalist Floating Admin Toast -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <div
+        id="reports-toast"
+        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl"
+      >
+        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span id="reports-toast-text">Incident resolved successfully.</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Interactive Script -->
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', () => {
+        // 1. Auth Guard
+        const adminSession = localStorage.getItem('extlabs_admin_session');
+        if (!adminSession) {
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        // 2. State & Elements
+        let currentPage = 1;
+        const itemsPerPage = 20;
+
+        const rows = Array.from(document.querySelectorAll('.report-item-row'));
+        const prevBtn = document.getElementById('prev-page-btn');
+        const nextBtn = document.getElementById('next-page-btn');
+        const pageBtns = document.querySelectorAll('.page-number-btn');
+        const rangeStart = document.getElementById('page-range-start');
+        const rangeEnd = document.getElementById('page-range-end');
+        const searchInput = document.getElementById('reports-search-input');
+        const filterBtns = document.querySelectorAll('.filter-tab-btn');
+
+        const toast = document.getElementById('reports-toast');
+        const toastText = document.getElementById('reports-toast-text');
+        let toastTimer = null;
+
+        function showToast(msg) {
+          if (toastTimer) clearTimeout(toastTimer);
+          if (toast && toastText) {
+            toastText.textContent = msg;
+            toast.classList.remove('hidden');
+            toastTimer = setTimeout(() => {
+              toast.classList.add('hidden');
+            }, 3000);
+          }
+        }
+
+        // 3. Pagination Logic
+        function updatePagination() {
+          const visibleRows = rows.filter((r) => r.dataset.matched !== 'false');
+          const totalPages = Math.max(1, Math.ceil(visibleRows.length / itemsPerPage));
+          
+          if (currentPage > totalPages) currentPage = totalPages;
+          
+          const startIdx = (currentPage - 1) * itemsPerPage;
+          const endIdx = startIdx + itemsPerPage;
+
+          visibleRows.forEach((row, i) => {
+            if (i >= startIdx && i < endIdx) {
+              row.classList.remove('hidden');
+            } else {
+              row.classList.add('hidden');
+            }
+          });
+
+          // Update Range Text
+          if (rangeStart && rangeEnd) {
+            rangeStart.textContent = visibleRows.length > 0 ? (startIdx + 1).toString() : '0';
+            rangeEnd.textContent = Math.min(endIdx, visibleRows.length).toString();
+          }
+
+          // Update Prev / Next Buttons
+          if (prevBtn) prevBtn.disabled = currentPage <= 1;
+          if (nextBtn) nextBtn.disabled = currentPage >= totalPages || visibleRows.length <= itemsPerPage;
+
+          // Update Page Number Buttons
+          pageBtns.forEach((btn) => {
+            const pageTarget = parseInt(btn.getAttribute('data-page-target') || '1', 10);
+            if (pageTarget === currentPage) {
+              btn.className = 'page-number-btn px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors bg-slate-900 text-white';
+            } else {
+              btn.className = 'page-number-btn px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors bg-white hover:bg-slate-100 text-slate-700 border border-slate-200';
+            }
+          });
+        }
+
+        if (prevBtn) {
+          prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+              currentPage--;
+              updatePagination();
+            }
+          });
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener('click', () => {
+            currentPage++;
+            updatePagination();
+          });
+        }
+
+        pageBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const target = parseInt(btn.getAttribute('data-page-target') || '1', 10);
+            currentPage = target;
+            updatePagination();
+          });
+        });
+
+        // 4. Search & Filter
+        let activeStatus = 'all';
+
+        function applyFilters() {
+          const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+          rows.forEach((row) => {
+            const name = row.getAttribute('data-name') || '';
+            const title = row.getAttribute('data-title') || '';
+            const reporter = row.getAttribute('data-reporter') || '';
+            const status = row.getAttribute('data-status') || '';
+
+            const matchesQuery = !query || name.includes(query) || title.includes(query) || reporter.includes(query);
+            const matchesStatus =
+              activeStatus === 'all' ||
+              (activeStatus === 'open' && status === 'open') ||
+              (activeStatus === 'investigating' && status === 'investigating') ||
+              (activeStatus === 'resolved' && status === 'resolved');
+
+            if (matchesQuery && matchesStatus) {
+              row.dataset.matched = 'true';
+            } else {
+              row.dataset.matched = 'false';
+              row.classList.add('hidden');
+            }
+          });
+
+          currentPage = 1;
+          updatePagination();
+        }
+
+        if (searchInput) {
+          searchInput.addEventListener('input', applyFilters);
+        }
+
+        filterBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            filterBtns.forEach((b) => {
+              b.className = 'filter-tab-btn text-slate-500 hover:text-slate-900 cursor-pointer';
+            });
+            btn.className = 'filter-tab-btn font-semibold text-slate-900 underline underline-offset-4 cursor-pointer';
+            activeStatus = btn.getAttribute('data-filter') || 'all';
+            applyFilters();
+          });
+        });
+
+        // 5. Action Handlers (Resolve & Dismiss)
+        const resolveButtons = document.querySelectorAll('.resolve-btn');
+        resolveButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const name = btn.getAttribute('data-name');
+            const row = btn.closest('tr');
+            if (row) {
+              const statusCell = row.querySelector('.status-cell');
+              if (statusCell) {
+                statusCell.innerHTML = `
+                  <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                    <span>✓ Resolved</span>
+                  </span>
+                `;
+              }
+              const actionCell = row.querySelector('td:last-child div');
+              if (actionCell) {
+                btn.remove();
+              }
+              row.setAttribute('data-status', 'resolved');
+            }
+            showToast(`Incident for "${name}" resolved & closed.`);
+          });
+        });
+
+        const dismissButtons = document.querySelectorAll('.dismiss-btn');
+        dismissButtons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const name = btn.getAttribute('data-name');
+            const row = btn.closest('tr');
+            if (row) {
+              const statusCell = row.querySelector('.status-cell');
+              if (statusCell) {
+                statusCell.innerHTML = `
+                  <span class="text-xs text-slate-400">
+                    Dismissed
+                  </span>
+                `;
+              }
+              btn.remove();
+              row.setAttribute('data-status', 'dismissed');
+            }
+            showToast(`Report for "${name}" dismissed.`);
+          });
+        });
+
+        // 6. Refresh Button Mock
+        const refreshBtn = document.getElementById('refresh-reports-btn');
+        const refreshIcon = document.getElementById('reports-refresh-icon');
+        if (refreshBtn && refreshIcon) {
+          refreshBtn.addEventListener('click', () => {
+            refreshIcon.classList.add('animate-spin');
+            setTimeout(() => {
+              refreshIcon.classList.remove('animate-spin');
+              showToast('Incident queue synchronized with security crawler logs.');
+            }, 600);
+          });
+        }
+      });
+    </script>
+
+  </body>
+</html>
