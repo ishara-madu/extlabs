@@ -12,7 +12,8 @@ import {
   Bell,
   ChevronUp,
   ChevronDown,
-  Trash2
+  Trash2,
+  Key
 } from '@lucide/astro';
 ---
 
@@ -332,7 +333,7 @@ import {
               
               <!-- 1. Profile Settings -->
               <a
-                href="/developers/settings"
+                href="/admin/settings"
                 class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <User class="w-3.5 h-3.5 text-slate-500" />
@@ -341,19 +342,19 @@ import {
 
               <!-- 2. System / Platform Settings -->
               <a
-                href="/developers/settings"
+                href="/admin/settings"
                 class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <Settings class="w-3.5 h-3.5 text-slate-500" />
                 <span>Settings</span>
               </a>
 
-              <!-- 3. Admin Controls / Moderation Hub -->
+              <!-- 3. Admin Controls / Staff Delegation -->
               <a
-                href="/admin"
+                href="/admin/controls"
                 class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
-                <ShieldCheck class="w-3.5 h-3.5 text-slate-500" />
+                <Key class="w-3.5 h-3.5 text-slate-500" />
                 <span>Admin Controls</span>
               </a>
 

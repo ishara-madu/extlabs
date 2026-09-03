@@ -1,0 +1,713 @@
+---
+// src/pages/admin/controls/index.astro
+import "../../../styles/global.css";
+import AdminNavbar from "../../../components/AdminNavbar.astro";
+import Footer from "../../../components/Footer.astro";
+import { EXTENSIONS } from "../../../data/extensions";
+import { DEVELOPERS_DATA } from "../../../data/developers";
+import { OPEN_REPORTS_COUNT } from "../../../data/reports";
+import { 
+  ADMIN_MEMBERS_DATA, 
+  RECENT_AUDIT_LOGS,
+  type AdminMember 
+} from "../../../data/admins";
+import { 
+  ShieldCheck, 
+  Check, 
+  Search, 
+  ArrowRight, 
+  RefreshCw, 
+  ExternalLink, 
+  AlertCircle,
+  Users, 
+  BarChart3, 
+  Settings, 
+  Clock, 
+  Box, 
+  ShieldAlert, 
+  Key, 
+  Lock, 
+  UserPlus, 
+  UserX, 
+  UserCheck, 
+  Sliders, 
+  History,
+  CheckCircle2,
+  XCircle,
+  Crown,
+  Trash2,
+  X
+} from '@lucide/astro';
+
+const totalStaff = ADMIN_MEMBERS_DATA.length;
+const activeStaff = ADMIN_MEMBERS_DATA.filter(a => a.status === 'active').length;
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Controls & Staff Delegation — ExtLabs Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Admin Topbar -->
+    <AdminNavbar />
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-8">
+      
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-6">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-xs font-semibold text-blue-600 font-mono">
+              Staff Portal • Root Governance
+            </span>
+            <span class="text-xs text-slate-400 font-medium">
+              Super Admin Workstation
+            </span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Admin Controls & Staff Delegation
+          </h1>
+
+          <p class="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Centralized super-admin console to manage platform administrators, assign granular moderation authorities, audit staff actions, and revoke credentials.
+          </p>
+        </div>
+
+        <!-- Action Button: Invite Admin -->
+        <div class="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            id="open-invite-modal-btn"
+            class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
+          >
+            <UserPlus class="w-4 h-4 text-slate-300" />
+            <span>Invite Administrator</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Navigation Submenu / Tabs -->
+      <div class="border-b border-slate-200 -mt-4">
+        <nav class="flex items-center gap-1 sm:gap-6 overflow-x-auto no-scrollbar text-xs sm:text-sm font-medium">
+          <!-- 1. Moderation Hub -->
+          <a
+            href="/admin"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <ShieldCheck class="w-4 h-4 text-slate-400" />
+            <span>Moderation Hub</span>
+          </a>
+
+          <!-- 2. Pending Review -->
+          <a
+            href="/admin/pending-review"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Clock class="w-4 h-4 text-slate-400" />
+            <span>Pending Review</span>
+            <span class="text-[11px] font-mono font-semibold text-amber-600">25</span>
+          </a>
+
+          <!-- 3. Live Directory -->
+          <a
+            href="/admin/directory"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Box class="w-4 h-4 text-slate-400" />
+            <span>Live Directory</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+          </a>
+
+          <!-- 4. Developers -->
+          <a
+            href="/admin/developers"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Users class="w-4 h-4 text-slate-400" />
+            <span>Developers</span>
+            <span class="text-[11px] font-mono font-semibold text-blue-600">{DEVELOPERS_DATA.length}</span>
+          </a>
+
+          <!-- 5. Statistics -->
+          <a
+            href="/admin/statistics"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <BarChart3 class="w-4 h-4 text-slate-400" />
+            <span>Statistics</span>
+          </a>
+
+          <!-- 6. Reports -->
+          <a
+            href="/admin/reports"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <AlertCircle class="w-4 h-4 text-slate-400" />
+            <span>Reports</span>
+            <span class="text-[11px] font-mono font-semibold text-rose-600">{OPEN_REPORTS_COUNT}</span>
+          </a>
+
+          <!-- 7. Settings -->
+          <a
+            href="/admin/settings"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Settings class="w-4 h-4 text-slate-400" />
+            <span>Settings</span>
+          </a>
+
+          <!-- 8. Admin Controls (Active) -->
+          <a
+            href="/admin/controls"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-slate-900 text-slate-900 font-semibold shrink-0"
+          >
+            <Key class="w-4 h-4 text-slate-900" />
+            <span>Admin Controls</span>
+            <span class="text-[11px] font-mono font-semibold text-blue-600">{totalStaff}</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- 1. Governance KPI Summary Cards (#f0f4f9 Minimalist Style) -->
+      <section class="space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 tracking-tight">Staff Access & Delegation Overview</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- Card 1: Total Admins -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Total Staff</span>
+                <span class="text-xs font-semibold text-blue-600 font-mono">{activeStaff} Active</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                {totalStaff}
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Authorized staff accounts with portal access
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Pending Invites</span>
+              <span class="font-mono font-semibold text-slate-700">1 Pending</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Root Owner -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Super Administrator</span>
+                <span class="text-xs font-semibold text-amber-600 font-mono">Root Authority</span>
+              </div>
+              <div class="text-base font-bold text-slate-900 tracking-tight leading-snug">
+                Ishara Madusanka
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Can promote, demote, or revoke any staff account
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Owner Status</span>
+              <span class="font-mono font-semibold text-emerald-600">Active Session</span>
+            </div>
+          </div>
+
+          <!-- Card 3: 2FA Enforcement -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">Security Compliance</span>
+                <span class="text-xs font-semibold text-emerald-600 font-mono">100% Enforced</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                2FA Verified
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Hardware security keys & TOTP mandatory
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Bypass Accounts</span>
+              <span class="font-mono font-semibold text-slate-700">0 Allowed</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Organization Binding -->
+          <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-600">GitHub Organization</span>
+                <span class="text-xs font-semibold text-blue-600 font-mono">OAuth 2.0</span>
+              </div>
+              <div class="text-lg font-bold text-slate-900 font-mono tracking-tight">
+                extlabs-team
+              </div>
+              <span class="text-[11px] text-slate-500 block leading-tight">
+                Only authenticated team members can sign in
+              </span>
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">SSO Enforcement</span>
+              <span class="font-mono font-semibold text-emerald-600">Active</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 2. Staff Management Table Section -->
+      <section class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 tracking-tight">
+              Platform Staff & Administrator Directory
+            </h2>
+            <p class="text-xs text-slate-500">
+              Root administrator controls to modify roles, toggle account suspensions, and revoke credentials.
+            </p>
+          </div>
+
+          <!-- Search Box -->
+          <div class="relative w-full sm:w-64">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <Search class="w-3.5 h-3.5" />
+            </div>
+            <input
+              type="text"
+              id="staff-search-input"
+              placeholder="Search admin name or @username..."
+              class="w-full pl-8 pr-3 py-1.5 text-xs bg-white text-slate-900 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 placeholder:text-slate-400"
+            />
+          </div>
+        </div>
+
+        <!-- Admins Table Container -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 font-medium bg-slate-50/50">
+                  <th scope="col" class="py-3 px-4 sm:px-6 font-semibold">Administrator</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Role & Authority</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Granted Permissions</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Security (2FA)</th>
+                  <th scope="col" class="py-3 px-4 font-semibold">Last Active</th>
+                  <th scope="col" class="py-3 px-4 sm:px-6 text-right font-semibold">Super Admin Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100" id="staff-table-body">
+                {ADMIN_MEMBERS_DATA.map((admin) => (
+                  <tr 
+                    class="staff-row hover:bg-slate-50/70 transition-colors"
+                    data-name={admin.name.toLowerCase()}
+                    data-username={admin.username.toLowerCase()}
+                    id={`admin-row-${admin.id}`}
+                  >
+                    <!-- Administrator Info -->
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <div class="flex items-center gap-3">
+                        <img 
+                          src={admin.avatar} 
+                          alt={admin.name} 
+                          class="w-8 h-8 rounded-full border border-slate-200 object-cover shrink-0" 
+                        />
+                        <div>
+                          <div class="font-bold text-slate-900 flex items-center gap-1.5 leading-tight">
+                            <span>{admin.name}</span>
+                            {admin.isPrimarySuperAdmin && (
+                              <Crown class="w-3.5 h-3.5 text-amber-500" title="Primary Owner" />
+                            )}
+                          </div>
+                          <span class="text-[11px] text-slate-400 font-mono block">
+                            @{admin.username} • {admin.email}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Role & Authority (Pure text with subtle icon per AGENTS.md) -->
+                    <td class="py-3.5 px-4 role-cell">
+                      {admin.role === 'super_admin' && (
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600">
+                          <Crown class="w-3.5 h-3.5 text-amber-500" />
+                          <span>Super Admin</span>
+                        </span>
+                      )}
+                      {admin.role === 'security_auditor' && (
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600">
+                          <ShieldAlert class="w-3.5 h-3.5 text-indigo-500" />
+                          <span>Security Auditor</span>
+                        </span>
+                      )}
+                      {admin.role === 'moderator' && (
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                          <ShieldCheck class="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Review Moderator</span>
+                        </span>
+                      )}
+                      {admin.role === 'support' && (
+                        <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-600">
+                          <Users class="w-3.5 h-3.5 text-slate-400" />
+                          <span>Developer Support</span>
+                        </span>
+                      )}
+                    </td>
+
+                    <!-- Granted Permissions -->
+                    <td class="py-3.5 px-4 text-slate-600 text-[11px]">
+                      <span class="line-clamp-1 max-w-xs">
+                        {admin.permissions.join(', ')}
+                      </span>
+                    </td>
+
+                    <!-- Security (2FA) -->
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      {admin.twoFactorEnabled ? (
+                        <span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+                          <CheckCircle2 class="w-3.5 h-3.5 text-emerald-500" />
+                          <span>2FA Enforced</span>
+                        </span>
+                      ) : (
+                        <span class="inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+                          <Clock class="w-3.5 h-3.5 text-amber-500" />
+                          <span>Pending 2FA</span>
+                        </span>
+                      )}
+                    </td>
+
+                    <!-- Last Active -->
+                    <td class="py-3.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+                      {admin.lastActive}
+                    </td>
+
+                    <!-- Super Admin Actions -->
+                    <td class="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
+                      {admin.isPrimarySuperAdmin ? (
+                        <span class="text-[11px] text-slate-400 font-mono">Primary Root</span>
+                      ) : (
+                        <div class="flex items-center justify-end gap-1.5">
+                          <!-- Change Role Action -->
+                          <button
+                            type="button"
+                            class="change-role-btn px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 text-[11px] font-medium rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
+                            data-id={admin.id}
+                            data-name={admin.name}
+                            data-role={admin.role}
+                          >
+                            Change Role
+                          </button>
+
+                          <!-- Suspend / Revoke Action -->
+                          <button
+                            type="button"
+                            class="toggle-suspend-btn px-2.5 py-1 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-[11px] font-medium rounded-lg border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer shadow-2xs"
+                            data-id={admin.id}
+                            data-name={admin.name}
+                          >
+                            {admin.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="py-2.5 px-4 bg-slate-50/50 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+            <span>Root policy: Super Admin holds sovereign revocation authority over all accounts.</span>
+            <span class="font-mono text-slate-400">Total staff: {totalStaff}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Recent Staff Audit Logs Activity Stream -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <History class="w-4 h-4 text-slate-500" />
+            <span>Administrator Action Audit Log</span>
+          </h2>
+          <span class="text-[11px] text-slate-400 font-mono">Immutable audit stream</span>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 shadow-2xs">
+          {RECENT_AUDIT_LOGS.map((log) => (
+            <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+              <div class="flex items-center gap-3">
+                <img 
+                  src={log.adminAvatar} 
+                  alt={log.adminName} 
+                  class="w-7 h-7 rounded-full border border-slate-200 object-cover shrink-0" 
+                />
+                <div>
+                  <div class="font-semibold text-slate-900">
+                    <span>{log.adminName}</span>
+                    <span class="text-slate-400 font-normal"> (@{log.adminUsername})</span>
+                  </div>
+                  <div class="text-slate-600 text-[11px]">
+                    <span>{log.action}</span> • <span class="font-mono text-slate-800 font-medium">{log.target}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-slate-400 text-[11px] font-mono shrink-0 sm:text-right">
+                {log.timestamp}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Staff Invite Modal (Vanilla JS Clean Drawer) -->
+    <div
+      id="invite-modal"
+      class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="space-y-0.5">
+            <h3 class="text-sm font-bold text-slate-900">Invite Staff Administrator</h3>
+            <p class="text-[11px] text-slate-500">Authorize a team member to access the staff console.</p>
+          </div>
+          <button
+            type="button"
+            id="close-invite-modal-btn"
+            class="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <form id="invite-staff-form" class="space-y-4" onsubmit="event.preventDefault();">
+          <div class="space-y-1">
+            <label for="invite-name" class="block text-xs font-semibold text-slate-700">Full Name</label>
+            <input
+              type="text"
+              id="invite-name"
+              placeholder="e.g. David Kim"
+              required
+              class="w-full px-3 py-1.5 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label for="invite-username" class="block text-xs font-semibold text-slate-700">GitHub Username</label>
+            <input
+              type="text"
+              id="invite-username"
+              placeholder="e.g. david-kim-dev"
+              required
+              class="w-full px-3 py-1.5 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label for="invite-email" class="block text-xs font-semibold text-slate-700">Staff Email Address</label>
+            <input
+              type="email"
+              id="invite-email"
+              placeholder="e.g. david@extlabs.io"
+              required
+              class="w-full px-3 py-1.5 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label for="invite-role" class="block text-xs font-semibold text-slate-700">Assigned Role</label>
+            <select
+              id="invite-role"
+              class="w-full px-3 py-1.5 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+            >
+              <option value="security_auditor">Security Auditor (AST Scans & Malware Triage)</option>
+              <option value="moderator" selected>Review Moderator (Pending Queue & Approval)</option>
+              <option value="support">Developer Relations (Developer Support Tickets)</option>
+              <option value="super_admin">Super Administrator (Full Root Authority)</option>
+            </select>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              id="cancel-invite-btn"
+              class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              id="submit-invite-btn"
+              class="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+            >
+              Send Staff Invite
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Minimalist Floating Admin Toast -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <div
+        id="controls-toast"
+        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl"
+      >
+        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span id="controls-toast-text">Action completed successfully.</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Interactive Script -->
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', () => {
+        // 1. Auth Guard
+        const adminSession = localStorage.getItem('extlabs_admin_session');
+        if (!adminSession) {
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        // 2. Elements & Toast
+        const toast = document.getElementById('controls-toast');
+        const toastText = document.getElementById('controls-toast-text');
+        let toastTimer = null;
+
+        function showToast(msg) {
+          if (toastTimer) clearTimeout(toastTimer);
+          if (toast && toastText) {
+            toastText.textContent = msg;
+            toast.classList.remove('hidden');
+            toastTimer = setTimeout(() => {
+              toast.classList.add('hidden');
+            }, 3000);
+          }
+        }
+
+        // 3. Search Filter
+        const searchInput = document.getElementById('staff-search-input');
+        const rows = document.querySelectorAll('.staff-row');
+
+        if (searchInput) {
+          searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            rows.forEach((row) => {
+              const name = row.getAttribute('data-name') || '';
+              const username = row.getAttribute('data-username') || '';
+              if (!query || name.includes(query) || username.includes(query)) {
+                row.classList.remove('hidden');
+              } else {
+                row.classList.add('hidden');
+              }
+            });
+          });
+        }
+
+        // 4. Suspend / Reactivate Action
+        const suspendBtns = document.querySelectorAll('.toggle-suspend-btn');
+        suspendBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const name = btn.getAttribute('data-name');
+            const row = btn.closest('tr');
+            if (btn.textContent.trim() === 'Suspend') {
+              btn.textContent = 'Reactivate';
+              btn.classList.add('bg-slate-900', 'text-white');
+              btn.classList.remove('text-slate-600');
+              if (row) row.classList.add('opacity-40');
+              showToast(`Access suspended for ${name}.`);
+            } else {
+              btn.textContent = 'Suspend';
+              btn.classList.remove('bg-slate-900', 'text-white');
+              btn.classList.add('text-slate-600');
+              if (row) row.classList.remove('opacity-40');
+              showToast(`Access restored for ${name}.`);
+            }
+          });
+        });
+
+        // 5. Change Role Action
+        const changeRoleBtns = document.querySelectorAll('.change-role-btn');
+        changeRoleBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const name = btn.getAttribute('data-name');
+            const currentRole = btn.getAttribute('data-role');
+            const row = btn.closest('tr');
+            const roleCell = row ? row.querySelector('.role-cell') : null;
+
+            if (currentRole === 'moderator') {
+              btn.setAttribute('data-role', 'security_auditor');
+              if (roleCell) {
+                roleCell.innerHTML = `
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600">
+                    <span>Security Auditor</span>
+                  </span>
+                `;
+              }
+              showToast(`Promoted ${name} to Security Auditor.`);
+            } else {
+              btn.setAttribute('data-role', 'moderator');
+              if (roleCell) {
+                roleCell.innerHTML = `
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                    <span>Review Moderator</span>
+                  </span>
+                `;
+              }
+              showToast(`Assigned ${name} to Review Moderator role.`);
+            }
+          });
+        });
+
+        // 6. Invite Modal Controls
+        const modal = document.getElementById('invite-modal');
+        const openModalBtn = document.getElementById('open-invite-modal-btn');
+        const closeModalBtn = document.getElementById('close-invite-modal-btn');
+        const cancelBtn = document.getElementById('cancel-invite-btn');
+        const form = document.getElementById('invite-staff-form');
+
+        function openModal() {
+          if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+          if (modal) modal.classList.add('hidden');
+          if (form) form.reset();
+        }
+
+        if (openModalBtn) openModalBtn.addEventListener('click', openModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+        if (form) {
+          form.addEventListener('submit', () => {
+            const name = (document.getElementById('invite-name')).value;
+            const email = (document.getElementById('invite-email')).value;
+            closeModal();
+            showToast(`Invitation sent to ${name} (${email}).`);
+          });
+        }
+      });
+    </script>
+
+  </body>
+</html>

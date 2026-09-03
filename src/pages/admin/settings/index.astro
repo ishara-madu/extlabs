@@ -1,0 +1,556 @@
+---
+// src/pages/admin/settings/index.astro
+import "../../../styles/global.css";
+import AdminNavbar from "../../../components/AdminNavbar.astro";
+import Footer from "../../../components/Footer.astro";
+import { EXTENSIONS } from "../../../data/extensions";
+import { DEVELOPERS_DATA } from "../../../data/developers";
+import { OPEN_REPORTS_COUNT } from "../../../data/reports";
+import { 
+  ShieldCheck, 
+  Check, 
+  Save, 
+  RefreshCw, 
+  Users, 
+  BarChart3, 
+  Settings as SettingsIcon, 
+  Clock, 
+  Box, 
+  DollarSign, 
+  ShieldAlert, 
+  Bell, 
+  Key, 
+  Globe, 
+  Sliders, 
+  AlertCircle,
+  Database,
+  Lock,
+  Cpu
+} from '@lucide/astro';
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Settings & Policies — ExtLabs Admin</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Admin Topbar -->
+    <AdminNavbar />
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-8">
+      
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-6">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-xs font-semibold text-blue-600 font-mono">
+              Staff Portal • Configuration
+            </span>
+            <span class="text-xs text-slate-400 font-medium">
+              System Policies & Infrastructure
+            </span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Platform Settings & Controls
+          </h1>
+
+          <p class="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Configure global store parameters, enforce the 5:1 Monetag monetization split, manage automated malware scanners, and control administrator access.
+          </p>
+        </div>
+
+        <!-- Quick Status & Save Action -->
+        <div class="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            id="save-settings-btn"
+            class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
+          >
+            <Save class="w-4 h-4 text-slate-300" />
+            <span>Save Configuration</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Navigation Submenu / Tabs -->
+      <div class="border-b border-slate-200 -mt-4">
+        <nav class="flex items-center gap-1 sm:gap-6 overflow-x-auto no-scrollbar text-xs sm:text-sm font-medium">
+          <!-- 1. Moderation Hub -->
+          <a
+            href="/admin"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <ShieldCheck class="w-4 h-4 text-slate-400" />
+            <span>Moderation Hub</span>
+          </a>
+
+          <!-- 2. Pending Review -->
+          <a
+            href="/admin/pending-review"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Clock class="w-4 h-4 text-slate-400" />
+            <span>Pending Review</span>
+            <span class="text-[11px] font-mono font-semibold text-amber-600">25</span>
+          </a>
+
+          <!-- 3. Live Directory -->
+          <a
+            href="/admin/directory"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Box class="w-4 h-4 text-slate-400" />
+            <span>Live Directory</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+          </a>
+
+          <!-- 4. Developers -->
+          <a
+            href="/admin/developers"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Users class="w-4 h-4 text-slate-400" />
+            <span>Developers</span>
+            <span class="text-[11px] font-mono font-semibold text-blue-600">{DEVELOPERS_DATA.length}</span>
+          </a>
+
+          <!-- 5. Statistics -->
+          <a
+            href="/admin/statistics"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <BarChart3 class="w-4 h-4 text-slate-400" />
+            <span>Statistics</span>
+          </a>
+
+          <!-- 6. Reports -->
+          <a
+            href="/admin/reports"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <AlertCircle class="w-4 h-4 text-slate-400" />
+            <span>Reports</span>
+            <span class="text-[11px] font-mono font-semibold text-rose-600">{OPEN_REPORTS_COUNT}</span>
+          </a>
+
+          <!-- 7. Settings (Active) -->
+          <a
+            href="/admin/settings"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-slate-900 text-slate-900 font-semibold shrink-0"
+          >
+            <SettingsIcon class="w-4 h-4 text-slate-900" />
+            <span>Settings</span>
+          </a>
+
+          <!-- 8. Admin Controls -->
+          <a
+            href="/admin/controls"
+            class="flex items-center gap-2 py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <Key class="w-4 h-4 text-slate-400" />
+            <span>Admin Controls</span>
+            <span class="text-[11px] font-mono font-semibold text-blue-600">6</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Settings Form Sections -->
+      <form id="admin-settings-form" class="space-y-8" onsubmit="event.preventDefault();">
+        
+        <!-- SECTION 1: GENERAL PLATFORM & STOREFRONT -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-6">
+          <div class="border-b border-slate-100 pb-4">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <Globe class="w-4 h-4 text-blue-600" />
+              <span>Storefront & General Parameters</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Core configuration for public directory access, branding, and package submission availability.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Storefront Name -->
+            <div class="space-y-1.5">
+              <label for="store-name" class="block text-xs font-semibold text-slate-700">
+                Directory Public Name
+              </label>
+              <input
+                type="text"
+                id="store-name"
+                value="ExtLabs Extension Store"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
+              />
+              <span class="text-[11px] text-slate-400 block">
+                Displayed on the customer-facing storefront header and metadata tags.
+              </span>
+            </div>
+
+            <!-- Support / Contact Email -->
+            <div class="space-y-1.5">
+              <label for="support-email" class="block text-xs font-semibold text-slate-700">
+                Support & Inquiries Email
+              </label>
+              <input
+                type="email"
+                id="support-email"
+                value="support@extlabs.io"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
+              />
+              <span class="text-[11px] text-slate-400 block">
+                Primary contact address provided to third-party developers and users.
+              </span>
+            </div>
+
+            <!-- Maximum Upload Size -->
+            <div class="space-y-1.5">
+              <label for="max-upload-size" class="block text-xs font-semibold text-slate-700">
+                Maximum Package Bundle Size (MB)
+              </label>
+              <input
+                type="number"
+                id="max-upload-size"
+                value="25"
+                min="5"
+                max="100"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
+              />
+              <span class="text-[11px] text-slate-400 block">
+                Maximum allowed size for uploaded `.zip` extension archives.
+              </span>
+            </div>
+
+            <!-- Manifest Enforcement -->
+            <div class="space-y-1.5">
+              <label for="manifest-enforce" class="block text-xs font-semibold text-slate-700">
+                Chromium Manifest Policy
+              </label>
+              <select
+                id="manifest-enforce"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
+              >
+                <option value="mv3_strict" selected>Manifest V3 Only (Strictly Enforced)</option>
+                <option value="mv3_with_exemptions">Manifest V3 (Allow Enterprise Exemptions)</option>
+                <option value="all">Legacy MV2 & MV3</option>
+              </select>
+              <span class="text-[11px] text-slate-400 block">
+                Automated rejection for submissions containing deprecated Manifest V2 patterns.
+              </span>
+            </div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="pt-4 border-t border-slate-100 space-y-4">
+            <!-- Submissions Open Toggle -->
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-800 block">Allow Developer Submissions</span>
+                <span class="text-[11px] text-slate-500">Permit registered developers to upload new packages to the pending queue.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-submissions" class="sr-only peer" checked />
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+              </label>
+            </div>
+
+            <!-- Maintenance Mode Toggle -->
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-800 block">Storefront Maintenance Mode</span>
+                <span class="text-[11px] text-slate-500">Render a maintenance notice on public routes while keeping admin workstation active.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-maintenance" class="sr-only peer" />
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: 5:1 AD MONETIZATION & MONETAG CONFIGURATION -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-6">
+          <div class="border-b border-slate-100 pb-4">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <DollarSign class="w-4 h-4 text-emerald-600" />
+              <span>5:1 Monetization & Monetag Architecture</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Configure the revenue allocation ratio and ExtLabs platform ad tags that cycle every 5 developer ad clicks.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Pacing Ratio -->
+            <div class="space-y-1.5">
+              <label for="ad-ratio" class="block text-xs font-semibold text-slate-700">
+                Developer Pacing Allocation Ratio
+              </label>
+              <select
+                id="ad-ratio"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
+              >
+                <option value="5_to_1" selected>5 Developer Clicks : 1 ExtLabs Click (Standard)</option>
+                <option value="4_to_1">4 Developer Clicks : 1 ExtLabs Click (Accelerated)</option>
+                <option value="6_to_1">6 Developer Clicks : 1 ExtLabs Click (Generous)</option>
+                <option value="direct_only">100% Developer Direct (No Platform Split)</option>
+              </select>
+              <span class="text-[11px] text-slate-400 block">
+                Guarantees developers receive 83.3% of all network ad traffic.
+              </span>
+            </div>
+
+            <!-- ExtLabs Platform Monetag Zone ID -->
+            <div class="space-y-1.5">
+              <label for="monetag-zone" class="block text-xs font-semibold text-slate-700">
+                ExtLabs Platform Monetag Zone ID
+              </label>
+              <input
+                type="text"
+                id="monetag-zone"
+                value="extlabs_infra_zone_882941"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
+              />
+              <span class="text-[11px] text-slate-400 block">
+                Zone ID triggered on the 6th impression for server maintenance.
+              </span>
+            </div>
+
+            <!-- Interstitial Frequency Capping -->
+            <div class="space-y-1.5">
+              <label for="freq-cap" class="block text-xs font-semibold text-slate-700">
+                User Session Frequency Capping
+              </label>
+              <select
+                id="freq-cap"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
+              >
+                <option value="1_per_session" selected>1 Ad Interstitial per User Session</option>
+                <option value="2_per_session">2 Ad Interstitials per User Session</option>
+                <option value="1_per_day">1 Ad per 24 Hours</option>
+              </select>
+              <span class="text-[11px] text-slate-400 block">
+                Prevents advertising fatigue by limiting popunder and interstitial frequency.
+              </span>
+            </div>
+
+            <!-- Ad Blocker Fallback -->
+            <div class="space-y-1.5">
+              <label for="adblock-action" class="block text-xs font-semibold text-slate-700">
+                Ad Blocker Detection Policy
+              </label>
+              <select
+                id="adblock-action"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
+              >
+                <option value="silent_pass" selected>Silent Pass (Direct Package Delivery)</option>
+                <option value="polite_notice">Show Polite Support Notice</option>
+                <option value="strict_block">Block Download (Require Whitelist)</option>
+              </select>
+              <span class="text-[11px] text-slate-400 block">
+                Action taken when client ad-blocker disables the Monetag interstitial script.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: AUTOMATED STATIC ANALYSIS & MALWARE GUARDS -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-6">
+          <div class="border-b border-slate-100 pb-4">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <ShieldAlert class="w-4 h-4 text-rose-600" />
+              <span>Security & Automated Scanner Policies</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Rules executed by the automated static analysis bot during submission ingest.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Scanner Active -->
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-800 block">Automated AST Code Scanner</span>
+                <span class="text-[11px] text-slate-500">Parse JavaScript files for `eval()`, obfuscated strings, and unvetted dynamic script execution.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-ast-scanner" class="sr-only peer" checked />
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+              </label>
+            </div>
+
+            <!-- Permission Scope Guard -->
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-800 block">Broad Host Permission Flagging</span>
+                <span class="text-[11px] text-slate-500">Automatically flag packages requesting &lt;all_urls&gt; or *://*/* into manual moderator review.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-permission-guard" class="sr-only peer" checked />
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+              </label>
+            </div>
+
+            <!-- Remote Dependency Block -->
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-800 block">Zero-Remote CDN Script Requirement</span>
+                <span class="text-[11px] text-slate-500">Reject packages that attempt to load external JS/CSS dependencies at runtime.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-zero-remote" class="sr-only peer" checked />
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: STAFF ACCESS & SECURITY -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-6">
+          <div class="border-b border-slate-100 pb-4">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <Lock class="w-4 h-4 text-slate-700" />
+              <span>Administrative Authentication & Access</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Control staff login requirements and authorized GitHub Organization team bindings.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- GitHub Org Binding -->
+            <div class="space-y-1.5">
+              <label for="github-org" class="block text-xs font-semibold text-slate-700">
+                Authorized GitHub Organization
+              </label>
+              <input
+                type="text"
+                id="github-org"
+                value="extlabs-team"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
+              />
+              <span class="text-[11px] text-slate-400 block">
+                Only GitHub accounts in this organization can log in via `/admin/login`.
+              </span>
+            </div>
+
+            <!-- Session Timeout -->
+            <div class="space-y-1.5">
+              <label for="session-timeout" class="block text-xs font-semibold text-slate-700">
+                Staff Session Inactivity Timeout
+              </label>
+              <select
+                id="session-timeout"
+                class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
+              >
+                <option value="8h" selected>8 Hours (Workday Session)</option>
+                <option value="24h">24 Hours</option>
+                <option value="7d">7 Days (Remember Me)</option>
+                <option value="1h">1 Hour (High Security)</option>
+              </select>
+              <span class="text-[11px] text-slate-400 block">
+                Automatically invalidates `extlabs_admin_session` upon expiry.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Actions Bar -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+          <button
+            type="button"
+            id="reset-defaults-btn"
+            class="px-3 py-2 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium rounded-xl border border-slate-200 transition-colors cursor-pointer"
+          >
+            Reset to Platform Defaults
+          </button>
+
+          <button
+            type="button"
+            id="bottom-save-btn"
+            class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
+          >
+            <Check class="w-4 h-4 text-emerald-400" />
+            <span>Save Configuration Changes</span>
+          </button>
+        </div>
+
+      </form>
+
+    </main>
+
+    <!-- Minimalist Floating Admin Toast -->
+    <div class="fixed bottom-6 right-6 z-50">
+      <div
+        id="settings-toast"
+        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl"
+      >
+        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span id="settings-toast-text">Configuration saved successfully.</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Interactive Script -->
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', () => {
+        // 1. Auth Guard
+        const adminSession = localStorage.getItem('extlabs_admin_session');
+        if (!adminSession) {
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        // 2. Toast Setup
+        const toast = document.getElementById('settings-toast');
+        const toastText = document.getElementById('settings-toast-text');
+        let toastTimer = null;
+
+        function showToast(msg) {
+          if (toastTimer) clearTimeout(toastTimer);
+          if (toast && toastText) {
+            toastText.textContent = msg;
+            toast.classList.remove('hidden');
+            toastTimer = setTimeout(() => {
+              toast.classList.add('hidden');
+            }, 3000);
+          }
+        }
+
+        // 3. Save Handlers
+        const topSaveBtn = document.getElementById('save-settings-btn');
+        const bottomSaveBtn = document.getElementById('bottom-save-btn');
+        const resetBtn = document.getElementById('reset-defaults-btn');
+
+        function handleSave() {
+          showToast('Configuration changes saved to production edge nodes.');
+        }
+
+        if (topSaveBtn) topSaveBtn.addEventListener('click', handleSave);
+        if (bottomSaveBtn) bottomSaveBtn.addEventListener('click', handleSave);
+
+        if (resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            const form = document.getElementById('admin-settings-form');
+            if (form) form.reset();
+            showToast('Platform settings reset to default values.');
+          });
+        }
+      });
+    </script>
+
+  </body>
+</html>
