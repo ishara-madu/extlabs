@@ -63,6 +63,23 @@ import { Box, Search, Plus, HelpCircle } from '@lucide/astro';
           <Plus class="w-3.5 h-3.5 text-blue-600" />
           <span>Submit Extension</span>
         </a>
+
+        <!-- Authenticated User Avatar (Shown when logged in) -->
+        <div id="nav-user-container" class="hidden items-center gap-2">
+          <a
+            id="nav-user-dashboard-link"
+            href="/developers/dashboard"
+            class="p-0.5 rounded-full hover:ring-2 hover:ring-slate-300 focus:outline-none transition-all flex items-center justify-center shrink-0"
+            title="Go to Console"
+          >
+            <img
+              id="nav-user-avatar"
+              src="https://avatars.githubusercontent.com/u/583231"
+              alt="User Avatar"
+              class="w-7 h-7 rounded-full border border-slate-200 object-cover"
+            />
+          </a>
+        </div>
       </div>
 
     </div>
@@ -78,3 +95,30 @@ import { Box, Search, Plus, HelpCircle } from '@lucide/astro';
     />
   </div>
 </header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user) {
+          const userContainer = document.getElementById('nav-user-container');
+          const userAvatar = document.getElementById('nav-user-avatar') as HTMLImageElement | null;
+          const userLink = document.getElementById('nav-user-dashboard-link') as HTMLAnchorElement | null;
+          if (userContainer) {
+            userContainer.classList.remove('hidden');
+            userContainer.classList.add('flex');
+          }
+          if (userAvatar && data.user.avatarUrl) {
+            userAvatar.src = data.user.avatarUrl;
+          }
+          if (userLink) {
+            const isAdmin = data.user.role === 'super_admin' || data.user.role === 'moderator' || data.user.role === 'security_auditor';
+            userLink.href = isAdmin ? '/admin' : '/developers/dashboard';
+            userLink.title = isAdmin ? 'Admin Console' : 'Developer Console';
+          }
+        }
+      })
+      .catch(() => {});
+  });
+</script>

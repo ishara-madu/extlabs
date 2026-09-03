@@ -1,5 +1,6 @@
 ---
 // src/pages/developers/dashboard.astro
+export const prerender = false;
 import "../../styles/global.css";
 import DeveloperNavbar from "../../components/DeveloperNavbar.astro";
 import Footer from "../../components/Footer.astro";
@@ -123,14 +124,21 @@ const allExtensions = [
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
     
-    <!-- Client-side Authentication Guard -->
+    <!-- Client-side Authentication Guard & Sync -->
     <script is:inline>
       (function() {
         if (typeof window !== 'undefined') {
-          var isAuth = localStorage.getItem('extlabs_dev_session');
-          if (!isAuth) {
-            window.location.href = '/developers/login?auth_required=true';
-          }
+          fetch('/api/auth/me')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+              if (!data.authenticated) {
+                localStorage.removeItem('extlabs_dev_session');
+                window.location.href = '/developers/login?auth_required=true';
+              } else {
+                localStorage.setItem('extlabs_dev_session', 'true');
+              }
+            })
+            .catch(function() {});
         }
       })();
     </script>

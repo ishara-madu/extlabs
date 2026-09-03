@@ -412,14 +412,29 @@ import {
 
     let lastDeletedItem = null;
 
-    // 2. Populate user details from localStorage
+    // 2. Hydrate user details from /api/auth/me or localStorage
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated && data.user) {
+          const u = data.user;
+          if (u.avatarUrl) {
+            if (navAvatar) (navAvatar as HTMLImageElement).src = u.avatarUrl;
+            if (dropAvatar) (dropAvatar as HTMLImageElement).src = u.avatarUrl;
+          }
+          if (u.name && dropName) dropName.textContent = u.name;
+          if (u.username && dropHandle) dropHandle.textContent = `@${u.username}`;
+        }
+      })
+      .catch(() => {});
+
     const savedUser = localStorage.getItem('extlabs_admin_user');
     if (savedUser) {
       try {
         const u = JSON.parse(savedUser);
         if (u.avatar) {
-          if (navAvatar) navAvatar.src = u.avatar;
-          if (dropAvatar) dropAvatar.src = u.avatar;
+          if (navAvatar) (navAvatar as HTMLImageElement).src = u.avatar;
+          if (dropAvatar) (dropAvatar as HTMLImageElement).src = u.avatar;
         }
         if (u.name && dropName) dropName.textContent = u.name;
         if (u.username && dropHandle) dropHandle.textContent = `@${u.username}`;
@@ -507,12 +522,12 @@ import {
       profileMenu.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    // 6. Sign Out Handler
+    // 6. Sign Out Handler calling /api/auth/logout
     if (signOutBtn) {
       signOutBtn.addEventListener('click', () => {
         localStorage.removeItem('extlabs_admin_session');
         localStorage.removeItem('extlabs_admin_user');
-        window.location.href = '/admin/login';
+        window.location.href = '/api/auth/logout';
       });
     }
   });

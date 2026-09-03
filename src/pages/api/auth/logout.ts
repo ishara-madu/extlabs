@@ -26,10 +26,30 @@ export const GET: APIRoute = async ({ request }) => {
     await destroySession(db, request);
   }
 
-  return new Response(null, {
-    status: 302,
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Logging Out...</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #fafafa;">
+  <script>
+    try {
+      localStorage.removeItem('extlabs_admin_session');
+      localStorage.removeItem('extlabs_admin_user');
+      localStorage.removeItem('extlabs_dev_session');
+      localStorage.removeItem('extlabs_user');
+      localStorage.removeItem('extlabs_dev_profile');
+    } catch(e) {}
+    window.location.href = '/';
+  </script>
+</body>
+</html>`;
+
+  return new Response(html, {
+    status: 200,
     headers: {
-      Location: '/',
+      'Content-Type': 'text/html; charset=utf-8',
       'Set-Cookie': clearSessionCookie(),
     },
   });
