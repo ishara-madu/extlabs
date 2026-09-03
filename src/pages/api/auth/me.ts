@@ -5,8 +5,8 @@ import { getDb } from '../../../lib/db';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, locals }) => {
-  const db = getDb(locals);
+export const GET: APIRoute = async ({ request }) => {
+  const db = getDb();
   if (!db) {
     return new Response(JSON.stringify({ authenticated: false, error: 'Database unavailable' }), {
       status: 200,

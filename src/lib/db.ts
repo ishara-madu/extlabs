@@ -1,5 +1,5 @@
-// src/lib/db.ts
 import type { D1Database } from '@cloudflare/workers-types';
+import { env } from 'cloudflare:workers';
 
 export interface DbUser {
   id: string;
@@ -95,10 +95,15 @@ export interface DbPlatformSetting {
 }
 
 /**
- * Get Cloudflare D1 Database binding from Astro runtime context
+ * Get Cloudflare D1 Database binding via cloudflare:workers env
  */
-export function getDb(locals: any): D1Database | null {
-  return locals?.runtime?.env?.DB || null;
+export function getDb(_locals?: any): D1Database | null {
+  try {
+    if ((env as any)?.DB) {
+      return (env as any).DB as D1Database;
+    }
+  } catch {}
+  return null;
 }
 
 /**

@@ -1,16 +1,17 @@
 // src/pages/api/auth/github/index.ts
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { getGitHubAuthUrl } from '../../../../lib/auth';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get('redirect') || '/developers/dashboard';
 
-  // Retrieve environment variables from Cloudflare runtime or process.env
-  const env = (locals as any)?.runtime?.env || process.env;
-  const clientId = env.GITHUB_CLIENT_ID;
+  // Retrieve environment variables via cloudflare:workers env or process.env
+  const cf = env as any;
+  const clientId = cf?.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID;
 
   if (!clientId || clientId === 'your_github_client_id_here') {
     return new Response(

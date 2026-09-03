@@ -1,5 +1,6 @@
 // src/pages/api/auth/github/callback.ts
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { 
   exchangeCodeForToken, 
   getGitHubUserProfile, 
@@ -10,7 +11,7 @@ import { getDb } from '../../../../lib/db';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const encodedState = url.searchParams.get('state');
@@ -31,17 +32,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
   }
 
-  // Get Cloudflare runtime env & D1 database binding
-  const env = (locals as any)?.runtime?.env || process.env;
-  const clientId = env.GITHUB_CLIENT_ID;
-  const clientSecret = env.GITHUB_CLIENT_SECRET;
-  const superAdmin = env.SUPER_ADMIN_GITHUB_USERNAME || 'ishara-madu';
+  // Get Cloudflare runtime env & D1 database binding via cloudflare:workers
+  const cf = env as any;
+  const clientId = cf?.GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID;
+  const clientSecret = cf?.GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET;
+  const superAdmin = cf?.SUPER_ADMIN_GITHUB_USERNAME || process.env.SUPER_ADMIN_GITHUB_USERNAME || 'ishara-madu';
 
   if (!clientId || !clientSecret) {
     return new Response('GitHub OAuth credentials not configured on server.', { status: 500 });
   }
 
-  const db = getDb(locals);
+  const db = getDb();
   if (!db) {
     return new Response('Database connection unavailable.', { status: 500 });
   }

@@ -5,8 +5,8 @@ import { getDb } from '../../../lib/db';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
-  const db = getDb(locals);
+export const POST: APIRoute = async ({ request }) => {
+  const db = getDb();
   if (db) {
     await destroySession(db, request);
   }
@@ -20,8 +20,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   });
 };
 
-export const GET: APIRoute = async ({ request, locals }) => {
-  const db = getDb(locals);
+export const GET: APIRoute = async ({ request }) => {
+  const db = getDb();
   if (db) {
     await destroySession(db, request);
   }
