@@ -22,6 +22,7 @@ export function getGitHubAuthUrl(clientId: string, state: string, redirectUri?: 
   const url = new URL('https://github.com/login/oauth/authorize');
   url.searchParams.set('client_id', clientId);
   url.searchParams.set('scope', 'read:user user:email');
+  url.searchParams.set('prompt', 'consent');
   url.searchParams.set('state', state);
   if (redirectUri) {
     url.searchParams.set('redirect_uri', redirectUri);
@@ -67,16 +68,17 @@ export async function exchangeCodeForToken(
 }
 
 /**
- * Fetch authenticated GitHub user profile
+ * Fetch authenticated GitHub user profile and verified email
  */
 export async function getGitHubUserProfile(accessToken: string): Promise<GitHubUserProfile | null> {
-  const response = await fetch('https://api.github.com/user', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'ExtLabs-Directory',
-    },
-  });
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'ExtLabs-Directory',
+  };
+
+  const response = await fetch('https://api.github.com/user', { headers });
 
   if (!response.ok) {
     console.error('Failed to fetch GitHub profile:', await response.text());
@@ -85,24 +87,42 @@ export async function getGitHubUserProfile(accessToken: string): Promise<GitHubU
 
   const user = (await response.json()) as GitHubUserProfile;
 
-  // If email is private, fetch from /user/emails
-  if (!user.email) {
-    try {
-      const emailRes = await fetch('https://api.github.com/user/emails', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/vnd.github.v3+json',
-          'User-Agent': 'ExtLabs-Directory',
-        },
-      });
-      if (emailRes.ok) {
-        const emails = (await emailRes.json()) as Array<{ email: string; primary: boolean; verified: boolean }>;
-        const primary = emails.find((e) => e.primary && e.verified) || emails[0];
-        if (primary) user.email = primary.email;
+  // Always query /user/emails to get the verified personal/support email
+  try {
+    const emailRes = await fetch('https://api.github.com/user/emails', { headers });
+    if (emailRes.ok) {
+      const emails = (await emailRes.json()) as Array<{
+        email: string;
+        primary: boolean;
+        verified: boolean;
+        visibility?: string | null;
+      }>;
+
+      if (Array.isArray(emails) && emails.length > 0) {
+        // Priority 1: Verified primary email that is not a GitHub noreply dummy
+        const realPrimary = emails.find(
+          (e) => e.verified && e.primary && !e.email.includes('noreply')
+        );
+        // Priority 2: Any verified email that is not a noreply dummy
+        const realVerified = emails.find(
+          (e) => e.verified && !e.email.includes('noreply')
+        );
+        // Priority 3: Any real email not containing noreply
+        const realAny = emails.find((e) => !e.email.includes('noreply'));
+        // Priority 4: Verified primary email (even if noreply)
+        const anyPrimary = emails.find((e) => e.primary && e.verified);
+        // Priority 5: Fallback to first available
+        const chosen = realPrimary || realVerified || realAny || anyPrimary || emails[0];
+
+        if (chosen && chosen.email) {
+          user.email = chosen.email;
+        }
       }
-    } catch (e) {
-      console.error('Error fetching emails:', e);
+    } else {
+      console.warn('GitHub /user/emails status:', emailRes.status);
     }
+  } catch (e) {
+    console.error('Error fetching /user/emails:', e);
   }
 
   return user;

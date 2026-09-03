@@ -21,7 +21,7 @@ INSERT OR IGNORE INTO platform_settings (key, value) VALUES
 
 -- 2. Initial Admin & Staff Users
 INSERT OR IGNORE INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled) VALUES
-  ('usr_admin_001', '583231', 'ishara-madu', 'ishara@extlabs.io', 'Ishara Madusanka', 'https://avatars.githubusercontent.com/u/583231', 'super_admin', 'active', 1),
+  ('usr_admin_001', '583231', 'ishara-madu', 'isharamadushankab@gmail.com', 'Ishara Madusanka', 'https://avatars.githubusercontent.com/u/583231', 'super_admin', 'active', 1),
   ('usr_admin_002', '124982', 'alex-security', 'alex.t@extlabs.io', 'Alex Thorne', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=96&h=96&fit=crop&crop=face', 'security_auditor', 'active', 1),
   ('usr_admin_003', '392819', 'elena-moderation', 'elena@extlabs.io', 'Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=face', 'moderator', 'active', 1),
   ('usr_admin_004', '491028', 'marcus-compliance', 'marcus.v@extlabs.io', 'Marcus Vance', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop&crop=face', 'moderator', 'active', 1);
