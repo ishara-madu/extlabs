@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /developers/dashboard
+Disallow: /developers/manage/
+Disallow: /api/
+
+Sitemap: https://extlabs.io/sitemap-index.xml

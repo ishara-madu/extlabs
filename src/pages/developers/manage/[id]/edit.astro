@@ -6,15 +6,68 @@ import Footer from "../../../../components/Footer.astro";
 import ExtensionEditor from "../../../../components/ExtensionEditor.astro";
 import { ArrowLeft } from '@lucide/astro';
 import { EXTENSIONS, getExtensionWithDefaults } from "../../../../data/extensions";
+import { 
+  getDb, 
+  getDeveloperByUserIdOrSlug, 
+  getDeveloperExtensionDetail,
+  type ManageExtensionDetail
+} from "../../../../lib/db";
+import { getSessionUser } from "../../../../lib/auth";
 
 export const prerender = false;
 
 const { id } = Astro.params;
-const rawExtension = EXTENSIONS.find((item) => item.id === id);
-if (!rawExtension) {
+if (!id) {
   return Astro.redirect('/developers/dashboard', 302);
 }
-const ext = getExtensionWithDefaults(rawExtension);
+
+// 1. Database Connection & Authentication
+const db = getDb();
+let user = (Astro.locals as any)?.user;
+if (!user && db) {
+  try {
+    user = await getSessionUser(db, Astro.request);
+  } catch {}
+}
+
+let developer = null;
+let dbExtension: ManageExtensionDetail | null = null;
+
+if (db) {
+  try {
+    if (user) {
+      developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
+    }
+    dbExtension = await getDeveloperExtensionDetail(db, id, developer?.id);
+  } catch (err) {
+    console.error("Database error fetching extension for edit:", err);
+  }
+}
+
+// Fallback to static catalog if record not in D1 (e.g. offline dev or seed testing)
+const rawExtension = EXTENSIONS.find((item) => item.id === id || item.slug === id);
+
+if (!dbExtension && !rawExtension) {
+  return Astro.redirect('/developers/dashboard', 302);
+}
+
+const fallbackExt = rawExtension ? getExtensionWithDefaults(rawExtension) : null;
+
+// Normalize extension detail
+const ext = {
+  id: dbExtension?.id || fallbackExt?.id || id,
+  name: dbExtension?.name || fallbackExt?.name || 'Untitled Extension',
+  version: dbExtension?.version_name || fallbackExt?.version || '1.0.0',
+  category: dbExtension?.category || fallbackExt?.category || 'Productivity',
+  tagline: dbExtension?.tagline || fallbackExt?.tagline || fallbackExt?.shortDescription || '',
+  description: dbExtension?.description || fallbackExt?.description || '',
+  githubUrl: dbExtension?.source_repo_url || (fallbackExt?.githubRepo) || `https://github.com/neural-labs/${id}`,
+  monetagUrl: dbExtension?.monetag_direct_link || (fallbackExt?.monetagDirectLink) || `https://monetag.com/direct/${id.replace(/-/g, '_')}_live_8912`,
+  frequency: "24h",
+  iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || '',
+  promoTileUrl: dbExtension?.featured_banner_url || (fallbackExt as any)?.promoTileUrl || '',
+  status: dbExtension?.status || 'Production'
+};
 ---
 
 <html lang="en" data-theme="light">
@@ -26,9 +79,6 @@ const ext = getExtensionWithDefaults(rawExtension);
     <meta name="generator" content={Astro.generator} />
     <title>Edit {ext.name} — ExtLabs Developer Console</title>
     <meta name="description" content={`Edit configuration and metadata for ${ext.name}.`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
@@ -78,13 +128,16 @@ const ext = getExtensionWithDefaults(rawExtension);
         initialData={{
           id: ext.id,
           name: ext.name,
-          version: ext.version || '2.4.1',
+          version: ext.version,
           category: ext.category,
           tagline: ext.tagline,
           description: ext.description,
-          githubUrl: `https://github.com/neural-labs/${ext.id}`,
-          monetagUrl: `https://monetag.com/direct/${ext.id.replace(/-/g, '_')}_live_8912`,
-          frequency: "24h"
+          githubUrl: ext.githubUrl,
+          monetagUrl: ext.monetagUrl,
+          frequency: ext.frequency,
+          iconUrl: ext.iconUrl,
+          promoTileUrl: ext.promoTileUrl,
+          status: ext.status
         }}
       />
 

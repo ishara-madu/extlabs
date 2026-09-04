@@ -64,3 +64,78 @@ export async function getExtensionsByCategory(
     .all<DbExtension>();
   return results || [];
 }
+
+export interface ManageExtensionDetail extends DbExtension {
+  developer_name: string;
+  developer_slug: string;
+  developer_verified: number;
+  version_name?: string;
+  review_status?: string;
+  package_size_bytes?: number;
+  manifest_json?: string;
+}
+
+/**
+ * Fetch extension details for developer management console by ID or slug
+ */
+export async function getDeveloperExtensionDetail(
+  db: D1Database,
+  idOrSlug: string,
+  developerId?: string
+): Promise<ManageExtensionDetail | null> {
+  const query = `
+    SELECT 
+      e.*, 
+      d.display_name AS developer_name, 
+      d.slug AS developer_slug, 
+      d.is_verified AS developer_verified,
+      ev.version AS version_name,
+      ev.review_status,
+      ev.package_size_bytes,
+      ev.manifest_json
+    FROM extensions e
+    JOIN developers d ON e.developer_id = d.id
+    LEFT JOIN (
+      SELECT extension_id, version, review_status, package_size_bytes, manifest_json, MAX(submitted_at)
+      FROM extension_versions
+      GROUP BY extension_id
+    ) ev ON e.id = ev.extension_id
+    WHERE (e.id = ? OR e.slug = ?)
+    ${developerId ? 'AND e.developer_id = ?' : ''}
+    LIMIT 1
+  `;
+
+  const stmt = db.prepare(query);
+  const result = developerId
+    ? await stmt.bind(idOrSlug, idOrSlug, developerId).first<ManageExtensionDetail>()
+    : await stmt.bind(idOrSlug, idOrSlug).first<ManageExtensionDetail>();
+
+  return result || null;
+}
+
+export interface ExtensionRegionalTelemetry {
+  country_code: string;
+  total_downloads: number;
+}
+
+/**
+ * Fetch aggregated downloads by country from Cloudflare D1 telemetry_daily
+ */
+export async function getExtensionRegionalAnalytics(
+  db: D1Database,
+  extensionId: string
+): Promise<ExtensionRegionalTelemetry[]> {
+  const query = `
+    SELECT 
+      country_code, 
+      SUM(downloads) AS total_downloads
+    FROM telemetry_daily
+    WHERE extension_id = ?
+    GROUP BY country_code
+    ORDER BY total_downloads DESC
+  `;
+
+  const { results } = await db.prepare(query).bind(extensionId).all<ExtensionRegionalTelemetry>();
+  return results || [];
+}
+

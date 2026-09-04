@@ -199,7 +199,16 @@ export async function createOrUpdateUserSession(
   const existingDev = await db
     .prepare('SELECT * FROM developers WHERE user_id = ? OR slug = ?')
     .bind(userId, username)
-    .first();
+    .first<any>();
+
+  // Determine website: if user has website on GitHub profile, take it; otherwise fallback to GitHub profile link
+  let devWebsite = profile.blog?.trim() || '';
+  if (devWebsite && !devWebsite.startsWith('http://') && !devWebsite.startsWith('https://')) {
+    devWebsite = `https://${devWebsite}`;
+  }
+  if (!devWebsite) {
+    devWebsite = `https://github.com/${username}`;
+  }
 
   if (!existingDev) {
     const devId = `dev_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
@@ -214,9 +223,14 @@ export async function createOrUpdateUserSession(
         username,
         profile.name || profile.login,
         profile.avatar_url,
-        profile.blog || null,
+        devWebsite,
         profile.bio || 'Chromium extension developer.'
       )
+      .run();
+  } else if (!existingDev.website || (existingDev.website.includes('github.com') && profile.blog?.trim())) {
+    await db
+      .prepare('UPDATE developers SET website = ? WHERE id = ?')
+      .bind(devWebsite, existingDev.id)
       .run();
   }
 

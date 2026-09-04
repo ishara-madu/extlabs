@@ -18,14 +18,72 @@ import {
 } from '@lucide/astro';
 import { EXTENSIONS, getExtensionWithDefaults } from "../../../../data/extensions";
 
+import { 
+  getDb, 
+  getDeveloperByUserIdOrSlug, 
+  getDeveloperExtensionDetail,
+  type ManageExtensionDetail
+} from "../../../../lib/db";
+import { getSessionUser } from "../../../../lib/auth";
+
 export const prerender = false;
 
 const { id } = Astro.params;
-const rawExtension = EXTENSIONS.find((item) => item.id === id);
-if (!rawExtension) {
+if (!id) {
   return Astro.redirect('/developers/dashboard', 302);
 }
-const ext = getExtensionWithDefaults(rawExtension);
+
+// 1. Database Connection & Authentication
+const db = getDb();
+let user = (Astro.locals as any)?.user;
+if (!user && db) {
+  try {
+    user = await getSessionUser(db, Astro.request);
+  } catch {}
+}
+
+let developer = null;
+let dbExtension: ManageExtensionDetail | null = null;
+
+if (db) {
+  try {
+    if (user) {
+      developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
+    }
+    dbExtension = await getDeveloperExtensionDetail(db, id, developer?.id);
+  } catch (err) {
+    console.error("Database error fetching extension for reviews:", err);
+  }
+}
+
+// Fallback to static catalog if record not in D1 (e.g. offline dev or seed testing)
+const rawExtension = EXTENSIONS.find((item) => item.id === id || item.slug === id);
+
+if (!dbExtension && !rawExtension) {
+  return Astro.redirect('/developers/dashboard', 302);
+}
+
+const fallbackExt = rawExtension ? getExtensionWithDefaults(rawExtension) : null;
+
+// Normalize extension detail
+const ext = {
+  id: dbExtension?.id || fallbackExt?.id || id,
+  name: dbExtension?.name || fallbackExt?.name || 'Untitled Extension',
+  version: dbExtension?.version_name || fallbackExt?.version || '1.0.0',
+  downloadCount: typeof dbExtension?.downloads_count === 'number' 
+    ? dbExtension.downloads_count 
+    : (fallbackExt?.downloadCount ?? 0),
+  rating: typeof dbExtension?.rating === 'number' 
+    ? dbExtension.rating 
+    : (fallbackExt?.rating ?? 5.0),
+  reviewCount: typeof dbExtension?.reviews_count === 'number' 
+    ? dbExtension.reviews_count 
+    : (fallbackExt?.reviewCount ?? 0),
+  category: dbExtension?.category || fallbackExt?.category || 'Productivity',
+  tagline: dbExtension?.tagline || fallbackExt?.tagline || fallbackExt?.shortDescription || '',
+  iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || '',
+  status: dbExtension?.status || 'Production'
+};
 
 // Rating distribution data
 const ratingsBreakdown = [
@@ -131,9 +189,6 @@ const reviewsList = [
     <meta name="generator" content={Astro.generator} />
     <title>Ratings & User Reviews — {ext.name} — ExtLabs</title>
     <meta name="description" content={`Manage user feedback, view rating analytics, and publish official developer responses for ${ext.name}.`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">

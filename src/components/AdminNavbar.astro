@@ -419,8 +419,8 @@ import {
         if (data.authenticated && data.user) {
           const u = data.user;
           if (u.avatarUrl) {
-            if (navAvatar) (navAvatar as HTMLImageElement).src = u.avatarUrl;
-            if (dropAvatar) (dropAvatar as HTMLImageElement).src = u.avatarUrl;
+            if (navAvatar instanceof HTMLImageElement) navAvatar.src = u.avatarUrl;
+            if (dropAvatar instanceof HTMLImageElement) dropAvatar.src = u.avatarUrl;
           }
           if (u.name && dropName) dropName.textContent = u.name;
           if (u.username && dropHandle) dropHandle.textContent = `@${u.username}`;
@@ -433,8 +433,8 @@ import {
       try {
         const u = JSON.parse(savedUser);
         if (u.avatar) {
-          if (navAvatar) (navAvatar as HTMLImageElement).src = u.avatar;
-          if (dropAvatar) (dropAvatar as HTMLImageElement).src = u.avatar;
+          if (navAvatar instanceof HTMLImageElement) navAvatar.src = u.avatar;
+          if (dropAvatar instanceof HTMLImageElement) dropAvatar.src = u.avatar;
         }
         if (u.name && dropName) dropName.textContent = u.name;
         if (u.username && dropHandle) dropHandle.textContent = `@${u.username}`;

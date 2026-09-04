@@ -4,7 +4,7 @@ export const prerender = false;
 import "../../styles/global.css";
 import DeveloperNavbar from "../../components/DeveloperNavbar.astro";
 import Footer from "../../components/Footer.astro";
-import { getDb } from "../../lib/db";
+import { getDb, getDeveloperByUserIdOrSlug, type DbDeveloper } from "../../lib/db";
 import { getSessionUser } from "../../lib/auth";
 import { 
   ShieldCheck, 
@@ -25,17 +25,60 @@ if (!user && db) {
   } catch {}
 }
 
+let developer: DbDeveloper | null = null;
+if (db && user) {
+  try {
+    developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
+  } catch (err) {
+    console.error("Error fetching developer profile in settings:", err);
+  }
+}
+
 // Studio / Developer Name: ONLY normal GitHub name (username is not used here)
-const devName = user?.name || user?.username || "Developer";
+const devName = developer?.display_name || user?.name || user?.username || "Developer";
 // GitHub Handle (Linked): Username with @
-const devHandleRaw = user?.username || "developer";
+const devHandleRaw = developer?.slug || user?.username || "developer";
 const devHandle = `@${devHandleRaw}`;
+const devGithubProfileUrl = `https://github.com/${devHandleRaw}`;
 // Public Support Email
 const devEmail = user?.email || "";
-// Website / Portfolio URL: GitHub profile URL by default
-const devWebsite = `https://github.com/${devHandleRaw}`;
+
+// Website / Portfolio URL:
+// 1. If user has a website saved in D1 (and not the old dummy seed), use it.
+// 2. Otherwise, check GitHub profile API for user website (blog).
+// 3. Fallback strictly to GitHub profile URL (always available since auth is via GitHub).
+let devWebsite = developer?.website?.trim() || "";
+
+if (!devWebsite || devWebsite === devGithubProfileUrl || devWebsite === "https://extlabs.io") {
+  if (devHandleRaw && devHandleRaw !== "developer") {
+    try {
+      const ghRes = await fetch(`https://api.github.com/users/${devHandleRaw}`, {
+        headers: {
+          'User-Agent': 'ExtLabs-Directory',
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (ghRes.ok) {
+        const ghData = (await ghRes.json()) as any;
+        const blogUrl = ghData?.blog?.trim();
+        if (blogUrl) {
+          devWebsite = (blogUrl.startsWith('http://') || blogUrl.startsWith('https://'))
+            ? blogUrl
+            : `https://${blogUrl}`;
+        }
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }
+}
+
+if (!devWebsite || devWebsite === "https://extlabs.io") {
+  devWebsite = devGithubProfileUrl;
+}
+
 // Avatar URL
-const devAvatar = user?.avatar_url || "/icons/github-profile-placeholder.avif";
+const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-profile-placeholder.avif";
 ---
 
 <html lang="en" data-theme="light">
@@ -47,9 +90,6 @@ const devAvatar = user?.avatar_url || "/icons/github-profile-placeholder.avif";
     <meta name="generator" content={Astro.generator} />
     <title>Developer Settings — ExtLabs</title>
     <meta name="description" content="Manage your ExtLabs developer profile, default Monetag links, GitHub release webhooks, and API access tokens." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
@@ -88,10 +128,36 @@ const devAvatar = user?.avatar_url || "/icons/github-profile-placeholder.avif";
                 var emailEl = document.getElementById('dev-email');
                 if (emailEl && u.email) emailEl.value = u.email;
 
-                // Website / Portfolio URL
+                // Website / Portfolio URL: If user has a website in GitHub profile, use it; else fallback to GitHub profile
                 var webEl = document.getElementById('dev-website');
-                if (webEl && u.username && !webEl.value) {
-                  webEl.value = 'https://github.com/' + u.username;
+                if (webEl) {
+                  var savedProfile = null;
+                  try {
+                    savedProfile = JSON.parse(localStorage.getItem('extlabs_dev_profile') || '{}');
+                  } catch (e) {}
+
+                  if (savedProfile && savedProfile.website && savedProfile.website !== 'https://extlabs.io') {
+                    webEl.value = savedProfile.website;
+                  } else if (u.website && u.website !== ('https://github.com/' + u.username) && u.website !== 'https://extlabs.io') {
+                    webEl.value = u.website;
+                  } else {
+                    fetch('https://api.github.com/users/' + u.username)
+                      .then(function(res) { return res.json(); })
+                      .then(function(ghData) {
+                        if (ghData && ghData.blog && ghData.blog.trim()) {
+                          var blog = ghData.blog.trim();
+                          var formatted = (blog.startsWith('http://') || blog.startsWith('https://')) ? blog : 'https://' + blog;
+                          webEl.value = formatted;
+                        } else if (!webEl.value || webEl.value === 'https://extlabs.io') {
+                          webEl.value = 'https://github.com/' + u.username;
+                        }
+                      })
+                      .catch(function() {
+                        if (!webEl.value || webEl.value === 'https://extlabs.io') {
+                          webEl.value = 'https://github.com/' + u.username;
+                        }
+                      });
+                  }
                 }
 
                 // Avatar
@@ -107,50 +173,49 @@ const devAvatar = user?.avatar_url || "/icons/github-profile-placeholder.avif";
     <!-- Top Developer Navbar -->
     <DeveloperNavbar />
 
-    <!-- Main Settings Workspace (Open & Seamless Minimalist Layout) -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-8">
+    <!-- Settings Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-6 sm:px-8 py-8 space-y-8">
       
-      <!-- Top Breadcrumb & Page Header -->
-      <div class="space-y-3 border-b border-slate-200 pb-6">
-        <a
-          href="/developers/dashboard"
-          class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors font-medium"
-        >
+      <!-- Top Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs text-slate-500">
+        <a href="/developers/dashboard" class="hover:text-blue-600 inline-flex items-center gap-1 transition-colors font-medium">
           <ArrowLeft class="w-3.5 h-3.5" />
-          <span>Back to Console Dashboard</span>
+          <span>Developer Console</span>
         </a>
-
-        <div class="space-y-1">
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Developer Settings
-          </h1>
-          <p class="text-xs sm:text-sm text-slate-500">
-            Manage your developer profile, default Monetag direct link stream, GitHub release webhooks, and deployment tokens.
-          </p>
-        </div>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 font-medium">Settings</span>
       </div>
 
-      <!-- Settings Form -->
+      <!-- Page Header -->
+      <div class="space-y-1">
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          Developer Profile & Defaults
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500">
+          Manage your verified studio credentials, automated Monetag monetization streams, and webhook delivery endpoints.
+        </p>
+      </div>
+
       <form id="settings-form" class="space-y-10">
         
-        <!-- 1. DEVELOPER IDENTITY & PROFILE -->
+        <!-- 1. STUDIO / DEVELOPER PROFILE (Synchronized with GitHub) -->
         <section class="space-y-6">
           <div class="space-y-1">
             <h2 class="text-base font-bold text-slate-900 tracking-tight">
-              Developer Profile & Identity
+              Developer Profile Information
             </h2>
             <p class="text-xs text-slate-500">
-              Your public developer information displayed on extension listing pages.
+              Identity details publicly displayed on your extension store listings.
             </p>
           </div>
 
-          <!-- Avatar & Verified Handle Row -->
-          <div class="flex items-center gap-4 py-2">
+          <!-- Avatar & Header Strip -->
+          <div class="flex items-center gap-4 p-4 bg-[#f0f4f9] rounded-2xl">
             <img
               id="dev-profile-avatar"
               src={devAvatar}
               alt="Developer Avatar"
-              class="w-14 h-14 rounded-full border border-slate-200 object-cover shadow-2xs"
+              class="w-12 h-12 rounded-full border border-white shadow-2xs object-cover bg-white"
             />
             <div class="space-y-1">
               <div class="flex items-center gap-2">
@@ -161,7 +226,7 @@ const devAvatar = user?.avatar_url || "/icons/github-profile-placeholder.avif";
                 </span>
               </div>
               <p class="text-xs text-slate-400 font-mono">
-                Avatar and authentication linked with GitHub <a id="dev-profile-github-link" href={devWebsite} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">{devHandle}</a>
+                Avatar and authentication linked with GitHub <a id="dev-profile-github-link" href={devGithubProfileUrl} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">{devHandle}</a>
               </p>
             </div>
           </div>
@@ -189,7 +254,7 @@ const devAvatar = user?.avatar_url || "/icons/github-profile-placeholder.avif";
                 </label>
                 <a
                   id="dev-handle-link"
-                  href={devWebsite}
+                  href={devGithubProfileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   class="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-0.5"
@@ -782,21 +847,36 @@ const devAvatar = user?.avatar_url || "/icons/github-profile-placeholder.avif";
           });
         }
 
-        // 6. Save Settings Form & Persist Profile to LocalStorage
+        // 6. Save Settings Form & Persist Profile to LocalStorage & D1
         const form = document.getElementById('settings-form');
         if (form) {
-          form.addEventListener('submit', (e) => {
+          form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('dev-name') as HTMLInputElement | null;
             const emailInput = document.getElementById('dev-email') as HTMLInputElement | null;
             const websiteInput = document.getElementById('dev-website') as HTMLInputElement | null;
             
             const profileData = {
-              name: nameInput?.value || 'NeuralLabs Studio',
+              name: nameInput?.value || 'Developer',
               email: emailInput?.value || '',
               website: websiteInput?.value || ''
             };
             localStorage.setItem('extlabs_dev_profile', JSON.stringify(profileData));
+
+            try {
+              const res = await fetch('/api/developers/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(profileData)
+              });
+              const data = await res.json();
+              if (data.website && websiteInput) {
+                websiteInput.value = data.website;
+                profileData.website = data.website;
+                localStorage.setItem('extlabs_dev_profile', JSON.stringify(profileData));
+              }
+            } catch (err) {}
+
             alert('Developer profile & settings saved successfully!');
           });
         }

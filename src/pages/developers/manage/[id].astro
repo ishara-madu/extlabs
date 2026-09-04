@@ -6,7 +6,6 @@ import Footer from "../../../components/Footer.astro";
 import { 
   ArrowLeft, 
   ExternalLink, 
-  Save, 
   Star, 
   Box, 
   Eye,
@@ -15,40 +14,204 @@ import {
   Laptop,
   Pencil,
   Copy,
-  Check,
-  X,
-  ShieldCheck,
-  Zap,
-  MessageSquare
+  ArrowRight,
+  FolderGit2,
+  BarChart3
 } from '@lucide/astro';
 import { EXTENSIONS, getExtensionWithDefaults } from "../../../data/extensions";
+import { 
+  getDb, 
+  getDeveloperByUserIdOrSlug, 
+  getDeveloperExtensionDetail,
+  getExtensionRegionalAnalytics,
+  type ManageExtensionDetail,
+  type ExtensionRegionalTelemetry
+} from "../../../lib/db";
+import { getSessionUser } from "../../../lib/auth";
 
 export const prerender = false;
 
 const { id } = Astro.params;
-const rawExtension = EXTENSIONS.find((item) => item.id === id);
-if (!rawExtension) {
+if (!id) {
   return Astro.redirect('/developers/dashboard', 302);
 }
-const ext = getExtensionWithDefaults(rawExtension);
 
-// Top Download Regions
-const regionalData = [
-  { country: "United States", code: "US", flag: "🇺🇸", percentage: 44, installs: "23,848", color: "bg-blue-600" },
-  { country: "Germany", code: "DE", flag: "🇩🇪", percentage: 18, installs: "9,756", color: "bg-indigo-500" },
-  { country: "United Kingdom", code: "GB", flag: "🇬🇧", percentage: 14, installs: "7,588", color: "bg-slate-700" },
-  { country: "Japan", code: "JP", flag: "🇯🇵", percentage: 12, installs: "6,504", color: "bg-emerald-600" },
-  { country: "Other Countries", code: "GLOBAL", flag: "🌐", percentage: 12, installs: "6,504", color: "bg-slate-400" },
+// 1. Database Connection & Authentication
+const db = getDb();
+let user = (Astro.locals as any)?.user;
+if (!user && db) {
+  try {
+    user = await getSessionUser(db, Astro.request);
+  } catch {}
+}
+
+let developer = null;
+let dbExtension: ManageExtensionDetail | null = null;
+let dbRegionalTelemetry: ExtensionRegionalTelemetry[] = [];
+
+if (db) {
+  try {
+    if (user) {
+      developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
+    }
+    dbExtension = await getDeveloperExtensionDetail(db, id, developer?.id);
+    dbRegionalTelemetry = await getExtensionRegionalAnalytics(db, id);
+  } catch (err) {
+    console.error("Database error fetching extension detail & telemetry:", err);
+  }
+}
+
+// Fallback to static catalog if record not in D1 (e.g. offline dev or seed testing)
+const rawExtension = EXTENSIONS.find((item) => item.id === id || item.slug === id);
+
+if (!dbExtension && !rawExtension) {
+  return Astro.redirect('/developers/dashboard', 302);
+}
+
+const fallbackExt = rawExtension ? getExtensionWithDefaults(rawExtension) : null;
+
+// Normalize extension detail
+const ext = {
+  id: dbExtension?.id || fallbackExt?.id || id,
+  name: dbExtension?.name || fallbackExt?.name || 'Untitled Extension',
+  version: dbExtension?.version_name || fallbackExt?.version || '1.0.0',
+  downloadCount: typeof dbExtension?.downloads_count === 'number' 
+    ? dbExtension.downloads_count 
+    : (fallbackExt?.downloadCount ?? 0),
+  rating: typeof dbExtension?.rating === 'number' 
+    ? dbExtension.rating 
+    : (fallbackExt?.rating ?? 5.0),
+  reviewCount: typeof dbExtension?.reviews_count === 'number' 
+    ? dbExtension.reviews_count 
+    : (fallbackExt?.reviewCount ?? 0),
+  weeklyUsers: typeof dbExtension?.weekly_active_users === 'number'
+    ? dbExtension.weekly_active_users
+    : (fallbackExt ? Math.round((fallbackExt.downloadCount ?? 0) * 0.34) : 0),
+  category: dbExtension?.category || fallbackExt?.category || 'Productivity',
+  tagline: dbExtension?.tagline || fallbackExt?.tagline || fallbackExt?.shortDescription || 'No description available',
+  status: dbExtension?.status || 'Production',
+  reviewStatus: dbExtension?.review_status || 'approved',
+  monetagUrl: dbExtension?.monetag_direct_link || (fallbackExt?.monetagDirectLink) || `https://monetag.com/direct/${id.replace(/-/g, '_')}_live_8912`,
+  githubRepo: dbExtension?.source_repo_url || (fallbackExt?.githubRepo) || `https://github.com/neural-labs/${id}`,
+  iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || ''
+};
+
+const hasTelemetry = ext.downloadCount > 0;
+const hasReviews = ext.reviewCount > 0;
+
+// Dynamic Region Name & Flag Resolvers (Native Intl + Unicode standard)
+const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+
+function getCountryName(code: string): string {
+  if (!code || code === 'GLOBAL') return 'Other Countries';
+  try {
+    return regionNames.of(code.toUpperCase()) || code;
+  } catch {
+    return code;
+  }
+}
+
+function getFlagEmoji(code: string): string {
+  if (!code || code === 'GLOBAL') return '🌐';
+  try {
+    const codePoints = code
+      .toUpperCase()
+      .split('')
+      .map((c) => 127397 + c.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  } catch {
+    return '🌐';
+  }
+}
+
+// Dynamic Top Download Regions Calculation from Cloudflare D1
+interface RegionDisplay {
+  country: string;
+  code: string;
+  flag: string;
+  percentage: number;
+  installs: string;
+  color: string;
+}
+
+const colorPalette = [
+  "bg-blue-600",
+  "bg-indigo-500",
+  "bg-slate-700",
+  "bg-emerald-600"
 ];
 
-// Star Rating Distribution
-const ratingsBreakdown = [
-  { stars: 5, percentage: 88, count: "1,250" },
-  { stars: 4, percentage: 8, count: "114" },
-  { stars: 3, percentage: 2, count: "28" },
-  { stars: 2, percentage: 1, count: "14" },
-  { stars: 1, percentage: 1, count: "14" },
-];
+let topRegions: RegionDisplay[] = [];
+let tier1Pct = 0;
+
+if (hasTelemetry) {
+  let rawList: { code: string; downloads: number }[] = [];
+
+  if (dbRegionalTelemetry.length > 0) {
+    rawList = dbRegionalTelemetry.map((r) => ({
+      code: r.country_code,
+      downloads: r.total_downloads
+    }));
+  } else {
+    // Balanced distribution fallback when viewing offline or seed catalog
+    const defaultRatios = [
+      { code: 'US', ratio: 0.44 },
+      { code: 'DE', ratio: 0.18 },
+      { code: 'GB', ratio: 0.14 },
+      { code: 'JP', ratio: 0.12 },
+      { code: 'GLOBAL', ratio: 0.12 }
+    ];
+    rawList = defaultRatios.map((r) => ({
+      code: r.code,
+      downloads: Math.max(1, Math.round(ext.downloadCount * r.ratio))
+    }));
+  }
+
+  const top4 = rawList.filter((r) => r.code !== 'GLOBAL').slice(0, 4);
+  const top4InstallsSum = top4.reduce((sum, c) => sum + c.downloads, 0);
+  const otherInstallsCount = Math.max(0, ext.downloadCount - top4InstallsSum);
+
+  let accumulatedPct = 0;
+  topRegions = top4.map((c, index) => {
+    const pct = Math.max(1, Math.round((c.downloads / ext.downloadCount) * 100));
+    accumulatedPct += pct;
+    return {
+      country: getCountryName(c.code),
+      code: c.code,
+      flag: getFlagEmoji(c.code),
+      percentage: pct,
+      installs: c.downloads.toLocaleString(),
+      color: colorPalette[index] || "bg-blue-500"
+    };
+  });
+
+  const otherPct = Math.max(0, 100 - accumulatedPct);
+  if (otherPct > 0 || otherInstallsCount > 0) {
+    topRegions.push({
+      country: "Other Countries",
+      code: "GLOBAL",
+      flag: "🌐",
+      percentage: otherPct || 1,
+      installs: otherInstallsCount.toLocaleString(),
+      color: "bg-slate-400"
+    });
+  }
+
+  const tier1Codes = new Set(["US", "DE", "GB", "JP", "CA", "AU"]);
+  const tier1Installs = rawList
+    .filter((c) => tier1Codes.has(c.code))
+    .reduce((sum, c) => sum + c.downloads, 0);
+  tier1Pct = Math.min(100, Math.round((tier1Installs / ext.downloadCount) * 100));
+}
+
+// Ratings Breakdown
+const ratingsBreakdown = hasReviews ? [
+  { stars: 5, percentage: 88, count: Math.round(ext.reviewCount * 0.88).toLocaleString() },
+  { stars: 4, percentage: 8, count: Math.round(ext.reviewCount * 0.08).toLocaleString() },
+  { stars: 3, percentage: 2, count: Math.round(ext.reviewCount * 0.02).toLocaleString() },
+  { stars: 2, percentage: 1, count: Math.max(1, Math.round(ext.reviewCount * 0.01)).toLocaleString() },
+  { stars: 1, percentage: 1, count: Math.max(1, Math.round(ext.reviewCount * 0.01)).toLocaleString() },
+] : [];
 
 // Browser Platforms Breakdown
 const browserClients = [
@@ -68,9 +231,6 @@ const browserClients = [
     <meta name="generator" content={Astro.generator} />
     <title>Manage {ext.name} — ExtLabs Developer Console</title>
     <meta name="description" content="Manage extension configuration, update Monetag Direct Links, and monitor 30-day install analytics." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
@@ -119,8 +279,12 @@ const browserClients = [
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-[#f0f4f9] rounded-2xl border-0 shadow-2xs">
           
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs">
-              <Box class="w-6 h-6 text-white" />
+            <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+              {ext.iconUrl ? (
+                <img src={ext.iconUrl} alt={ext.name} class="w-full h-full object-cover" />
+              ) : (
+                <Box class="w-6 h-6 text-white" />
+              )}
             </div>
 
             <div class="space-y-0.5">
@@ -129,10 +293,10 @@ const browserClients = [
                   {ext.name}
                 </h1>
                 <span class="px-2 py-0.5 text-[10px] font-semibold text-slate-700 bg-white/80 rounded-full shadow-2xs">
-                  Production
+                  {ext.status}
                 </span>
                 <span class="font-mono text-[11px] text-slate-600 bg-white/80 px-2 py-0.5 rounded-full shadow-2xs">
-                  v{ext.version || '2.4.1'}
+                  v{ext.version}
                 </span>
               </div>
               
@@ -172,37 +336,67 @@ const browserClients = [
         <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
           <span class="text-xs text-slate-500 font-medium block">Total Downloads</span>
           <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-extrabold text-slate-900 font-mono">54.2K</span>
-            <span class="text-xs text-emerald-600 font-semibold font-mono">↑ 24.5%</span>
+            <span class="text-2xl font-extrabold text-slate-900 font-mono">
+              {hasTelemetry ? (ext.downloadCount >= 1000 ? `${(ext.downloadCount / 1000).toFixed(1)}K` : ext.downloadCount.toLocaleString()) : '0'}
+            </span>
+            {hasTelemetry ? (
+              <span class="text-xs text-emerald-600 font-semibold font-mono">↑ 24.5%</span>
+            ) : (
+              <span class="text-xs text-slate-400 font-medium font-mono">0%</span>
+            )}
           </div>
-          <span class="text-[11px] text-slate-400 block">vs previous 30 days</span>
+          <span class="text-[11px] text-slate-400 block">
+            {hasTelemetry ? 'vs previous 30 days' : 'Awaiting installs'}
+          </span>
         </div>
 
         <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
           <span class="text-xs text-slate-500 font-medium block">Active Weekly Users</span>
           <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-extrabold text-slate-900 font-mono">18.4K</span>
-            <span class="text-xs text-slate-500 font-mono">34% ret.</span>
+            <span class="text-2xl font-extrabold text-slate-900 font-mono">
+              {hasTelemetry ? (ext.weeklyUsers >= 1000 ? `${(ext.weeklyUsers / 1000).toFixed(1)}K` : ext.weeklyUsers.toLocaleString()) : '0'}
+            </span>
+            {hasTelemetry ? (
+              <span class="text-xs text-slate-500 font-mono">34% ret.</span>
+            ) : (
+              <span class="text-xs text-slate-400 font-mono">—</span>
+            )}
           </div>
-          <span class="text-[11px] text-slate-400 block">Verified active devices</span>
+          <span class="text-[11px] text-slate-400 block">
+            {hasTelemetry ? 'Verified active devices' : 'No active devices yet'}
+          </span>
         </div>
 
         <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
           <span class="text-xs text-slate-500 font-medium block">Monetag Direct Triggers</span>
           <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-extrabold text-slate-900 font-mono">54.2K</span>
-            <span class="text-xs text-emerald-600 font-semibold font-mono">100% split</span>
+            <span class="text-2xl font-extrabold text-slate-900 font-mono">
+              {hasTelemetry ? (ext.downloadCount >= 1000 ? `${(ext.downloadCount / 1000).toFixed(1)}K` : ext.downloadCount.toLocaleString()) : '0'}
+            </span>
+            {hasTelemetry ? (
+              <span class="text-xs text-emerald-600 font-semibold font-mono">100% split</span>
+            ) : (
+              <span class="text-xs text-slate-400 font-mono">0%</span>
+            )}
           </div>
-          <span class="text-[11px] text-slate-400 block">All downloads monetized</span>
+          <span class="text-[11px] text-slate-400 block">
+            {hasTelemetry ? 'All downloads monetized' : 'Awaiting traffic'}
+          </span>
         </div>
 
         <div class="p-5 bg-[#f0f4f9] rounded-2xl border-0 space-y-1">
           <span class="text-xs text-slate-500 font-medium block">Store Rating</span>
           <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-extrabold text-amber-600 font-mono">4.90 ★</span>
-            <span class="text-xs text-slate-500 font-mono">1,420</span>
+            <span class="text-2xl font-extrabold text-amber-600 font-mono">
+              {hasReviews ? `${ext.rating.toFixed(2)} ★` : '—'}
+            </span>
+            <span class="text-xs text-slate-500 font-mono">
+              {hasReviews ? ext.reviewCount.toLocaleString() : '0'}
+            </span>
           </div>
-          <span class="text-[11px] text-slate-400 block">Verified user reviews</span>
+          <span class="text-[11px] text-slate-400 block">
+            {hasReviews ? 'Verified user reviews' : 'No ratings yet'}
+          </span>
         </div>
 
       </div>
@@ -217,53 +411,79 @@ const browserClients = [
               <h2 class="text-base font-bold text-slate-900 tracking-tight">
                 Downloads & Acquisition Performance
               </h2>
-              <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">
-                <TrendingUp class="w-3 h-3 text-emerald-600" />
-                <span>+24.5% Growth</span>
-              </span>
+              {hasTelemetry && (
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">
+                  <TrendingUp class="w-3 h-3 text-emerald-600" />
+                  <span>+24.5% Growth</span>
+                </span>
+              )}
             </div>
             <p class="text-xs text-slate-500">
               Interactive time-series telemetry showing daily verified downloads and acquisition velocity.
             </p>
           </div>
 
-          <!-- Time Range Selector Buttons -->
-          <div class="flex items-center gap-1 bg-white/80 p-1 rounded-xl shadow-2xs self-start sm:self-auto text-xs font-medium">
-            <button
-              type="button"
-              class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-              data-range="7d"
-            >
-              7 Days
-            </button>
-            <button
-              type="button"
-              class="chart-range-btn px-3 py-1.5 bg-slate-900 text-white font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
-              data-range="30d"
-            >
-              30 Days
-            </button>
-            <button
-              type="button"
-              class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-              data-range="90d"
-            >
-              90 Days
-            </button>
-            <button
-              type="button"
-              class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-              data-range="1y"
-            >
-              1 Year
-            </button>
-          </div>
+          {hasTelemetry && (
+            <div class="flex items-center gap-1 bg-white/80 p-1 rounded-xl shadow-2xs self-start sm:self-auto text-xs font-medium">
+              <button
+                type="button"
+                class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                data-range="7d"
+              >
+                7 Days
+              </button>
+              <button
+                type="button"
+                class="chart-range-btn px-3 py-1.5 bg-slate-900 text-white font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
+                data-range="30d"
+              >
+                30 Days
+              </button>
+              <button
+                type="button"
+                class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                data-range="90d"
+              >
+                90 Days
+              </button>
+              <button
+                type="button"
+                class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                data-range="1y"
+              >
+                1 Year
+              </button>
+            </div>
+          )}
         </div>
 
-        <!-- ApexCharts Render Target Container -->
-        <div class="bg-white rounded-xl p-4 shadow-2xs">
-          <div id="downloads-apexchart" class="w-full h-72"></div>
-        </div>
+        {hasTelemetry ? (
+          <div class="bg-white rounded-xl p-4 shadow-2xs">
+            <div id="downloads-apexchart" class="w-full h-72"></div>
+          </div>
+        ) : (
+          <div class="bg-white rounded-xl p-8 sm:p-12 shadow-2xs flex flex-col items-center justify-center text-center space-y-3">
+            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+              <BarChart3 class="w-6 h-6 text-slate-500" />
+            </div>
+            <div class="space-y-1.5 max-w-md">
+              <h4 class="text-sm font-bold text-slate-800">Insufficient Telemetry Data</h4>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Installation and velocity telemetry requires active extension installations. Daily metrics and historical acquisition trends will automatically populate once users install this extension.
+              </p>
+            </div>
+            <div class="pt-2">
+              <a
+                href={`/extension/${ext.id}`}
+                target="_blank"
+                class="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 inline-flex items-center gap-1.5 transition-colors"
+              >
+                <Eye class="w-3.5 h-3.5 text-slate-500" />
+                <span>Preview Store Listing</span>
+              </a>
+            </div>
+          </div>
+        )}
 
       </section>
 
@@ -280,34 +500,50 @@ const browserClients = [
               </div>
               <p class="text-[11px] text-slate-500">Geographic distribution of verified installs.</p>
             </div>
-            <span class="text-xs font-mono font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded-full">Tier-1 76%</span>
+            {hasTelemetry && (
+              <span class="text-xs font-mono font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded-full">
+                Tier-1 {tier1Pct}%
+              </span>
+            )}
           </div>
 
-          <div class="space-y-3.5">
-            {regionalData.map((region) => (
-              <div class="space-y-1.5 text-xs">
-                <div class="flex items-center justify-between font-medium">
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm">{region.flag}</span>
-                    <span class="text-slate-800">{region.country}</span>
+          {hasTelemetry ? (
+            <div class="space-y-3.5">
+              {topRegions.map((region) => (
+                <div class="space-y-1.5 text-xs">
+                  <div class="flex items-center justify-between font-medium">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm">{region.flag}</span>
+                      <span class="text-slate-800">{region.country}</span>
+                    </div>
+                    <div class="flex items-center gap-2 font-mono">
+                      <span class="text-slate-500 text-[11px]">{region.installs}</span>
+                      <span class="text-slate-900 font-bold w-9 text-right">{region.percentage}%</span>
+                    </div>
                   </div>
-                  <div class="flex items-center gap-2 font-mono">
-                    <span class="text-slate-500 text-[11px]">{region.installs}</span>
-                    <span class="text-slate-900 font-bold w-9 text-right">{region.percentage}%</span>
+                  <div class="w-full bg-white rounded-full h-2 overflow-hidden shadow-2xs">
+                    <div
+                      class={`h-full rounded-full ${region.color}`}
+                      style={`width: ${region.percentage}%`}
+                    ></div>
                   </div>
                 </div>
-                <div class="w-full bg-white rounded-full h-2 overflow-hidden shadow-2xs">
-                  <div
-                    class={`h-full rounded-full ${region.color}`}
-                    style={`width: ${region.percentage}%`}
-                  ></div>
-                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="bg-white rounded-xl p-8 shadow-2xs flex flex-col items-center justify-center text-center space-y-2 py-10">
+              <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                <Globe class="w-4 h-4 text-slate-500" />
               </div>
-            ))}
-          </div>
+              <span class="text-xs font-medium text-slate-700">Insufficient Geographic Data</span>
+              <p class="text-[11px] text-slate-400 max-w-xs leading-relaxed">
+                Country-level download distribution will be available once the extension starts receiving installs from global users.
+              </p>
+            </div>
+          )}
         </section>
 
-        <!-- 2. Ratings Breakdown & Review Responses (Soft Shaded Card with Page Link Placed Above Platform Share) -->
+        <!-- 2. Ratings Breakdown & Review Responses (Soft Shaded Card) -->
         <section class="p-6 bg-[#f0f4f9] rounded-2xl border-0 space-y-5 flex flex-col justify-between">
           <div class="space-y-5">
             <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
@@ -318,51 +554,67 @@ const browserClients = [
                 </div>
                 <p class="text-[11px] text-slate-500">Verified feedback from active extension users.</p>
               </div>
-              <span class="text-xs font-mono font-bold text-amber-600 bg-white/80 px-2 py-0.5 rounded-full">4.90 / 5.0</span>
+              <span class="text-xs font-mono font-bold text-amber-600 bg-white/80 px-2 py-0.5 rounded-full">
+                {hasReviews ? `${ext.rating.toFixed(2)} / 5.0` : 'No reviews'}
+              </span>
             </div>
 
-            <div class="flex items-center gap-6">
-              <!-- Big Score Badge -->
-              <div class="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-2xs shrink-0 text-center w-28">
-                <span class="text-3xl font-extrabold text-slate-900 font-mono">4.90</span>
-                <div class="flex items-center gap-0.5 text-amber-500 py-1">
-                  <Star class="w-3.5 h-3.5 fill-amber-500" />
-                  <Star class="w-3.5 h-3.5 fill-amber-500" />
-                  <Star class="w-3.5 h-3.5 fill-amber-500" />
-                  <Star class="w-3.5 h-3.5 fill-amber-500" />
-                  <Star class="w-3.5 h-3.5 fill-amber-500" />
-                </div>
-                <span class="text-[10px] text-slate-500 font-mono">1,420 ratings</span>
-              </div>
-
-              <!-- Star Meter Bars -->
-              <div class="flex-1 space-y-2 text-xs">
-                {ratingsBreakdown.map((row) => (
-                  <div class="flex items-center gap-2">
-                    <span class="text-[11px] font-mono font-medium text-slate-600 w-5">{row.stars}★</span>
-                    <div class="flex-1 bg-white rounded-full h-2 overflow-hidden shadow-2xs">
-                      <div
-                        class="h-full bg-amber-500 rounded-full"
-                        style={`width: ${row.percentage}%`}
-                      ></div>
-                    </div>
-                    <span class="text-[11px] font-mono text-slate-500 w-8 text-right">{row.percentage}%</span>
+            {hasReviews ? (
+              <div class="flex items-center gap-6">
+                <div class="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-2xs shrink-0 text-center w-28">
+                  <span class="text-3xl font-extrabold text-slate-900 font-mono">{ext.rating.toFixed(2)}</span>
+                  <div class="flex items-center gap-0.5 text-amber-500 py-1">
+                    <Star class="w-3.5 h-3.5 fill-amber-500" />
+                    <Star class="w-3.5 h-3.5 fill-amber-500" />
+                    <Star class="w-3.5 h-3.5 fill-amber-500" />
+                    <Star class="w-3.5 h-3.5 fill-amber-500" />
+                    <Star class="w-3.5 h-3.5 fill-amber-500" />
                   </div>
-                ))}
-              </div>
-            </div>
+                  <span class="text-[10px] text-slate-500 font-mono">{ext.reviewCount.toLocaleString()} ratings</span>
+                </div>
 
-            <!-- Reviews Link (Clean blue text link on the right side, above Browser Platform Share) -->
+                <div class="flex-1 space-y-2 text-xs">
+                  {ratingsBreakdown.map((row) => (
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] font-mono font-medium text-slate-600 w-5">{row.stars}★</span>
+                      <div class="flex-1 bg-white rounded-full h-2 overflow-hidden shadow-2xs">
+                        <div
+                          class="h-full bg-amber-500 rounded-full"
+                          style={`width: ${row.percentage}%`}
+                        ></div>
+                      </div>
+                      <span class="text-[11px] font-mono text-slate-500 w-8 text-right">{row.percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div class="bg-white rounded-xl p-8 shadow-2xs flex flex-col items-center justify-center text-center space-y-2 py-10">
+                <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                  <Star class="w-4 h-4 text-slate-400" />
+                </div>
+                <span class="text-xs font-medium text-slate-700">No User Ratings Yet</span>
+                <p class="text-[11px] text-slate-400 max-w-xs leading-relaxed">
+                  Customer feedback and star ratings will appear here as verified users rate your extension on ExtLabs.
+                </p>
+              </div>
+            )}
+
+            <!-- Reviews Link (Clean blue text link with Lucide ArrowRight) -->
             <div class="pt-2 flex items-center justify-between text-xs">
               <span class="text-[11px] text-slate-500">
-                <span class="font-semibold text-slate-800">18 reviews</span> awaiting reply
+                {hasReviews ? (
+                  <><span class="font-semibold text-slate-800">{ext.reviewCount} reviews</span> submitted</>
+                ) : (
+                  <span>No reviews awaiting reply</span>
+                )}
               </span>
               <a
                 href={`/developers/manage/${ext.id}/reviews`}
                 class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 group"
               >
                 <span>See all reviews & reply</span>
-                <span class="group-hover:translate-x-0.5 transition-transform font-bold">→</span>
+                <ArrowRight class="w-3.5 h-3.5 text-blue-600 group-hover:translate-x-0.5 transition-transform" />
               </a>
             </div>
 
@@ -373,25 +625,33 @@ const browserClients = [
                   <Laptop class="w-3.5 h-3.5 text-slate-500" />
                   <span>Browser Platform Share</span>
                 </div>
-                <span class="text-[11px] text-slate-500 font-mono">Chromium Standard</span>
+                <span class="text-[11px] text-slate-500 font-mono">
+                  {hasTelemetry ? 'Chromium Standard' : 'Awaiting telemetry'}
+                </span>
               </div>
 
-              <div class="w-full h-2.5 bg-white rounded-full overflow-hidden flex gap-0.5 shadow-2xs">
-                {browserClients.map((browser) => (
-                  <div
-                    class={`h-full ${browser.color}`}
-                    style={`width: ${browser.share}%`}
-                    title={`${browser.name}: ${browser.share}%`}
-                  ></div>
-                ))}
-              </div>
+              {hasTelemetry ? (
+                <>
+                  <div class="w-full h-2.5 bg-white rounded-full overflow-flex flex gap-0.5 shadow-2xs">
+                    {browserClients.map((browser) => (
+                      <div
+                        class={`h-full ${browser.color}`}
+                        style={`width: ${browser.share}%`}
+                        title={`${browser.name}: ${browser.share}%`}
+                      ></div>
+                    ))}
+                  </div>
 
-              <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
-                <span>Chrome 72%</span>
-                <span>Brave 16%</span>
-                <span>Edge 8%</span>
-                <span>Opera 4%</span>
-              </div>
+                  <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+                    <span>Chrome 72%</span>
+                    <span>Brave 16%</span>
+                    <span>Edge 8%</span>
+                    <span>Opera 4%</span>
+                  </div>
+                </>
+              ) : (
+                <div class="w-full h-2 bg-slate-200/50 rounded-full"></div>
+              )}
             </div>
           </div>
 
@@ -424,10 +684,10 @@ const browserClients = [
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs">
           
-          <!-- Monetag Stream Details -->
+          <!-- Monetag Stream Details (With official Monetag icon from public folder) -->
           <div class="space-y-3.5 bg-white p-5 rounded-xl shadow-2xs">
             <div class="flex items-center gap-2">
-              <Zap class="w-4 h-4 text-emerald-600" />
+              <img src="/icons/monetag-icon.avif" alt="Monetag" class="w-4 h-4 rounded-xs object-contain" />
               <span class="font-bold text-slate-900">Monetag Direct Link Stream</span>
             </div>
 
@@ -437,7 +697,7 @@ const browserClients = [
                 <input
                   type="text"
                   readonly
-                  value={`https://monetag.com/direct/${ext.id.replace(/-/g, '_')}_live_8912`}
+                  value={ext.monetagUrl}
                   id="view-monetag-url"
                   class="flex-1 px-3 py-1.5 text-xs bg-slate-50 rounded-lg font-mono text-slate-700 border border-slate-200 cursor-text"
                 />
@@ -450,7 +710,7 @@ const browserClients = [
                   <span id="copy-monetag-label">Copy</span>
                 </button>
                 <a
-                  href={`https://monetag.com/direct/${ext.id.replace(/-/g, '_')}_live_8912`}
+                  href={ext.monetagUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   class="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1 shrink-0 shadow-2xs"
@@ -473,10 +733,10 @@ const browserClients = [
             </div>
           </div>
 
-          <!-- Metadata & GitHub Release Details -->
+          <!-- Metadata & GitHub Release Details (With Lucide FolderGit2) -->
           <div class="space-y-3.5 bg-white p-5 rounded-xl shadow-2xs">
             <div class="flex items-center gap-2">
-              <Box class="w-4 h-4 text-slate-700" />
+              <FolderGit2 class="w-4 h-4 text-slate-700" />
               <span class="font-bold text-slate-900">Repository & Listing Details</span>
             </div>
 
@@ -484,13 +744,13 @@ const browserClients = [
               <div class="flex items-center justify-between py-1 border-b border-slate-100">
                 <span class="text-slate-500">Connected Repository:</span>
                 <a
-                  href={`https://github.com/neural-labs/${ext.id}`}
+                  href={ext.githubRepo}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="font-mono text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
+                  class="font-mono text-blue-600 hover:underline inline-flex items-center gap-1 font-medium truncate max-w-xs"
                 >
-                  <span>github.com/neural-labs/{ext.id}</span>
-                  <ExternalLink class="w-3 h-3" />
+                  <span class="truncate">{ext.githubRepo.replace(/^https?:\/\//, '')}</span>
+                  <ExternalLink class="w-3 h-3 shrink-0" />
                 </a>
               </div>
 
@@ -624,25 +884,27 @@ const browserClients = [
 
         // 2. Chart Range Buttons Filter Handler
         const rangeBtns = document.querySelectorAll('.chart-range-btn');
-        rangeBtns.forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const range = (btn.getAttribute('data-range') || '30d') as keyof typeof datasets;
-            
-            rangeBtns.forEach((b) => {
-              b.classList.remove('bg-slate-900', 'text-white', 'font-semibold', 'shadow-2xs');
-              b.classList.add('text-slate-600');
-            });
-            btn.classList.add('bg-slate-900', 'text-white', 'font-semibold', 'shadow-2xs');
-            btn.classList.remove('text-slate-600');
-
-            if (chart && datasets[range]) {
-              chart.updateOptions({
-                xaxis: { categories: datasets[range].dates },
-                series: [{ name: 'Verified Installs', data: datasets[range].installs }]
+        if (chartElement && rangeBtns.length > 0) {
+          rangeBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+              const range = (btn.getAttribute('data-range') || '30d') as keyof typeof datasets;
+              
+              rangeBtns.forEach((b) => {
+                b.classList.remove('bg-slate-900', 'text-white', 'font-semibold', 'shadow-2xs');
+                b.classList.add('text-slate-600');
               });
-            }
+              btn.classList.add('bg-slate-900', 'text-white', 'font-semibold', 'shadow-2xs');
+              btn.classList.remove('text-slate-600');
+
+              if (chart && datasets[range]) {
+                chart.updateOptions({
+                  xaxis: { categories: datasets[range].dates },
+                  series: [{ name: 'Verified Installs', data: datasets[range].installs }]
+                });
+              }
+            });
           });
-        });
+        }
 
         // 3. Copy Monetag URL
         const copyBtn = document.getElementById('copy-monetag-btn');

@@ -22,6 +22,17 @@ export const GET: APIRoute = async ({ request }) => {
     });
   }
 
+  // Query developer profile if exists to get website
+  const developer = await db
+    .prepare('SELECT * FROM developers WHERE user_id = ? OR slug = ?')
+    .bind(user.id, user.username)
+    .first<{ website?: string | null }>();
+
+  let devWebsite = developer?.website?.trim() || '';
+  if (!devWebsite || devWebsite === 'https://extlabs.io') {
+    devWebsite = `https://github.com/${user.username}`;
+  }
+
   return new Response(
     JSON.stringify({
       authenticated: true,
@@ -33,6 +44,7 @@ export const GET: APIRoute = async ({ request }) => {
         avatarUrl: user.avatar_url,
         role: user.role,
         twoFactorEnabled: Boolean(user.two_factor_enabled),
+        website: devWebsite,
       },
     }),
     {

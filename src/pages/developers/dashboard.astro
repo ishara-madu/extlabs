@@ -9,7 +9,8 @@ import {
   Search, 
   ArrowRight, 
   Bookmark, 
-  Star 
+  Star,
+  Box
 } from '@lucide/astro';
 import { 
   getDb, 
@@ -35,7 +36,7 @@ export interface DashboardExtension {
   updateStatus: string;
   downloads: string;
   downloadGrowth: string;
-  rating: string;
+  rating: number;
   reviewCount: string;
   topGeography: string;
   secondaryGeography: string;
@@ -83,7 +84,7 @@ if (db && user) {
             updateStatus,
             downloads: formattedDownloads,
             downloadGrowth: `${(15 + (idx * 4.5)).toFixed(1)}%`,
-            rating: (row.rating || 5.0).toFixed(3),
+            rating: typeof row.rating === 'number' ? row.rating : (Number(row.rating) || 5.0),
             reviewCount: (row.review_count || 0).toLocaleString(),
             topGeography: idx % 2 === 0 ? 'US (44%)' : 'US (38%)',
             secondaryGeography: idx % 2 === 0 ? 'DE 18% • UK 14%' : 'CA 16% • UK 15%',
@@ -101,104 +102,6 @@ if (db && user) {
     console.error('Error fetching developer extensions from D1:', err);
   }
 }
-
-// Fallback sample data if no extensions created yet or offline
-if (allExtensions.length === 0) {
-  allExtensions = [
-    {
-      id: "deep-summarize-ai",
-      name: "DeepSummarize: AI Web & PDF Reader",
-      packageId: "io.extlabs.deepsummarize",
-      lastUpdated: "Aug 24, 2026",
-      status: "Production",
-      updateStatus: "Live on Directory",
-      downloads: "54.2K",
-      downloadGrowth: "24.5%",
-      rating: "4.900",
-      reviewCount: "1,420",
-      topGeography: "US (44%)",
-      secondaryGeography: "DE 18% • UK 14%",
-      version: "v2.4.1",
-      targetEngine: "Manifest V3 • Chromium",
-      iconUrl: "/icons/extension-placeholder.avif",
-      isBookmarked: true
-    },
-    {
-      id: "smart-prompt-copilot",
-      name: "Smart Prompt Copilot for AI Chat",
-      packageId: "io.extlabs.smartprompt",
-      lastUpdated: "Aug 19, 2026",
-      status: "Production",
-      updateStatus: "Live on Directory",
-      downloads: "28.4K",
-      downloadGrowth: "15.8%",
-      rating: "4.800",
-      reviewCount: "890",
-      topGeography: "US (38%)",
-      secondaryGeography: "CA 16% • UK 15%",
-      version: "v1.8.0",
-      targetEngine: "Manifest V3 • Chromium",
-      iconUrl: "/icons/extension-placeholder.avif",
-      isBookmarked: true
-    },
-    {
-      id: "json-craft-formatter",
-      name: "JSONCraft Formatter & Validator Pro",
-      packageId: "io.extlabs.jsoncraft",
-      downloads: "0",
-      status: "In Review",
-      updateStatus: "Pending security audit",
-      lastUpdated: "Aug 31, 2026",
-      downloadGrowth: "0.0%",
-      rating: "5.000",
-      reviewCount: "0",
-      topGeography: "N/A",
-      secondaryGeography: "Pending launch",
-      version: "v1.5.0",
-      targetEngine: "Manifest V3 • Chromium",
-      iconUrl: "/icons/extension-placeholder.avif",
-      isBookmarked: false
-    },
-    {
-      id: "cookie-sentinel-pro",
-      name: "Cookie Sentinel & Tracker Blocker",
-      packageId: "io.extlabs.cookiesentinel",
-      downloads: "14.1K",
-      status: "Production",
-      updateStatus: "Live on Directory",
-      lastUpdated: "Aug 12, 2026",
-      downloadGrowth: "12.4%",
-      rating: "4.750",
-      reviewCount: "310",
-      topGeography: "UK (32%)",
-      secondaryGeography: "US 28% • FR 14%",
-      version: "v1.9.4",
-      targetEngine: "Manifest V3 • Chromium",
-      iconUrl: "/icons/extension-placeholder.avif",
-      isBookmarked: false
-    },
-    {
-      id: "speed-reader-bionic",
-      name: "Bionic Reader: Speed Reading Assistant",
-      packageId: "io.extlabs.bionicreader",
-      downloads: "0",
-      status: "Draft",
-      updateStatus: "Not yet sent for review",
-      lastUpdated: "Aug 02, 2026",
-      downloadGrowth: "0.0%",
-      rating: "5.000",
-      reviewCount: "0",
-      topGeography: "N/A",
-      secondaryGeography: "Draft stage",
-      version: "v1.0.0",
-      targetEngine: "Manifest V3 • Chromium",
-      iconUrl: "/icons/extension-placeholder.avif",
-      isBookmarked: false
-    }
-  ];
-
-  bookmarkedExtensions = allExtensions.filter(ext => ext.isBookmarked).slice(0, 5);
-}
 ---
 
 <html lang="en" data-theme="light">
@@ -210,9 +113,6 @@ if (allExtensions.length === 0) {
     <meta name="generator" content={Astro.generator} />
     <title>Developer Console — ExtLabs</title>
     <meta name="description" content="ExtLabs Developer Console. Manage your browser extensions, monitor downloads, and update releases." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
@@ -242,8 +142,55 @@ if (allExtensions.length === 0) {
     <!-- Main Developer Console Workspace -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-10">
       
-      <!-- 1. BOOKMARKED EXTENSIONS SECTION (Max 5 Bookmarked Extensions) -->
-      <section id="bookmarked-section" class="space-y-4">
+      {allExtensions.length === 0 ? (
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div class="space-y-0.5">
+              <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                All extensions
+              </h1>
+              <p class="text-xs text-slate-500">
+                Complete catalog of your published, draft, and in-review browser extensions.
+              </p>
+            </div>
+
+            <a
+              href="/developers/new"
+              class="h-9 px-4 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-300 hover:border-blue-300 text-xs font-medium rounded-lg inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs group shrink-0"
+            >
+              <Plus class="w-4 h-4 text-slate-700 group-hover:text-blue-600 transition-colors shrink-0" />
+              <span class="leading-none">Create extension</span>
+            </a>
+          </div>
+
+          <div class="py-16 sm:py-24 text-center max-w-md mx-auto space-y-5">
+            <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-slate-400 shadow-2xs">
+              <Box class="w-6 h-6 text-slate-500 stroke-[1.5]" />
+            </div>
+
+            <div class="space-y-1">
+              <h2 class="text-base font-bold text-slate-900">
+                No extensions found
+              </h2>
+              <p class="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                No extensions found in the database. Upload your Manifest V3 package (.zip) to get started and publish your first extension.
+              </p>
+            </div>
+
+            <div class="pt-2">
+              <a
+                href="/developers/new"
+                class="h-9 px-4.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg inline-flex items-center justify-center gap-2 transition-colors shadow-xs cursor-pointer"
+              >
+                <Plus class="w-4 h-4 text-white" />
+                <span>Upload new extension</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <section id="bookmarked-section" class="space-y-4">
         
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
@@ -333,8 +280,8 @@ if (allExtensions.length === 0) {
                       ExtLabs store rating
                     </span>
                     <div class="flex items-center gap-1.5 text-xl sm:text-2xl font-bold font-mono text-slate-900">
-                      <span>{item.rating}</span>
-                      <Star class="w-4 h-4 text-amber-500 fill-amber-500 -mt-0.5" />
+                      <Star class="w-5 h-5 text-amber-500 fill-amber-500 -mt-0.5" />
+                      <span>{item.rating.toFixed(1)}</span>
                     </div>
                     <div class="text-[11px] text-slate-400">
                       {item.reviewCount} verified reviews
@@ -381,10 +328,8 @@ if (allExtensions.length === 0) {
 
       </section>
 
-      <!-- 2. ALL EXTENSIONS DATA TABLE (Clean Direct Columns + 10 Per Page Pagination) -->
       <section class="space-y-4">
         
-        <!-- Table Section Header & Action Controls -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
           
           <div class="space-y-0.5">
@@ -530,6 +475,11 @@ if (allExtensions.length === 0) {
 
                   </tr>
                 ))}
+                <tr id="no-search-results" class="hidden">
+                  <td colspan="6" class="py-8 text-center text-xs text-slate-500">
+                    No extensions match your search query.
+                  </td>
+                </tr>
               </tbody>
 
             </table>
@@ -567,6 +517,8 @@ if (allExtensions.length === 0) {
         </div>
 
       </section>
+        </>
+      )}
 
     </main>
 
@@ -718,6 +670,11 @@ if (allExtensions.length === 0) {
           // Hide all, show only current page slice
           allRows.forEach(row => (row.style.display = 'none'));
           matchingRows.slice(startIndex, endIndex).forEach(row => (row.style.display = ''));
+
+          const noResultsRow = document.getElementById('no-search-results');
+          if (noResultsRow) {
+            noResultsRow.classList.toggle('hidden', total > 0 || !searchQuery);
+          }
 
           // Update text indicators
           if (pageStartEl) pageStartEl.textContent = total > 0 ? (startIndex + 1).toString() : '0';
