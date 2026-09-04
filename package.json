@@ -25,6 +25,7 @@
     "esbuild": true
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260903.1",
     "daisyui": "^5.7.23",
     "wrangler": "^4.128.0"
   }
