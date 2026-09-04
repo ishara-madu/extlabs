@@ -225,7 +225,7 @@ const data = {
   license: initialData.license || "MIT",
   supportedBrowsers: initialData.supportedBrowsers || ["chrome", "brave", "edge", "firefox", "arc", "opera"],
   privacyPolicyUrl: initialData.privacyPolicyUrl || (isEdit && initialData.id ? `https://github.com/neural-labs/${initialData.id}/blob/main/PRIVACY.md` : ""),
-  iconUrl: initialData.iconUrl || (isEdit ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80" : ""),
+  iconUrl: initialData.iconUrl || (isEdit ? "/icons/extension-placeholder.avif" : ""),
   promoTileUrl: initialData.promoTileUrl || (isEdit ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80" : ""),
   screenshots: isEdit ? initialScreenshots : [],
   youtubeVideoUrl: initialData.youtubeVideoUrl || (isEdit ? "https://www.youtube.com/watch?v=dQw4w9WgXcQ" : ""),

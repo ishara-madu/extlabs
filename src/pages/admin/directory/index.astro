@@ -246,9 +246,11 @@ const verifiedCount = EXTENSIONS.filter(e => e.isVerified).length;
                     <!-- Extension Info -->
                     <td class="py-3.5 px-4 sm:px-6">
                       <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                          {ext.name.charAt(0)}
-                        </div>
+                        <img
+                          src={ext.iconUrl || "/icons/extension-placeholder.avif"}
+                          alt={ext.name}
+                          class="w-8 h-8 rounded-lg object-contain bg-slate-50 border border-slate-200/90 shrink-0 p-0.5"
+                        />
                         <div>
                           <a
                             href={`/extension/${ext.id}`}

@@ -31,7 +31,7 @@ export const ADMIN_MEMBERS_DATA: AdminMember[] = [
     name: "Ishara Madusanka",
     username: "ishara-madu",
     email: "ishara@extlabs.io",
-    avatar: "https://avatars.githubusercontent.com/u/583231",
+    avatar: "/icons/github-profile-placeholder.avif",
     role: "super_admin",
     roleLabel: "Super Admin (Owner)",
     status: "active",
@@ -112,7 +112,7 @@ export const RECENT_AUDIT_LOGS: AdminActivityLog[] = [
     id: "log-001",
     adminName: "Ishara Madusanka",
     adminUsername: "ishara-madu",
-    adminAvatar: "https://avatars.githubusercontent.com/u/583231",
+    adminAvatar: "/icons/github-profile-placeholder.avif",
     action: "Updated monetization split pacing ratio to 5:1",
     target: "Platform Monetag Settings",
     timestamp: "24m ago"
@@ -139,7 +139,7 @@ export const RECENT_AUDIT_LOGS: AdminActivityLog[] = [
     id: "log-004",
     adminName: "Ishara Madusanka",
     adminUsername: "ishara-madu",
-    adminAvatar: "https://avatars.githubusercontent.com/u/583231",
+    adminAvatar: "/icons/github-profile-placeholder.avif",
     action: "Invited new developer relations administrator",
     target: "sarah.j@extlabs.io",
     timestamp: "Yesterday"

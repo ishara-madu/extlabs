@@ -245,9 +245,11 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
                     <!-- Extension Info -->
                     <td class="py-3.5 px-4">
                       <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 shrink-0">
-                          {item.name.charAt(0)}
-                        </div>
+                        <img
+                          src="/icons/extension-placeholder.avif"
+                          alt={item.name}
+                          class="w-9 h-9 rounded-lg object-contain bg-slate-50 border border-slate-200/90 shrink-0 p-0.5"
+                        />
                         <div class="space-y-0.5">
                           <a
                             href={`/extension/${item.id}`}

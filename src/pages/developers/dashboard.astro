@@ -164,7 +164,11 @@ const allExtensions = [
               <!-- Top Row: App Title & Manage App Link -->
               <div class="flex items-start justify-between gap-4">
                 <div class="flex items-center gap-3.5">
-                  <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs" set:html={item.iconSvg} />
+                  {item.iconSvg ? (
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs" set:html={item.iconSvg} />
+                  ) : (
+                    <img src={item.iconUrl || "/icons/extension-placeholder.avif"} alt={item.name} class="w-12 h-12 rounded-xl object-contain bg-slate-50 border border-slate-200 shrink-0 shadow-2xs p-1" />
+                  )}
                   
                   <div class="space-y-0.5">
                     <a
@@ -321,7 +325,11 @@ const allExtensions = [
                     <!-- App Info -->
                     <td class="py-3.5 px-4">
                       <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0" set:html={ext.iconSvg} />
+                        {ext.iconSvg ? (
+                          <div class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0" set:html={ext.iconSvg} />
+                        ) : (
+                          <img src={ext.iconUrl || "/icons/extension-placeholder.avif"} alt={ext.name} class="w-9 h-9 rounded-lg object-contain bg-slate-50 border border-slate-200 shrink-0 p-0.5" />
+                        )}
                         
                         <div class="space-y-0.5">
                           <a

@@ -57,6 +57,7 @@ export interface Extension {
   editorsPick?: boolean;
   badge?: string;
   iconSvg?: string;
+  iconUrl?: string;
   bannerSvg: string;
   screenshots?: string[];
   youtubeVideoId?: string;
@@ -1616,6 +1617,7 @@ export function getExtensionWithDefaults(ext: Extension) {
     reviews: defaultReviews,
     developerSupport: defaultSupport,
     youtubeVideoId: defaultYoutubeVideoId,
+    iconUrl: ext.iconUrl || '/icons/extension-placeholder.avif',
     downloadUrl: ext.downloadUrl || '#',
     monetagUrl: ext.monetagUrl || 'https://monetag.com'
   };

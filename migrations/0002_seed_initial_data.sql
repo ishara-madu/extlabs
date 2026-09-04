@@ -21,14 +21,14 @@ INSERT OR IGNORE INTO platform_settings (key, value) VALUES
 
 -- 2. Initial Admin & Staff Users
 INSERT OR IGNORE INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled) VALUES
-  ('usr_admin_001', '583231', 'ishara-madu', 'isharamadushankab@gmail.com', 'Ishara Madusanka', 'https://avatars.githubusercontent.com/u/583231', 'super_admin', 'active', 1),
+  ('usr_admin_001', '583231', 'ishara-madu', 'isharamadushankab@gmail.com', 'Ishara Madusanka', '/icons/github-profile-placeholder.avif', 'super_admin', 'active', 1),
   ('usr_admin_002', '124982', 'alex-security', 'alex.t@extlabs.io', 'Alex Thorne', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=96&h=96&fit=crop&crop=face', 'security_auditor', 'active', 1),
   ('usr_admin_003', '392819', 'elena-moderation', 'elena@extlabs.io', 'Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=face', 'moderator', 'active', 1),
   ('usr_admin_004', '491028', 'marcus-compliance', 'marcus.v@extlabs.io', 'Marcus Vance', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop&crop=face', 'moderator', 'active', 1);
 
 -- 3. Initial Developers
 INSERT OR IGNORE INTO developers (id, user_id, slug, display_name, avatar_url, website, bio, primary_focus, is_verified, status) VALUES
-  ('dev_extlabs', 'usr_admin_001', 'extlabs-team', 'ExtLabs Official Team', 'https://avatars.githubusercontent.com/u/583231', 'https://extlabs.io', 'Official engineering and security research team maintaining verified core utilities for the Chromium ecosystem.', 'Core Developer Utilities & Privacy Tools', 1, 'active'),
+  ('dev_extlabs', 'usr_admin_001', 'extlabs-team', 'ExtLabs Official Team', '/icons/github-profile-placeholder.avif', 'https://extlabs.io', 'Official engineering and security research team maintaining verified core utilities for the Chromium ecosystem.', 'Core Developer Utilities & Privacy Tools', 1, 'active'),
   ('dev_aether', NULL, 'aether-labs', 'AetherLabs Engineering', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=96&h=96&fit=crop', 'https://aetherlabs.dev', 'Specializing in next-generation browser privacy, encrypted cookie vaults, and sandboxed web tools.', 'Browser Security & Privacy Protection', 1, 'active'),
   ('dev_nova', NULL, 'nova-devtools', 'Nova DevTools Studio', 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=96&h=96&fit=crop', 'https://novadev.tools', 'Building state-of-the-art developer inspection instruments and real-time network payload formatters.', 'Network Inspection & API Automation', 1, 'active'),
   ('dev_zenith', NULL, 'zenith-productivity', 'Zenith Labs Global', 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=96&h=96&fit=crop', 'https://zenithlabs.io', 'Ergonomic browser workspace optimizers, smart tab clustering, and memory suspension agents.', 'Tab Management & System Efficiency', 1, 'active');
