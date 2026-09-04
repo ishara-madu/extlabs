@@ -56,16 +56,21 @@ const fallbackExt = rawExtension ? getExtensionWithDefaults(rawExtension) : null
 // Normalize extension detail
 const ext = {
   id: dbExtension?.id || fallbackExt?.id || id,
+  slug: dbExtension?.slug || fallbackExt?.slug || id,
   name: dbExtension?.name || fallbackExt?.name || 'Untitled Extension',
-  version: dbExtension?.version_name || fallbackExt?.version || '1.0.0',
+  version: dbExtension?.version_name || dbExtension?.current_version || fallbackExt?.version || '1.0.0',
   category: dbExtension?.category || fallbackExt?.category || 'Productivity',
-  tagline: dbExtension?.tagline || fallbackExt?.tagline || fallbackExt?.shortDescription || '',
-  description: dbExtension?.description || fallbackExt?.description || '',
-  githubUrl: dbExtension?.source_repo_url || (fallbackExt?.githubRepo) || `https://github.com/neural-labs/${id}`,
-  monetagUrl: dbExtension?.monetag_direct_link || (fallbackExt?.monetagDirectLink) || `https://monetag.com/direct/${id.replace(/-/g, '_')}_live_8912`,
+  tagline: dbExtension?.short_description || fallbackExt?.tagline || fallbackExt?.shortDescription || '',
+  description: dbExtension?.full_description || fallbackExt?.description || '',
+  githubUrl: dbExtension?.source_repo_url || fallbackExt?.githubRepo || (user?.username ? `https://github.com/${user.username}/${id}` : ''),
+  downloadUrl: dbExtension?.zip_download_url || dbExtension?.crx_download_url || fallbackExt?.downloadUrl || '',
+  supportEmail: dbExtension?.support_email || user?.email || '',
+  developerWebsite: developer?.website || (user?.username ? `https://github.com/${user.username}` : ''),
+  docsUrl: dbExtension?.docs_url || '',
+  monetagUrl: dbExtension?.monetag_direct_link || (fallbackExt?.monetagDirectLink) || '',
   frequency: "24h",
   iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || '',
-  promoTileUrl: dbExtension?.featured_banner_url || (fallbackExt as any)?.promoTileUrl || '',
+  promoTileUrl: dbExtension?.header_image_url || (fallbackExt as any)?.promoTileUrl || '',
   status: dbExtension?.status || 'Production'
 };
 ---
@@ -115,7 +120,7 @@ const ext = {
           <span>Developer Console</span>
         </a>
         <span class="text-slate-300">/</span>
-        <a href={`/developers/manage/${ext.id}`} class="hover:text-blue-600 transition-colors">
+        <a href={`/developers/manage/${ext.slug || ext.id}`} class="hover:text-blue-600 transition-colors">
           {ext.name}
         </a>
         <span class="text-slate-300">/</span>
@@ -127,12 +132,17 @@ const ext = {
         isEdit={true} 
         initialData={{
           id: ext.id,
+          slug: ext.slug,
           name: ext.name,
           version: ext.version,
           category: ext.category,
           tagline: ext.tagline,
           description: ext.description,
           githubUrl: ext.githubUrl,
+          downloadUrl: ext.downloadUrl,
+          supportEmail: ext.supportEmail,
+          developerWebsite: ext.developerWebsite,
+          docsUrl: ext.docsUrl,
           monetagUrl: ext.monetagUrl,
           frequency: ext.frequency,
           iconUrl: ext.iconUrl,

@@ -51,6 +51,12 @@ export interface DbExtension {
   download_count: number;
   crx_download_url: string | null;
   zip_download_url: string | null;
+  source_repo_url?: string | null;
+  monetag_direct_link?: string | null;
+  support_email?: string | null;
+  docs_url?: string | null;
+  screenshots?: string | null;
+  youtube_video_url?: string | null;
   created_at: string;
   updated_at: string;
 }
