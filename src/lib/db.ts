@@ -107,42 +107,6 @@ export function getDb(_locals?: any): D1Database | null {
 }
 
 /**
- * Helper to fetch all live extensions from D1
+ * Re-export all query helpers from dedicated queries directory
  */
-export async function getLiveExtensions(db: D1Database): Promise<DbExtension[]> {
-  const { results } = await db
-    .prepare('SELECT * FROM extensions WHERE is_active = 1 AND is_suspended = 0 ORDER BY rating DESC')
-    .all<DbExtension>();
-  return results || [];
-}
-
-/**
- * Helper to fetch extension by slug with developer info
- */
-export async function getExtensionBySlug(db: D1Database, slug: string) {
-  const result = await db
-    .prepare(`
-      SELECT e.*, d.display_name AS developer_name, d.slug AS developer_slug, d.is_verified AS developer_verified
-      FROM extensions e
-      JOIN developers d ON e.developer_id = d.id
-      WHERE e.slug = ?
-    `)
-    .bind(slug)
-    .first<DbExtension & { developer_name: string; developer_slug: string; developer_verified: number }>();
-  return result;
-}
-
-/**
- * Helper to fetch platform settings
- */
-export async function getPlatformSettings(db: D1Database): Promise<Record<string, string>> {
-  const { results } = await db
-    .prepare('SELECT key, value FROM platform_settings')
-    .all<DbPlatformSetting>();
-  
-  const settings: Record<string, string> = {};
-  for (const row of results || []) {
-    settings[row.key] = row.value;
-  }
-  return settings;
-}
+export * from './queries';

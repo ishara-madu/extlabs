@@ -51,3 +51,14 @@ Consult these guides before working on related tasks:
 - **Component Primitives & Layout Elements**: Use **[daisyUI](https://daisyui.com/components/)** for clean semantic structures, button variations, badges, alerts, and navigation bars.
 - **Icons**: Use **[Lucide Icons](https://lucide.dev/)** exclusively for all UI symbols.
 - **Styling & Layout**: Prioritize crisp typography, subtle neutral borders, structured grids, and plenty of breathing room (whitespace) with zero motion.
+
+## Database Queries & Data Access Architecture (Repository Pattern)
+
+> [!IMPORTANT]
+> **Strict Database Query & Reusability Policy**:
+> - **Dedicated Queries Directory (`src/lib/queries/`)**: All Cloudflare D1 SQL queries MUST reside in `src/lib/queries/` (e.g., `developers.ts`, `extensions.ts`, `settings.ts`). Re-export them from `src/lib/queries/index.ts` and `src/lib/db.ts`.
+> - **Always Check Existing Queries First**: Before writing any new query, always inspect `src/lib/queries/` to verify if a relevant query already exists.
+> - **Reuse or Safely Extend**: If an existing query satisfies the requirement or can be safely modified/extended with optional parameters without breaking existing callers, reuse or extend it.
+> - **Strictly No Raw SQL in Astro Pages or Components**: Strictly forbid writing raw inline `db.prepare(...)` SQL queries inside `.astro` pages, layouts, or UI components. Always extract queries into typed helper functions in `src/lib/queries/` and import them.
+
+
