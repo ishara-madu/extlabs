@@ -11,6 +11,7 @@ export interface DbUser {
   role: 'super_admin' | 'moderator' | 'security_auditor' | 'developer' | 'support';
   status: 'active' | 'suspended' | 'invited';
   two_factor_enabled: number;
+  github_access_token?: string | null;
   created_at: string;
   updated_at: string;
 }

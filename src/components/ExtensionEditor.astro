@@ -36,7 +36,9 @@ import {
   FileImage,
   AlertCircle,
   X,
-  ArrowRight
+  ArrowRight,
+  Search,
+  ChevronDown
 } from '@lucide/astro';
 
 export interface FeatureData {
@@ -273,11 +275,14 @@ const data = {
   </div>
 
   <!-- 🌟 1-CLICK MAGIC GITHUB AUTO-IMPORT BAR (Frictionless Onboarding) -->
-  <div class="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-2.5 shadow-2xs">
+  <div class="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-3 shadow-2xs">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
       <div>
-        <span class="text-xs font-bold text-slate-900 block">Magic Auto-Fill from GitHub</span>
-        <span class="text-[11px] text-slate-500">Paste your repository URL to instantly populate 85% of your store listing from manifest.json & README.</span>
+        <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+          <Sparkles class="w-3.5 h-3.5 text-blue-600" />
+          <span>Magic Auto-Fill from GitHub</span>
+        </span>
+        <span class="text-[11px] text-slate-500">Search and select any repository from your connected GitHub account to auto-populate your listing.</span>
       </div>
       <span id="magic-status-text" class="text-[11px] font-mono text-blue-600 font-medium hidden sm:block">
         Instant Manifest & Repo Sync
@@ -285,21 +290,49 @@ const data = {
     </div>
 
     <div class="flex flex-col sm:flex-row gap-2">
-      <div class="relative flex-1">
-        <input
-          id="magic-github-input"
-          type="url"
-          value={data.githubUrl || ""}
-          placeholder="https://github.com/username/my-awesome-extension"
-          class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none text-slate-900 font-mono shadow-2xs"
-        />
+      <!-- Unified Searchable Repository Combobox -->
+      <div class="relative flex-1" id="magic-combobox-wrapper">
+        <div class="relative flex items-center">
+          <div class="absolute left-3.5 pointer-events-none text-slate-400 flex items-center">
+            <Search class="w-3.5 h-3.5" />
+          </div>
+          <input
+            id="magic-github-input"
+            type="text"
+            autocomplete="off"
+            value={data.githubUrl || ""}
+            placeholder="Search or select from your GitHub repositories..."
+            class="w-full pl-9 pr-9 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none text-slate-900 font-mono shadow-2xs transition-colors"
+          />
+          <button
+            type="button"
+            id="magic-combobox-toggle"
+            class="absolute right-2 p-1 text-slate-400 hover:text-slate-600 rounded-md transition-colors cursor-pointer"
+            aria-label="Toggle repository list"
+          >
+            <ChevronDown id="magic-chevron-icon" class="w-3.5 h-3.5 transition-transform duration-200" />
+          </button>
+        </div>
+
+        <!-- Custom Dropdown Menu matching ExtLabs theme -->
+        <div
+          id="magic-dropdown-menu"
+          class="hidden absolute left-0 right-0 top-full mt-1.5 z-40 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-slate-100"
+        >
+          <div id="magic-dropdown-loading" class="px-3.5 py-3 text-xs text-slate-500 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+            <span>Loading your GitHub repositories...</span>
+          </div>
+          <div id="magic-dropdown-list" class="divide-y divide-slate-100"></div>
+        </div>
       </div>
 
       <button
         type="button"
         id="magic-import-btn"
-        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-2xs"
+        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-2xs"
       >
+        <Sparkles class="w-3.5 h-3.5" />
         <span>Fetch & Auto-Fill</span>
       </button>
     </div>
@@ -3104,82 +3137,370 @@ const data = {
       });
     });
 
-    // 2. 🌟 MAGIC GITHUB AUTO-IMPORT ACTION
+    // 2. 🌟 MAGIC GITHUB AUTO-IMPORT ACTION (Unified Searchable Combobox)
+    const comboboxWrapper = document.getElementById('magic-combobox-wrapper');
     const magicInput = document.getElementById('magic-github-input') as HTMLInputElement | null;
+    const toggleBtn = document.getElementById('magic-combobox-toggle');
+    const chevronIcon = document.getElementById('magic-chevron-icon');
+    const dropdownMenu = document.getElementById('magic-dropdown-menu');
+    const dropdownList = document.getElementById('magic-dropdown-list');
+    const dropdownLoading = document.getElementById('magic-dropdown-loading');
     const magicBtn = document.getElementById('magic-import-btn') as HTMLButtonElement | null;
     const magicStatus = document.getElementById('magic-status-text');
 
+    let userRepos: any[] = [];
+    let connectedUsername = '';
+
+    function openDropdown() {
+      if (dropdownMenu) dropdownMenu.classList.remove('hidden');
+      if (chevronIcon) chevronIcon.classList.add('rotate-180');
+    }
+
+    function closeDropdown() {
+      if (dropdownMenu) dropdownMenu.classList.add('hidden');
+      if (chevronIcon) chevronIcon.classList.remove('rotate-180');
+    }
+
+    function renderDropdown(reposToRender: any[]) {
+      if (!dropdownList) return;
+
+      if (reposToRender.length === 0) {
+        dropdownList.innerHTML = `
+          <div class="px-4 py-3 text-center text-xs text-slate-400">
+            ${connectedUsername ? `No matching repositories found in @${connectedUsername}` : 'No repositories found.'}
+          </div>
+        `;
+        return;
+      }
+
+      dropdownList.innerHTML = reposToRender
+        .map(
+          (r: any) => `
+          <div class="magic-repo-item px-3.5 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors" data-url="${r.url}">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-slate-800 font-mono flex items-center gap-1.5 truncate">
+                <span class="text-blue-600 font-bold">${r.name}</span>
+                ${r.isPrivate ? '<span class="text-[10px] text-slate-400">🔒</span>' : ''}
+              </span>
+              <span class="text-[10px] font-mono text-slate-400 shrink-0">@${connectedUsername || r.fullName.split('/')[0]}</span>
+            </div>
+            ${r.description ? `<p class="text-[11px] text-slate-500 truncate mt-0.5">${r.description}</p>` : ''}
+          </div>
+        `
+        )
+        .join('');
+
+      // Add click handlers for each repository item
+      dropdownList.querySelectorAll('.magic-repo-item').forEach((el) => {
+        el.addEventListener('click', () => {
+          const repoUrl = el.getAttribute('data-url');
+          if (repoUrl && magicInput) {
+            magicInput.value = repoUrl;
+            magicInput.dispatchEvent(new Event('input'));
+          }
+          closeDropdown();
+        });
+      });
+    }
+
+    // Load developer's GitHub repositories asynchronously
+    fetch('/api/developers/github/repos')
+      .then((r) => r.json())
+      .then((data) => {
+        if (dropdownLoading) dropdownLoading.classList.add('hidden');
+        if (data.success) {
+          connectedUsername = (data.username || '').toLowerCase();
+          userRepos = Array.isArray(data.repos) ? data.repos : [];
+          renderDropdown(userRepos);
+        } else if (dropdownList) {
+          dropdownList.innerHTML = `<div class="px-4 py-3 text-center text-xs text-slate-400">Please connect your GitHub account to load repositories.</div>`;
+        }
+      })
+      .catch(() => {
+        if (dropdownLoading) dropdownLoading.classList.add('hidden');
+        if (dropdownList) {
+          dropdownList.innerHTML = `<div class="px-4 py-3 text-center text-xs text-slate-400">Could not load repositories.</div>`;
+        }
+      });
+
+    // Toggle dropdown on button click
+    toggleBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (dropdownMenu?.classList.contains('hidden')) {
+        renderDropdown(userRepos);
+        openDropdown();
+      } else {
+        closeDropdown();
+      }
+    });
+
+    // Open dropdown and filter when input is focused or typed
+    magicInput?.addEventListener('focus', () => {
+      if (userRepos.length > 0) {
+        filterAndRender();
+        openDropdown();
+      }
+    });
+
+    magicInput?.addEventListener('input', () => {
+      filterAndRender();
+      openDropdown();
+    });
+
+    function filterAndRender() {
+      const q = (magicInput?.value || '').trim().toLowerCase();
+      if (!q) {
+        renderDropdown(userRepos);
+        return;
+      }
+
+      // If user typed a full URL, check ownership
+      if (q.includes('github.com/')) {
+        const parts = q.replace(/^https?:\/\/github\.com\//i, '').split('/');
+        const owner = parts[0]?.toLowerCase();
+        if (connectedUsername && owner && owner !== connectedUsername) {
+          if (dropdownList) {
+            dropdownList.innerHTML = `
+              <div class="px-4 py-3 text-xs text-amber-700 bg-amber-50/70 border-b border-amber-100 font-medium">
+                ⚠️ Account Restriction: You can only import repositories from your connected account (@${connectedUsername}).
+              </div>
+            `;
+          }
+          return;
+        }
+      }
+
+      const cleanQuery = q.replace(/^https?:\/\/github\.com\//i, '').replace(/^[a-z0-9_-]+\//i, '');
+      const filtered = userRepos.filter(
+        (r) =>
+          r.name.toLowerCase().includes(cleanQuery) ||
+          r.fullName.toLowerCase().includes(cleanQuery) ||
+          (r.description && r.description.toLowerCase().includes(cleanQuery))
+      );
+
+      renderDropdown(filtered);
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (comboboxWrapper && !comboboxWrapper.contains(e.target as Node)) {
+        closeDropdown();
+      }
+    });
+
+    // Trigger Fetch & Auto-Fill from backend endpoint
     magicBtn?.addEventListener('click', async () => {
       const url = magicInput?.value.trim() || '';
       if (!url || !url.includes('github.com')) {
-        alert('Please enter a valid GitHub repository URL (e.g. https://github.com/username/extension-repo)');
+        alert('Please select or enter a valid GitHub repository URL (e.g. https://github.com/username/extension-repo)');
+        magicInput?.focus();
+        return;
+      }
+
+      // Security check: Only allow repositories belonging to the connected GitHub user
+      const pathParts = url.replace(/^https?:\/\/github\.com\//i, '').replace(/^\/+/, '').split('/');
+      const typedOwner = pathParts[0]?.toLowerCase();
+      if (connectedUsername && typedOwner && typedOwner !== connectedUsername) {
+        alert(`Access Denied: You can only import repositories belonging to your own connected GitHub account (@${connectedUsername}).`);
         magicInput?.focus();
         return;
       }
 
       // Visual feedback loading
       const originalText = magicBtn.innerHTML;
-      magicBtn.innerHTML = `<span>Fetching Details...</span>`;
+      magicBtn.innerHTML = `<span>Fetching...</span>`;
       magicBtn.disabled = true;
 
-      // Extract username and repo
-      const parts = url.replace('https://github.com/', '').replace('.git', '').split('/');
-      const repoOwner = parts[0] || 'developer';
-      const repoName = parts[1] || 'extension';
-      
-      const cleanName = repoName
-        .split('-')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
+      if (magicStatus) {
+        magicStatus.textContent = 'Syncing manifest & repository...';
+        magicStatus.className = 'text-[11px] font-mono text-blue-600 font-medium hidden sm:block';
+      }
 
-      setTimeout(() => {
-        // Auto-fill Name & Slug
+      try {
+        const res = await fetch('/api/developers/github/fetch-repo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repoUrl: url }),
+        });
+
+        const json = await res.json();
+        if (!json.success || !json.data) {
+          throw new Error(json.error || 'Failed to fetch repository details.');
+        }
+
+        const d = json.data;
+
+        // 1. Basic & Source (Tab 1)
         const nameInput = document.getElementById('ext-name-input') as HTMLInputElement | null;
         const slugInput = document.getElementById('ext-slug-input') as HTMLInputElement | null;
+        const categoryInput = document.getElementById('ext-category-input') as HTMLSelectElement | null;
+        const versionInput = document.getElementById('ext-version-input') as HTMLInputElement | null;
+        const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
         const githubInput = document.getElementById('ext-github-input') as HTMLInputElement | null;
         const downloadInput = document.getElementById('ext-download-input') as HTMLInputElement | null;
-        const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
-        const descInput = document.getElementById('ext-desc-input') as HTMLTextAreaElement | null;
-        const privacyInput = document.getElementById('ext-privacy-input') as HTMLInputElement | null;
+        const emailInput = document.getElementById('ext-support-email-input') as HTMLInputElement | null;
+        const websiteInput = document.getElementById('ext-dev-website-input') as HTMLInputElement | null;
+        const docsInput = document.getElementById('ext-docs-input') as HTMLInputElement | null;
 
-        if (nameInput) {
-          nameInput.value = cleanName.includes('Extension') ? cleanName : `${cleanName} Extension`;
+        if (nameInput && d.name) {
+          nameInput.value = d.name;
           nameInput.dispatchEvent(new Event('input'));
         }
-        if (slugInput) {
-          slugInput.value = repoName.toLowerCase();
+        if (slugInput && d.slug) {
+          slugInput.value = d.slug;
+          slugInput.dispatchEvent(new Event('input'));
         }
-        if (githubInput) {
-          githubInput.value = url;
+        if (categoryInput && d.category) {
+          categoryInput.value = d.category;
+          categoryInput.dispatchEvent(new Event('change'));
         }
-        if (downloadInput) {
-          downloadInput.value = `https://github.com/${repoOwner}/${repoName}/releases/latest/download/${repoName}.zip`;
+        if (versionInput && d.version) {
+          versionInput.value = d.version;
+          versionInput.dispatchEvent(new Event('input'));
         }
-        if (taglineInput && (!taglineInput.value || taglineInput.value.length < 5)) {
-          taglineInput.value = `Lightweight, privacy-friendly browser extension for high-performance productivity.`;
+        if (taglineInput && d.tagline) {
+          taglineInput.value = d.tagline;
           taglineInput.dispatchEvent(new Event('input'));
         }
-        if (descInput && (!descInput.value || descInput.value.length < 50)) {
-          descInput.value = `### Overview\n\n**${cleanName}** is an open-source Manifest V3 extension designed to streamline your web workflow directly within your browser.\n\n### Key Highlights\n- **Zero-Telemetry Privacy**: Executes locally without external data logging.\n- **Instant Performance**: Sub-second responsiveness on modern Chromium browsers.\n- **Open Source**: Full source code available and auditable on GitHub.`;
+        if (githubInput && d.githubUrl) {
+          githubInput.value = d.githubUrl;
+          githubInput.dispatchEvent(new Event('input'));
+        }
+        if (downloadInput && d.downloadUrl) {
+          downloadInput.value = d.downloadUrl;
+          downloadInput.dispatchEvent(new Event('input'));
+        }
+        if (emailInput && d.supportEmail && (!emailInput.value || emailInput.value.includes('@user.'))) {
+          emailInput.value = d.supportEmail;
+          emailInput.dispatchEvent(new Event('input'));
+        }
+        if (websiteInput && d.developerWebsite) {
+          websiteInput.value = d.developerWebsite;
+          websiteInput.dispatchEvent(new Event('input'));
+        }
+        if (docsInput && d.docsUrl) {
+          docsInput.value = d.docsUrl;
+          docsInput.dispatchEvent(new Event('input'));
+        }
+
+        // 2. Story & Overview (Tab 2)
+        const descInput = document.getElementById('ext-desc-input') as HTMLTextAreaElement | null;
+        if (descInput && d.description) {
+          descInput.value = d.description;
           descInput.dispatchEvent(new Event('input'));
         }
-        if (privacyInput) {
-          privacyInput.value = `https://github.com/${repoOwner}/${repoName}/blob/main/PRIVACY.md`;
+
+        // Auto-fill Feature Highlights
+        if (Array.isArray(d.features)) {
+          const featCards = document.querySelectorAll('#features-list-container .feature-card');
+          d.features.forEach((feat: any, idx: number) => {
+            if (featCards[idx]) {
+              const tIn = featCards[idx].querySelector('.feature-title-input') as HTMLInputElement | null;
+              const dIn = featCards[idx].querySelector('.feature-desc-input') as HTMLInputElement | null;
+              if (tIn && feat.title) {
+                tIn.value = feat.title;
+                tIn.dispatchEvent(new Event('input'));
+              }
+              if (dIn && feat.description) {
+                dIn.value = feat.description;
+                dIn.dispatchEvent(new Event('input'));
+              }
+            }
+          });
         }
 
-        // Reset button
-        magicBtn.innerHTML = `<span>Auto-Filled Successfully</span>`;
-        magicBtn.disabled = false;
+        // Auto-fill Workflow Stages
+        if (Array.isArray(d.workflow)) {
+          const wfCards = document.querySelectorAll('#workflow-list-container .workflow-card');
+          d.workflow.forEach((wf: any, idx: number) => {
+            if (wfCards[idx]) {
+              const tIn = wfCards[idx].querySelector('.workflow-title-input') as HTMLInputElement | null;
+              const dIn = wfCards[idx].querySelector('.workflow-desc-input') as HTMLInputElement | null;
+              if (tIn && wf.title) {
+                tIn.value = wf.title;
+                tIn.dispatchEvent(new Event('input'));
+              }
+              if (dIn && wf.description) {
+                dIn.value = wf.description;
+                dIn.dispatchEvent(new Event('input'));
+              }
+            }
+          });
+        }
 
+        // 3. Media & Icon (Tab 3)
+        if (d.iconUrl) {
+          const iconVal = document.getElementById('ext-icon-url-val') as HTMLInputElement | null;
+          const iconPreviewImg = document.getElementById('ext-icon-preview-img') as HTMLImageElement | null;
+          const iconPreviewPlaceholder = document.getElementById('ext-icon-placeholder');
+          if (iconVal) iconVal.value = d.iconUrl;
+          if (iconPreviewImg) {
+            iconPreviewImg.src = d.iconUrl;
+            iconPreviewImg.classList.remove('hidden');
+          }
+          if (iconPreviewPlaceholder) {
+            iconPreviewPlaceholder.classList.add('hidden');
+          }
+        }
+
+        // 4. Specs & Compliance (Tab 4)
+        const manifestInput = document.getElementById('ext-manifest-input') as HTMLSelectElement | null;
+        const licenseInput = document.getElementById('ext-license-input') as HTMLInputElement | null;
+        const privacyInput = document.getElementById('ext-privacy-input') as HTMLInputElement | null;
+
+        if (manifestInput && d.manifestVersion) {
+          manifestInput.value = d.manifestVersion;
+          manifestInput.dispatchEvent(new Event('change'));
+        }
+        if (licenseInput && d.license) {
+          licenseInput.value = d.license;
+          licenseInput.dispatchEvent(new Event('input'));
+        }
+        if (privacyInput && (!privacyInput.value || privacyInput.value.length < 5)) {
+          privacyInput.value = `${d.githubUrl}#privacy`;
+          privacyInput.dispatchEvent(new Event('input'));
+        }
+
+        // Auto-fill FAQs
+        if (Array.isArray(d.faqs)) {
+          const faqCards = document.querySelectorAll('#faqs-list-container .faq-card');
+          d.faqs.forEach((faq: any, idx: number) => {
+            if (faqCards[idx]) {
+              const qIn = faqCards[idx].querySelector('.faq-q-input') as HTMLInputElement | null;
+              const aIn = faqCards[idx].querySelector('.faq-a-input') as HTMLInputElement | null;
+              if (qIn && faq.q) {
+                qIn.value = faq.q;
+                qIn.dispatchEvent(new Event('input'));
+              }
+              if (aIn && faq.a) {
+                aIn.value = faq.a;
+                aIn.dispatchEvent(new Event('input'));
+              }
+            }
+          });
+        }
+
+        magicBtn.innerHTML = `<span>✓ Auto-Filled!</span>`;
         if (magicStatus) {
-          magicStatus.textContent = `✓ Synced with @${repoOwner}/${repoName}`;
+          const syncSource = d.hasManifest && d.hasReadme ? 'Manifest & README' : d.hasManifest ? 'Manifest V3' : 'GitHub Repository';
+          magicStatus.textContent = `✓ Synced with ${syncSource}`;
           magicStatus.className = 'text-[11px] font-mono text-emerald-600 font-semibold hidden sm:block';
         }
 
         setTimeout(() => {
           magicBtn.innerHTML = originalText;
+          magicBtn.disabled = false;
         }, 2500);
-      }, 750);
+      } catch (err: any) {
+        console.error('Magic auto-fill failed:', err);
+        alert(`Auto-fill error: ${err.message || 'Could not fetch repository.'}`);
+        magicBtn.innerHTML = originalText;
+        magicBtn.disabled = false;
+        if (magicStatus) {
+          magicStatus.textContent = 'Sync failed. Check repository URL.';
+          magicStatus.className = 'text-[11px] font-mono text-red-600 font-medium hidden sm:block';
+        }
+      }
     });
 
     // 3. Tagline & Name Counters

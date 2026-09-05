@@ -62,7 +62,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   // 3. Upsert user in Cloudflare D1 & create session
-  const { user, sessionId } = await createOrUpdateUserSession(db, profile, superAdmin);
+  const { user, sessionId } = await createOrUpdateUserSession(db, profile, superAdmin, accessToken);
 
   const isAdmin = user.role === 'super_admin' || user.role === 'moderator' || user.role === 'security_auditor';
   if (isAdmin && redirectTo === '/developers/dashboard') {

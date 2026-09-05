@@ -21,7 +21,7 @@ export interface GitHubUserProfile {
 export function getGitHubAuthUrl(clientId: string, state: string, redirectUri?: string): string {
   const url = new URL('https://github.com/login/oauth/authorize');
   url.searchParams.set('client_id', clientId);
-  url.searchParams.set('scope', 'read:user user:email');
+  url.searchParams.set('scope', 'read:user user:email public_repo');
   url.searchParams.set('prompt', 'consent');
   url.searchParams.set('state', state);
   if (redirectUri) {
@@ -134,7 +134,8 @@ export async function getGitHubUserProfile(accessToken: string): Promise<GitHubU
 export async function createOrUpdateUserSession(
   db: D1Database,
   profile: GitHubUserProfile,
-  configuredSuperAdmin?: string
+  configuredSuperAdmin?: string,
+  accessToken?: string
 ): Promise<{ user: DbUser; sessionId: string }> {
   const githubIdStr = profile.id.toString();
   const username = profile.login.toLowerCase();
@@ -160,39 +161,94 @@ export async function createOrUpdateUserSession(
 
   if (existingUser) {
     userId = existingUser.id;
-    await db
-      .prepare(`
-        UPDATE users 
-        SET github_id = ?, username = ?, email = COALESCE(?, email), name = ?, avatar_url = ?, role = ?, updated_at = DATETIME('now')
-        WHERE id = ?
-      `)
-      .bind(
-        githubIdStr,
-        username,
-        profile.email || null,
-        profile.name || profile.login,
-        profile.avatar_url,
-        userRole,
-        userId
-      )
-      .run();
+    let updated = false;
+    if (accessToken) {
+      try {
+        await db
+          .prepare(`
+            UPDATE users 
+            SET github_id = ?, username = ?, email = COALESCE(?, email), name = ?, avatar_url = ?, role = ?, github_access_token = ?, updated_at = DATETIME('now')
+            WHERE id = ?
+          `)
+          .bind(
+            githubIdStr,
+            username,
+            profile.email || null,
+            profile.name || profile.login,
+            profile.avatar_url,
+            userRole,
+            accessToken,
+            userId
+          )
+          .run();
+        updated = true;
+      } catch {
+        // Fallback if github_access_token column does not exist yet
+      }
+    }
+
+    if (!updated) {
+      await db
+        .prepare(`
+          UPDATE users 
+          SET github_id = ?, username = ?, email = COALESCE(?, email), name = ?, avatar_url = ?, role = ?, updated_at = DATETIME('now')
+          WHERE id = ?
+        `)
+        .bind(
+          githubIdStr,
+          username,
+          profile.email || null,
+          profile.name || profile.login,
+          profile.avatar_url,
+          userRole,
+          userId
+        )
+        .run();
+    }
   } else {
     userId = `usr_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
-    await db
-      .prepare(`
-        INSERT INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0)
-      `)
-      .bind(
-        userId,
-        githubIdStr,
-        username,
-        profile.email || null,
-        profile.name || profile.login,
-        profile.avatar_url,
-        userRole
-      )
-      .run();
+    let inserted = false;
+    if (accessToken) {
+      try {
+        await db
+          .prepare(`
+            INSERT INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled, github_access_token)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0, ?)
+          `)
+          .bind(
+            userId,
+            githubIdStr,
+            username,
+            profile.email || null,
+            profile.name || profile.login,
+            profile.avatar_url,
+            userRole,
+            accessToken
+          )
+          .run();
+        inserted = true;
+      } catch {
+        // Fallback if github_access_token column does not exist yet
+      }
+    }
+
+    if (!inserted) {
+      await db
+        .prepare(`
+          INSERT INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0)
+        `)
+        .bind(
+          userId,
+          githubIdStr,
+          username,
+          profile.email || null,
+          profile.name || profile.login,
+          profile.avatar_url,
+          userRole
+        )
+        .run();
+    }
   }
 
   // Ensure an associated developer profile exists if user is a developer
