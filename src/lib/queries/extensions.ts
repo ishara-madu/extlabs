@@ -316,3 +316,142 @@ export async function saveExtensionBasic(
   return { id: newId, slug: cleanSlug };
 }
 
+export interface SaveExtensionMediaInput {
+  id?: string;
+  slug?: string;
+  developerId: string;
+  iconUrl: string;
+  headerImageUrl?: string | null;
+  screenshots?: string[];
+  youtubeVideoUrl?: string | null;
+}
+
+/**
+ * Save or update visual media & store assets (Tab 2) in Cloudflare D1
+ */
+export async function saveExtensionMedia(
+  db: D1Database,
+  data: SaveExtensionMediaInput
+): Promise<{ id: string; success: boolean }> {
+  const cleanId = (data.id || '').trim();
+  const cleanSlug = (data.slug || '').trim().toLowerCase();
+
+  if (!cleanId && !cleanSlug) {
+    throw new Error('Extension ID or directory slug is required.');
+  }
+
+  // Find extension belonging to this developer
+  const existing = await db
+    .prepare('SELECT id FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
+    .bind(cleanId || cleanSlug, cleanSlug || cleanId, data.developerId)
+    .first<{ id: string }>();
+
+  if (!existing) {
+    throw new Error('Extension not found or permission denied.');
+  }
+
+  const screenshotsJson = JSON.stringify(data.screenshots || []);
+
+  await db
+    .prepare(`
+      UPDATE extensions
+      SET 
+        icon_url = ?,
+        header_image_url = ?,
+        screenshots = ?,
+        youtube_video_url = ?,
+        updated_at = DATETIME('now')
+      WHERE id = ? AND developer_id = ?
+    `)
+    .bind(
+      data.iconUrl.trim(),
+      data.headerImageUrl?.trim() || null,
+      screenshotsJson,
+      data.youtubeVideoUrl?.trim() || null,
+      existing.id,
+      data.developerId
+    )
+    .run();
+
+  return { id: existing.id, success: true };
+}
+
+export interface FeatureItemInput {
+  title: string;
+  description: string;
+}
+
+export interface WorkflowStageInput {
+  step: number;
+  title: string;
+  description: string;
+}
+
+export interface ComparisonRowInput {
+  feature: string;
+  current: string;
+  others: string;
+}
+
+export interface SaveExtensionStoryInput {
+  id?: string;
+  slug?: string;
+  developerId: string;
+  description: string;
+  features: FeatureItemInput[];
+  workflow: WorkflowStageInput[];
+  comparison: ComparisonRowInput[];
+}
+
+/**
+ * Save or update store story, features, workflow, and comparison matrix (Tab 3) in Cloudflare D1
+ */
+export async function saveExtensionStory(
+  db: D1Database,
+  data: SaveExtensionStoryInput
+): Promise<{ id: string; success: boolean }> {
+  const cleanId = (data.id || '').trim();
+  const cleanSlug = (data.slug || '').trim().toLowerCase();
+
+  if (!cleanId && !cleanSlug) {
+    throw new Error('Extension ID or directory slug is required.');
+  }
+
+  // Find extension belonging to this developer
+  const existing = await db
+    .prepare('SELECT id FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
+    .bind(cleanId || cleanSlug, cleanSlug || cleanId, data.developerId)
+    .first<{ id: string }>();
+
+  if (!existing) {
+    throw new Error('Extension not found or permission denied.');
+  }
+
+  const featuresJson = JSON.stringify(data.features || []);
+  const workflowJson = JSON.stringify(data.workflow || []);
+  const comparisonJson = JSON.stringify(data.comparison || []);
+
+  await db
+    .prepare(`
+      UPDATE extensions
+      SET 
+        full_description = ?,
+        features = ?,
+        workflow = ?,
+        comparison = ?,
+        updated_at = DATETIME('now')
+      WHERE id = ? AND developer_id = ?
+    `)
+    .bind(
+      data.description.trim(),
+      featuresJson,
+      workflowJson,
+      comparisonJson,
+      existing.id,
+      data.developerId
+    )
+    .run();
+
+  return { id: existing.id, success: true };
+}
+

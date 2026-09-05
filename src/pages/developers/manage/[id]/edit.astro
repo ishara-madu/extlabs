@@ -54,6 +54,53 @@ if (!dbExtension && !rawExtension) {
 const fallbackExt = rawExtension ? getExtensionWithDefaults(rawExtension) : null;
 
 // Normalize extension detail
+let parsedScreenshots: string[] = [];
+if (dbExtension?.screenshots) {
+  try {
+    const s = typeof dbExtension.screenshots === 'string' ? JSON.parse(dbExtension.screenshots) : dbExtension.screenshots;
+    if (Array.isArray(s)) parsedScreenshots = s;
+  } catch {}
+}
+if (!parsedScreenshots.length && fallbackExt?.screenshots) {
+  parsedScreenshots = fallbackExt.screenshots;
+}
+
+// Normalize features
+let parsedFeatures = undefined;
+if (dbExtension?.features) {
+  try {
+    const f = typeof dbExtension.features === 'string' ? JSON.parse(dbExtension.features) : dbExtension.features;
+    if (Array.isArray(f) && f.length > 0) parsedFeatures = f;
+  } catch {}
+}
+if (!parsedFeatures && fallbackExt?.features) {
+  parsedFeatures = fallbackExt.features;
+}
+
+// Normalize workflow
+let parsedWorkflow = undefined;
+if (dbExtension?.workflow) {
+  try {
+    const w = typeof dbExtension.workflow === 'string' ? JSON.parse(dbExtension.workflow) : dbExtension.workflow;
+    if (Array.isArray(w) && w.length > 0) parsedWorkflow = w;
+  } catch {}
+}
+if (!parsedWorkflow && fallbackExt?.howItWorks) {
+  parsedWorkflow = fallbackExt.howItWorks;
+}
+
+// Normalize comparison
+let parsedComparison = undefined;
+if (dbExtension?.comparison) {
+  try {
+    const c = typeof dbExtension.comparison === 'string' ? JSON.parse(dbExtension.comparison) : dbExtension.comparison;
+    if (Array.isArray(c) && c.length > 0) parsedComparison = c;
+  } catch {}
+}
+if (!parsedComparison && fallbackExt?.comparison) {
+  parsedComparison = fallbackExt.comparison;
+}
+
 const ext = {
   id: dbExtension?.id || fallbackExt?.id || id,
   slug: dbExtension?.slug || fallbackExt?.slug || id,
@@ -71,6 +118,11 @@ const ext = {
   frequency: "24h",
   iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || '',
   promoTileUrl: dbExtension?.header_image_url || (fallbackExt as any)?.promoTileUrl || '',
+  screenshots: parsedScreenshots.length > 0 ? parsedScreenshots : undefined,
+  youtubeVideoUrl: dbExtension?.youtube_video_url || (fallbackExt as any)?.youtubeVideoUrl || '',
+  features: parsedFeatures,
+  workflow: parsedWorkflow,
+  comparison: parsedComparison,
   status: dbExtension?.status || 'Production'
 };
 ---

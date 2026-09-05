@@ -680,6 +680,7 @@ const data = {
               </button>
             </div>
           </div>
+          <p id="err-ext-icon" class="hidden text-[11px] font-medium text-red-600 mt-1"></p>
         </div>
 
         <!-- Promotional Shelf Banner (Required *) -->
@@ -743,6 +744,7 @@ const data = {
               </button>
             </div>
           </div>
+          <p id="err-ext-promo" class="hidden text-[11px] font-medium text-red-600 mt-1"></p>
         </div>
 
       </div>
@@ -812,6 +814,7 @@ const data = {
           </span>
           <span class="text-[10px] text-slate-400">Supports PNG, WebP, JPG up to 5MB each</span>
         </div>
+        <p id="err-ext-screenshots" class="hidden text-[11px] font-medium text-red-600 mt-1"></p>
       </div>
 
       <!-- YouTube Demo Video (Optional) -->
@@ -840,6 +843,7 @@ const data = {
             class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-r-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
           />
         </div>
+        <p id="err-ext-youtube" class="hidden text-[11px] font-medium text-red-600 mt-1"></p>
 
         <!-- YouTube Live Video Preview Embed Container -->
         <div id="youtube-preview-container" class={`p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 ${!data.youtubeVideoUrl ? 'hidden' : ''}`}>
@@ -866,23 +870,35 @@ const data = {
       </div>
 
       <!-- Step Navigation Footer -->
-      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
-        <button
-          type="button"
-          class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
-          data-prev="1"
-        >
-          ← Basic & Source
-        </button>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
+            data-prev="1"
+          >
+            ← Basic & Source
+          </button>
+          <div id="tab2-save-status" class="text-xs text-slate-500 font-mono"></div>
+        </div>
 
-        <button
-          type="button"
-          class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-          data-next="3"
-        >
-          <span>Next: Store Story & SEO</span>
-          <ArrowRight class="w-3.5 h-3.5" />
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            id="tab2-save-btn"
+            class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>{isEdit ? "Save Visual Media" : "Save Draft"}</span>
+          </button>
+          <button
+            type="button"
+            class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            data-next="3"
+          >
+            <span>Next: Store Story & SEO</span>
+            <ArrowRight class="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1003,6 +1019,7 @@ const data = {
             <span>Standard Markdown syntax supported. Clean semantic structure for SEO.</span>
             <span id="char-status-badge" class="font-medium text-amber-600">Min 100 characters needed</span>
           </div>
+          <p id="err-ext-desc" class="text-[11px] text-red-600 font-medium hidden"></p>
         </div>
       </section>
 
@@ -1099,6 +1116,7 @@ const data = {
             <Plus class="w-3.5 h-3.5 text-blue-600" />
             <span>Add another feature (Min: 3, Max: 6)</span>
           </button>
+          <p id="err-ext-features" class="text-[11px] text-red-600 font-medium hidden mt-1"></p>
         </div>
       </section>
 
@@ -1195,6 +1213,7 @@ const data = {
             <Plus class="w-3.5 h-3.5 text-blue-600" />
             <span>Add another stage (Min: 3, Max: 5)</span>
           </button>
+          <p id="err-ext-workflow" class="text-[11px] text-red-600 font-medium hidden mt-1"></p>
         </div>
       </section>
 
@@ -1315,27 +1334,40 @@ const data = {
             <Plus class="w-3.5 h-3.5 text-blue-600" />
             <span>Add another comparison row (Min: 3, Max: 5)</span>
           </button>
+          <p id="err-ext-comparison" class="text-[11px] text-red-600 font-medium hidden mt-1"></p>
         </div>
       </section>
 
       <!-- Step Navigation Footer -->
-      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
-        <button
-          type="button"
-          class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
-          data-prev="2"
-        >
-          ← Visual Media
-        </button>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
+            data-prev="2"
+          >
+            ← Visual Media
+          </button>
+          <div id="tab3-save-status" class="text-xs text-slate-500 font-mono"></div>
+        </div>
 
-        <button
-          type="button"
-          class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-          data-next="4"
-        >
-          <span>Next: Monetization & Specs</span>
-          <ArrowRight class="w-3.5 h-3.5" />
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            id="tab3-save-btn"
+            class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>{isEdit ? "Save Story & SEO" : "Save Draft"}</span>
+          </button>
+          <button
+            type="button"
+            class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            data-next="4"
+          >
+            <span>Next: Monetization & Specs</span>
+            <ArrowRight class="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1651,6 +1683,77 @@ const data = {
     const errEmail = document.getElementById('err-ext-support-email');
     const errWebsite = document.getElementById('err-ext-dev-website');
 
+    // Tab 2 visual media elements
+    const tab2SaveBtn = document.getElementById('tab2-save-btn');
+    const tab2Status = document.getElementById('tab2-save-status');
+    const iconFileInput = document.getElementById('ext-icon-file-input') as HTMLInputElement | null;
+    const iconDropzone = document.getElementById('icon-upload-dropzone');
+    const iconEmptyState = document.getElementById('icon-empty-state');
+    const iconPreviewState = document.getElementById('icon-preview-state');
+    const iconPreviewImg = document.getElementById('icon-preview-img') as HTMLImageElement | null;
+    const iconFileName = document.getElementById('icon-file-name');
+    const iconFileSize = document.getElementById('icon-file-size');
+    const iconUrlVal = document.getElementById('ext-icon-url-val') as HTMLInputElement | null;
+    const removeIconBtn = document.getElementById('remove-icon-btn');
+
+    const promoFileInput = document.getElementById('ext-promo-file-input') as HTMLInputElement | null;
+    const promoDropzone = document.getElementById('promo-upload-dropzone');
+    const promoEmptyState = document.getElementById('promo-empty-state');
+    const promoPreviewState = document.getElementById('promo-preview-state');
+    const promoPreviewImg = document.getElementById('promo-preview-img') as HTMLImageElement | null;
+    const promoFileName = document.getElementById('promo-file-name');
+    const promoFileSize = document.getElementById('promo-file-size');
+    const promoUrlVal = document.getElementById('ext-promo-url-val') as HTMLInputElement | null;
+    const removePromoBtn = document.getElementById('remove-promo-btn');
+
+    const MIN_SCREENSHOTS = 2;
+    const MAX_SCREENSHOTS = 5;
+    const screenshotsFileInput = document.getElementById('ext-screenshots-file-input') as HTMLInputElement | null;
+    const screenshotsDropzone = document.getElementById('add-screenshots-dropzone');
+    const screenshotsContainer = document.getElementById('screenshots-grid-container');
+    const screenshotsBadge = document.getElementById('screenshots-count-badge');
+
+    const youtubeInput = document.getElementById('ext-youtube-input') as HTMLInputElement | null;
+    const youtubePreviewContainer = document.getElementById('youtube-preview-container');
+    const youtubeIframe = document.getElementById('youtube-preview-iframe') as HTMLIFrameElement | null;
+    const youtubeBadge = document.getElementById('youtube-video-id-badge');
+
+    // Tab 2 error message elements
+    const errIcon = document.getElementById('err-ext-icon');
+    const errPromo = document.getElementById('err-ext-promo');
+    const errScreenshots = document.getElementById('err-ext-screenshots');
+    const errYoutube = document.getElementById('err-ext-youtube');
+
+    // Tab 3 Store Story & SEO elements
+    const tab3SaveBtn = document.getElementById('tab3-save-btn');
+    const tab3Status = document.getElementById('tab3-save-status');
+    const descTextarea = document.getElementById('ext-desc-input') as HTMLTextAreaElement | null;
+    const charCounter = document.getElementById('desc-char-counter');
+    const statusBadge = document.getElementById('char-status-badge');
+    const formatBtns = document.querySelectorAll('.md-format-btn');
+    const errDesc = document.getElementById('err-ext-desc');
+
+    const MIN_FEATURES = 3;
+    const MAX_FEATURES = 6;
+    const featuresContainer = document.getElementById('features-list-container');
+    const addFeatureBtn = document.getElementById('add-feature-btn') as HTMLButtonElement | null;
+    const featuresBadge = document.getElementById('features-count-badge');
+    const errFeatures = document.getElementById('err-ext-features');
+
+    const MIN_WORKFLOW = 3;
+    const MAX_WORKFLOW = 5;
+    const workflowContainer = document.getElementById('workflow-list-container');
+    const addWorkflowBtn = document.getElementById('add-workflow-btn') as HTMLButtonElement | null;
+    const workflowBadge = document.getElementById('workflow-count-badge');
+    const errWorkflow = document.getElementById('err-ext-workflow');
+
+    const MIN_COMPARISON = 3;
+    const MAX_COMPARISON = 5;
+    const comparisonContainer = document.getElementById('comparison-list-container');
+    const addComparisonBtn = document.getElementById('add-comparison-btn') as HTMLButtonElement | null;
+    const comparisonBadge = document.getElementById('comparison-count-badge');
+    const errComparison = document.getElementById('err-ext-comparison');
+
     function validateInput(
       input: HTMLInputElement | HTMLSelectElement | null,
       errEl: HTMLElement | null,
@@ -1730,6 +1833,357 @@ const data = {
       } else {
         if (tab1Status && tab1Status.textContent.includes('⚠')) {
           tab1Status.textContent = '';
+        }
+      }
+
+      return allValid;
+    }
+
+    function validateVisualZone(
+      zoneEl: HTMLElement | null,
+      errEl: HTMLElement | null,
+      isValid: boolean,
+      errMsg: string
+    ): boolean {
+      if (!zoneEl) return true;
+      if (!isValid) {
+        zoneEl.classList.add('border-red-400');
+        zoneEl.classList.remove('border-slate-200');
+        if (errEl) {
+          errEl.textContent = errMsg;
+          errEl.classList.remove('hidden');
+        }
+        return false;
+      } else {
+        zoneEl.classList.remove('border-red-400');
+        zoneEl.classList.add('border-slate-200');
+        if (errEl) {
+          errEl.textContent = '';
+          errEl.classList.add('hidden');
+        }
+        return true;
+      }
+    }
+
+    function extractYouTubeId(url: string): string | null {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function compressImageFile(file: File, maxWidth: number, maxHeight: number, quality = 0.85): Promise<string> {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const raw = e.target?.result as string;
+          if (file.type === 'image/svg+xml') {
+            resolve(raw);
+            return;
+          }
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth || height > maxHeight) {
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(raw);
+              return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+            const format = file.type === 'image/png' ? 'image/png' : 'image/webp';
+            try {
+              const dataUrl = canvas.toDataURL(format, quality);
+              resolve(dataUrl);
+            } catch {
+              resolve(raw);
+            }
+          };
+          img.onerror = () => resolve(raw);
+          img.src = raw;
+        };
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function validateTab2(focusFirst = true): boolean {
+      const hasIcon = Boolean(iconUrlVal?.value && iconUrlVal.value.trim().length > 0);
+      const vIcon = validateVisualZone(iconDropzone, errIcon, hasIcon, 'Extension logo / icon is required (PNG, WebP, SVG).');
+
+      const hasPromo = Boolean(promoUrlVal?.value && promoUrlVal.value.trim().length > 0);
+      const vPromo = validateVisualZone(promoDropzone, errPromo, hasPromo, 'Promotional shelf banner is required (440x280 recommended).');
+
+      const screenshotCards = screenshotsContainer?.querySelectorAll('.screenshot-card') || [];
+      const count = screenshotCards.length;
+      const hasScreenshots = count >= MIN_SCREENSHOTS && count <= MAX_SCREENSHOTS;
+      const vScreenshots = validateVisualZone(
+        screenshotsDropzone,
+        errScreenshots,
+        hasScreenshots,
+        `Please upload between ${MIN_SCREENSHOTS} and ${MAX_SCREENSHOTS} screenshots (currently ${count}).`
+      );
+
+      const ytVal = (youtubeInput?.value || '').trim();
+      let vYt = true;
+      if (ytVal) {
+        const isYtUrl = Boolean(extractYouTubeId(ytVal));
+        vYt = validateInput(youtubeInput, errYoutube, isYtUrl, 'Please provide a valid YouTube video URL or leave blank.');
+      } else {
+        if (errYoutube) {
+          errYoutube.textContent = '';
+          errYoutube.classList.add('hidden');
+        }
+        youtubeInput?.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+        youtubeInput?.classList.add('border-slate-200', 'focus:border-blue-400');
+      }
+
+      const allValid = vIcon && vPromo && vScreenshots && vYt;
+
+      if (!allValid) {
+        if (tab2Status) {
+          tab2Status.textContent = '⚠ Complete all required visual assets above to proceed.';
+          tab2Status.className = 'text-xs text-amber-600 font-medium';
+        }
+        if (focusFirst) {
+          const zoneList = [
+            { ok: vIcon, el: iconDropzone },
+            { ok: vPromo, el: promoDropzone },
+            { ok: vScreenshots, el: screenshotsDropzone },
+            { ok: vYt, el: youtubeInput },
+          ];
+          const firstBad = zoneList.find(z => !z.ok)?.el;
+          if (firstBad) {
+            firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (firstBad instanceof HTMLInputElement) firstBad.focus();
+          }
+        }
+      } else {
+        if (tab2Status && tab2Status.textContent.includes('⚠')) {
+          tab2Status.textContent = '';
+        }
+      }
+
+      return allValid;
+    }
+
+    function validateTab3(focusFirst = true): boolean {
+      const descVal = (descTextarea?.value || '').trim();
+      const isDescValid = descVal.length >= 100;
+      const vDesc = validateInput(
+        descTextarea,
+        errDesc,
+        isDescValid,
+        `Markdown overview description must be at least 100 characters (currently ${descVal.length}).`
+      );
+
+      let vFeatures = true;
+      const featureCards = featuresContainer?.querySelectorAll('.feature-card') || [];
+      if (featureCards.length < MIN_FEATURES) {
+        vFeatures = false;
+        if (errFeatures) {
+          errFeatures.textContent = `At least ${MIN_FEATURES} key feature highlights are required (currently ${featureCards.length}).`;
+          errFeatures.classList.remove('hidden');
+        }
+      } else {
+        let firstInvalidFeatureInput: HTMLInputElement | null = null;
+        let featureErrMsg = '';
+        featureCards.forEach((card, idx) => {
+          const titleInput = card.querySelector('.feature-title-input') as HTMLInputElement | null;
+          const descInput = card.querySelector('.feature-desc-input') as HTMLInputElement | null;
+          const tVal = (titleInput?.value || '').trim();
+          const dVal = (descInput?.value || '').trim();
+          const isTitleValid = tVal.length >= 4 && tVal.length <= 60;
+          const isDescValValid = dVal.length >= 15 && dVal.length <= 180;
+
+          if (titleInput) {
+            if (!isTitleValid) {
+              titleInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              titleInput.classList.remove('border-slate-200', 'focus:border-blue-400');
+              if (!firstInvalidFeatureInput) firstInvalidFeatureInput = titleInput;
+              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} title must be between 4 and 60 characters.`;
+            } else {
+              titleInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              titleInput.classList.add('border-slate-200', 'focus:border-blue-400');
+            }
+          }
+
+          if (descInput) {
+            if (!isDescValValid) {
+              descInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              descInput.classList.remove('border-slate-200', 'focus:border-blue-400');
+              if (!firstInvalidFeatureInput) firstInvalidFeatureInput = descInput;
+              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} description must be between 15 and 180 characters.`;
+            } else {
+              descInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              descInput.classList.add('border-slate-200', 'focus:border-blue-400');
+            }
+          }
+
+          if (!isTitleValid || !isDescValValid) {
+            vFeatures = false;
+          }
+        });
+
+        if (errFeatures) {
+          if (!vFeatures) {
+            errFeatures.textContent = featureErrMsg || 'Please complete all feature fields according to length constraints.';
+            errFeatures.classList.remove('hidden');
+          } else {
+            errFeatures.textContent = '';
+            errFeatures.classList.add('hidden');
+          }
+        }
+      }
+
+      let vWorkflow = true;
+      const workflowCards = workflowContainer?.querySelectorAll('.workflow-card') || [];
+      if (workflowCards.length < MIN_WORKFLOW) {
+        vWorkflow = false;
+        if (errWorkflow) {
+          errWorkflow.textContent = `At least ${MIN_WORKFLOW} internal execution workflow stages are required (currently ${workflowCards.length}).`;
+          errWorkflow.classList.remove('hidden');
+        }
+      } else {
+        let firstInvalidWorkflowInput: HTMLInputElement | null = null;
+        let workflowErrMsg = '';
+        workflowCards.forEach((card, idx) => {
+          const titleInput = card.querySelector('.workflow-title-input') as HTMLInputElement | null;
+          const descInput = card.querySelector('.workflow-desc-input') as HTMLInputElement | null;
+          const tVal = (titleInput?.value || '').trim();
+          const dVal = (descInput?.value || '').trim();
+          const isTitleValid = tVal.length >= 4 && tVal.length <= 60;
+          const isDescValValid = dVal.length >= 20 && dVal.length <= 200;
+
+          if (titleInput) {
+            if (!isTitleValid) {
+              titleInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              titleInput.classList.remove('border-slate-200', 'focus:border-blue-400');
+              if (!firstInvalidWorkflowInput) firstInvalidWorkflowInput = titleInput;
+              if (!workflowErrMsg) workflowErrMsg = `Workflow stage #${idx + 1} headline must be between 4 and 60 characters.`;
+            } else {
+              titleInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              titleInput.classList.add('border-slate-200', 'focus:border-blue-400');
+            }
+          }
+
+          if (descInput) {
+            if (!isDescValValid) {
+              descInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              descInput.classList.remove('border-slate-200', 'focus:border-blue-400');
+              if (!firstInvalidWorkflowInput) firstInvalidWorkflowInput = descInput;
+              if (!workflowErrMsg) workflowErrMsg = `Workflow stage #${idx + 1} details must be between 20 and 200 characters.`;
+            } else {
+              descInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              descInput.classList.add('border-slate-200', 'focus:border-blue-400');
+            }
+          }
+
+          if (!isTitleValid || !isDescValValid) {
+            vWorkflow = false;
+          }
+        });
+
+        if (errWorkflow) {
+          if (!vWorkflow) {
+            errWorkflow.textContent = workflowErrMsg || 'Please complete all workflow stages according to length constraints.';
+            errWorkflow.classList.remove('hidden');
+          } else {
+            errWorkflow.textContent = '';
+            errWorkflow.classList.add('hidden');
+          }
+        }
+      }
+
+      let vComparison = true;
+      const comparisonCards = comparisonContainer?.querySelectorAll('.comparison-card') || [];
+      if (comparisonCards.length < MIN_COMPARISON) {
+        vComparison = false;
+        if (errComparison) {
+          errComparison.textContent = `At least ${MIN_COMPARISON} comparison rows are required (currently ${comparisonCards.length}).`;
+          errComparison.classList.remove('hidden');
+        }
+      } else {
+        let firstInvalidCompInput: HTMLInputElement | null = null;
+        let compErrMsg = '';
+        comparisonCards.forEach((card, idx) => {
+          const featInput = card.querySelector('.comp-feature-input') as HTMLInputElement | null;
+          const currInput = card.querySelector('.comp-current-input') as HTMLInputElement | null;
+          const otherInput = card.querySelector('.comp-others-input') as HTMLInputElement | null;
+          const fVal = (featInput?.value || '').trim();
+          const cVal = (currInput?.value || '').trim();
+          const oVal = (otherInput?.value || '').trim();
+          const isFeatValid = fVal.length >= 3 && fVal.length <= 40;
+          const isCurrValid = cVal.length >= 10 && cVal.length <= 100;
+          const isOtherValid = oVal.length >= 10 && oVal.length <= 100;
+
+          [
+            { el: featInput, ok: isFeatValid, msg: `Comparison row #${idx + 1} metric name must be 3-40 characters.` },
+            { el: currInput, ok: isCurrValid, msg: `Comparison row #${idx + 1} advantage details must be 10-100 characters.` },
+            { el: otherInput, ok: isOtherValid, msg: `Comparison row #${idx + 1} alternative details must be 10-100 characters.` },
+          ].forEach(item => {
+            if (item.el) {
+              if (!item.ok) {
+                item.el.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+                item.el.classList.remove('border-slate-200', 'focus:border-blue-400');
+                if (!firstInvalidCompInput) firstInvalidCompInput = item.el;
+                if (!compErrMsg) compErrMsg = item.msg;
+              } else {
+                item.el.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+                item.el.classList.add('border-slate-200', 'focus:border-blue-400');
+              }
+            }
+          });
+
+          if (!isFeatValid || !isCurrValid || !isOtherValid) {
+            vComparison = false;
+          }
+        });
+
+        if (errComparison) {
+          if (!vComparison) {
+            errComparison.textContent = compErrMsg || 'Please complete all comparison rows according to length constraints.';
+            errComparison.classList.remove('hidden');
+          } else {
+            errComparison.textContent = '';
+            errComparison.classList.add('hidden');
+          }
+        }
+      }
+
+      const allValid = vDesc && vFeatures && vWorkflow && vComparison;
+
+      if (!allValid) {
+        if (tab3Status) {
+          tab3Status.textContent = '⚠ Complete all required story & SEO fields above to proceed.';
+          tab3Status.className = 'text-xs text-amber-600 font-medium';
+        }
+        if (focusFirst) {
+          const list = [
+            { ok: vDesc, el: descTextarea },
+            { ok: vFeatures, el: featuresContainer },
+            { ok: vWorkflow, el: workflowContainer },
+            { ok: vComparison, el: comparisonContainer },
+          ];
+          const firstBad = list.find(item => !item.ok)?.el;
+          if (firstBad) {
+            firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (firstBad instanceof HTMLTextAreaElement || firstBad instanceof HTMLInputElement) {
+              firstBad.focus();
+            }
+          }
+        }
+      } else {
+        if (tab3Status && tab3Status.textContent.includes('⚠')) {
+          tab3Status.textContent = '';
         }
       }
 
@@ -1869,14 +2323,310 @@ const data = {
       }
     }
 
-    // Top Save Button triggers save
+    // Save Visual Media (Tab 2) to Cloudflare D1
+    async function saveMediaToDb(silent = false): Promise<boolean> {
+      if (!validateTab2(true)) {
+        return false;
+      }
+
+      let currentExtId = form?.getAttribute('data-extension-id') || '';
+      let currentSlug = form?.getAttribute('data-extension-slug') || '';
+
+      // If extension record not created in D1 yet, save basic details first
+      if (!currentExtId) {
+        const savedBasic = await saveBasicToDb(true);
+        if (!savedBasic) {
+          if (tab2Status) {
+            tab2Status.textContent = '⚠ Complete required Basic details in Tab 1 first.';
+            tab2Status.className = 'text-xs text-amber-600 font-medium';
+          }
+          return false;
+        }
+        currentExtId = form?.getAttribute('data-extension-id') || '';
+        currentSlug = form?.getAttribute('data-extension-slug') || '';
+      }
+
+      const screenshotImgs = screenshotsContainer?.querySelectorAll('.screenshot-preview-img') || [];
+      const screenshotsList: string[] = Array.from(screenshotImgs)
+        .map(img => (img as HTMLImageElement).src)
+        .filter(src => src && src.length > 0);
+
+      const mediaPayload = {
+        id: currentExtId,
+        slug: currentSlug,
+        iconUrl: iconUrlVal?.value.trim() || '',
+        headerImageUrl: promoUrlVal?.value.trim() || null,
+        promoTileUrl: promoUrlVal?.value.trim() || null,
+        screenshots: screenshotsList,
+        youtubeVideoUrl: youtubeInput?.value.trim() || null,
+      };
+
+      if (tab2Status) {
+        tab2Status.textContent = 'Saving visual media to database...';
+        tab2Status.className = 'text-xs text-blue-600 font-mono';
+      }
+
+      const originalSaveHtml = topSaveBtn ? topSaveBtn.innerHTML : '';
+      const originalTab2SaveHtml = tab2SaveBtn ? tab2SaveBtn.innerHTML : '';
+
+      if (topSaveBtn && !silent) {
+        topSaveBtn.setAttribute('disabled', 'true');
+        topSaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+      if (tab2SaveBtn && !silent) {
+        tab2SaveBtn.setAttribute('disabled', 'true');
+        tab2SaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-slate-700 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+
+      try {
+        const res = await fetch('/api/developers/extensions/save-media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mediaPayload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          if (tab2Status) {
+            tab2Status.textContent = `Error: ${data.error || 'Failed to save media'}`;
+            tab2Status.className = 'text-xs text-red-600 font-medium';
+          }
+          if (!silent) {
+            alert(data.error || 'Failed to save visual media to database.');
+          }
+          return false;
+        }
+
+        if (tab2Status) {
+          tab2Status.textContent = '✓ Saved to ExtLabs database';
+          tab2Status.className = 'text-xs text-emerald-600 font-mono';
+        }
+
+        if (!silent) {
+          if (topSaveBtn) {
+            topSaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              topSaveBtn.innerHTML = originalSaveHtml;
+              topSaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
+          if (tab2SaveBtn) {
+            tab2SaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              tab2SaveBtn.innerHTML = originalTab2SaveHtml;
+              tab2SaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
+        }
+
+        return true;
+      } catch (err: any) {
+        console.error('Error saving visual media to D1:', err);
+        if (tab2Status) {
+          tab2Status.textContent = 'Network error saving media to database.';
+          tab2Status.className = 'text-xs text-red-600 font-medium';
+        }
+        if (!silent) {
+          alert('Network or database error while saving visual media.');
+        }
+        return false;
+      } finally {
+        if (topSaveBtn && !silent && topSaveBtn.hasAttribute('disabled')) {
+          topSaveBtn.removeAttribute('disabled');
+          topSaveBtn.innerHTML = originalSaveHtml;
+        }
+        if (tab2SaveBtn && !silent && tab2SaveBtn.hasAttribute('disabled')) {
+          tab2SaveBtn.removeAttribute('disabled');
+          tab2SaveBtn.innerHTML = originalTab2SaveHtml;
+        }
+      }
+    }
+
+    // Save Store Story & SEO (Tab 3) to Cloudflare D1
+    async function saveStoryToDb(silent = false): Promise<boolean> {
+      if (!validateTab3(true)) {
+        return false;
+      }
+
+      let currentExtId = form?.getAttribute('data-extension-id') || '';
+      let currentSlug = form?.getAttribute('data-extension-slug') || '';
+
+      // If extension record not created in D1 yet, save basic details first
+      if (!currentExtId) {
+        const savedBasic = await saveBasicToDb(true);
+        if (!savedBasic) {
+          if (tab3Status) {
+            tab3Status.textContent = '⚠ Complete required Basic details in Tab 1 first.';
+            tab3Status.className = 'text-xs text-amber-600 font-medium';
+          }
+          return false;
+        }
+        currentExtId = form?.getAttribute('data-extension-id') || '';
+        currentSlug = form?.getAttribute('data-extension-slug') || '';
+      }
+
+      const featureCards = featuresContainer?.querySelectorAll('.feature-card') || [];
+      const featuresList = Array.from(featureCards).map(card => {
+        const titleInput = card.querySelector('.feature-title-input') as HTMLInputElement | null;
+        const descInput = card.querySelector('.feature-desc-input') as HTMLInputElement | null;
+        return {
+          title: (titleInput?.value || '').trim(),
+          description: (descInput?.value || '').trim(),
+        };
+      });
+
+      const workflowCards = workflowContainer?.querySelectorAll('.workflow-card') || [];
+      const workflowList = Array.from(workflowCards).map((card, idx) => {
+        const titleInput = card.querySelector('.workflow-title-input') as HTMLInputElement | null;
+        const descInput = card.querySelector('.workflow-desc-input') as HTMLInputElement | null;
+        return {
+          step: idx + 1,
+          title: (titleInput?.value || '').trim(),
+          description: (descInput?.value || '').trim(),
+        };
+      });
+
+      const comparisonCards = comparisonContainer?.querySelectorAll('.comparison-card') || [];
+      const comparisonList = Array.from(comparisonCards).map(card => {
+        const featInput = card.querySelector('.comp-feature-input') as HTMLInputElement | null;
+        const currInput = card.querySelector('.comp-current-input') as HTMLInputElement | null;
+        const otherInput = card.querySelector('.comp-others-input') as HTMLInputElement | null;
+        return {
+          feature: (featInput?.value || '').trim(),
+          current: (currInput?.value || '').trim(),
+          others: (otherInput?.value || '').trim(),
+        };
+      });
+
+      const storyPayload = {
+        id: currentExtId,
+        slug: currentSlug,
+        description: (descTextarea?.value || '').trim(),
+        features: featuresList,
+        workflow: workflowList,
+        comparison: comparisonList,
+      };
+
+      if (tab3Status) {
+        tab3Status.textContent = 'Saving store story to database...';
+        tab3Status.className = 'text-xs text-blue-600 font-mono';
+      }
+
+      const originalSaveHtml = topSaveBtn ? topSaveBtn.innerHTML : '';
+      const originalTab3SaveHtml = tab3SaveBtn ? tab3SaveBtn.innerHTML : '';
+
+      if (topSaveBtn && !silent) {
+        topSaveBtn.setAttribute('disabled', 'true');
+        topSaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+      if (tab3SaveBtn && !silent) {
+        tab3SaveBtn.setAttribute('disabled', 'true');
+        tab3SaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-slate-700 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+
+      try {
+        const res = await fetch('/api/developers/extensions/save-story', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(storyPayload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          if (tab3Status) {
+            tab3Status.textContent = `Error: ${data.error || 'Failed to save story'}`;
+            tab3Status.className = 'text-xs text-red-600 font-medium';
+          }
+          if (!silent) {
+            alert(data.error || 'Failed to save store story to database.');
+          }
+          return false;
+        }
+
+        if (tab3Status) {
+          tab3Status.textContent = '✓ Saved to ExtLabs database';
+          tab3Status.className = 'text-xs text-emerald-600 font-mono';
+        }
+
+        if (!silent) {
+          if (topSaveBtn) {
+            topSaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              topSaveBtn.innerHTML = originalSaveHtml;
+              topSaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
+          if (tab3SaveBtn) {
+            tab3SaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              tab3SaveBtn.innerHTML = originalTab3SaveHtml;
+              tab3SaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
+        }
+
+        return true;
+      } catch (err: any) {
+        console.error('Error saving store story to D1:', err);
+        if (tab3Status) {
+          tab3Status.textContent = 'Network error saving story to database.';
+          tab3Status.className = 'text-xs text-red-600 font-medium';
+        }
+        if (!silent) {
+          alert('Network or database error while saving store story.');
+        }
+        return false;
+      } finally {
+        if (topSaveBtn && !silent && topSaveBtn.hasAttribute('disabled')) {
+          topSaveBtn.removeAttribute('disabled');
+          topSaveBtn.innerHTML = originalSaveHtml;
+        }
+        if (tab3SaveBtn && !silent && tab3SaveBtn.hasAttribute('disabled')) {
+          tab3SaveBtn.removeAttribute('disabled');
+          tab3SaveBtn.innerHTML = originalTab3SaveHtml;
+        }
+      }
+    }
+
+    // Top Save Button triggers save for active tab
     topSaveBtn?.addEventListener('click', async () => {
-      await saveBasicToDb(false);
+      const activeTab = getCurrentActiveTab();
+      if (activeTab === 3) {
+        await saveStoryToDb(false);
+      } else if (activeTab === 2) {
+        await saveMediaToDb(false);
+      } else {
+        await saveBasicToDb(false);
+      }
     });
 
     // Tab 1 footer save draft button
     tab1SaveBtn?.addEventListener('click', async () => {
       await saveBasicToDb(false);
+    });
+
+    // Tab 2 footer save draft button
+    tab2SaveBtn?.addEventListener('click', async () => {
+      await saveMediaToDb(false);
+    });
+
+    // Tab 3 footer save draft button
+    tab3SaveBtn?.addEventListener('click', async () => {
+      await saveStoryToDb(false);
     });
 
     // 1. Tab Switching Logic with Guard
@@ -1915,15 +2665,54 @@ const data = {
       window.scrollTo({ top: 120, behavior: 'smooth' });
     }
 
-    function trySwitchTab(targetIndex: number) {
+    async function trySwitchTab(targetIndex: number) {
       const currentIdx = getCurrentActiveTab();
-      // Guard: Cannot leave Tab 1 forward to 2, 3, or 4 if mandatory fields are incomplete
+
+      // Guard 1: Cannot leave Tab 1 forward to 2, 3, or 4 if mandatory fields are incomplete
       if (currentIdx === 1 && targetIndex > 1) {
         const isValid = validateTab1(true);
         if (!isValid) return; // Strictly block!
         // Save basic in background to persist progress
-        saveBasicToDb(true);
+        const saved = await saveBasicToDb(true);
+        if (!saved) return; // Stop if D1 save failed (e.g. duplicate slug)
       }
+
+      // Guard 2: Cannot leave Tab 2 forward to 3 or 4 if visual media is incomplete
+      if (currentIdx === 2 && targetIndex > 2) {
+        const isValid = validateTab2(true);
+        if (!isValid) return; // Strictly block!
+        // Save visual media in background to persist progress
+        const saved = await saveMediaToDb(true);
+        if (!saved) return; // Stop if D1 media save failed
+      }
+
+      // Guard 3: Cannot leave Tab 3 forward to 4 if store story & SEO is incomplete
+      if (currentIdx === 3 && targetIndex > 3) {
+        const isValid = validateTab3(true);
+        if (!isValid) return; // Strictly block!
+        // Save store story in background to persist progress
+        const saved = await saveStoryToDb(true);
+        if (!saved) return; // Stop if D1 story save failed
+      }
+
+      // Guard 4: Attempting to jump from Tab 1 directly to 3 or 4 without Tab 2
+      if (currentIdx === 1 && targetIndex > 2) {
+        const isTab2Valid = validateTab2(true);
+        if (!isTab2Valid) {
+          switchTab(2);
+          return;
+        }
+      }
+
+      // Guard 5: Attempting to jump from Tab 1 or 2 directly to 4 without Tab 3
+      if (currentIdx < 3 && targetIndex > 3) {
+        const isTab3Valid = validateTab3(true);
+        if (!isTab3Valid) {
+          switchTab(3);
+          return;
+        }
+      }
+
       switchTab(targetIndex);
     }
 
@@ -2105,11 +2894,6 @@ const data = {
     syncSupportBadges();
 
     // 4. Overview Description & Markdown Toolbar
-    const descTextarea = document.getElementById('ext-desc-input') as HTMLTextAreaElement | null;
-    const charCounter = document.getElementById('desc-char-counter');
-    const statusBadge = document.getElementById('char-status-badge');
-    const formatBtns = document.querySelectorAll('.md-format-btn');
-
     function updateCharCount() {
       if (!descTextarea || !charCounter || !statusBadge) return;
       const len = descTextarea.value.length;
@@ -2134,7 +2918,10 @@ const data = {
       }
     }
 
-    descTextarea?.addEventListener('input', updateCharCount);
+    descTextarea?.addEventListener('input', () => {
+      updateCharCount();
+      validateTab3(false);
+    });
     updateCharCount();
 
     formatBtns.forEach((btn) => {
@@ -2174,16 +2961,11 @@ const data = {
         descTextarea.setRangeText(replacement, start, end, 'end');
         descTextarea.focus();
         updateCharCount();
+        validateTab3(false);
       });
     });
 
     // 5. Dynamic Key Features (Min 3, Max 6)
-    const MIN_FEATURES = 3;
-    const MAX_FEATURES = 6;
-    const featuresContainer = document.getElementById('features-list-container');
-    const addFeatureBtn = document.getElementById('add-feature-btn') as HTMLButtonElement | null;
-    const featuresBadge = document.getElementById('features-count-badge');
-
     function updateFeatureCounters(card: Element) {
       const titleInput = card.querySelector('.feature-title-input') as HTMLInputElement | null;
       const titleCount = card.querySelector('.feature-title-count');
@@ -2241,8 +3023,14 @@ const data = {
         const titleInput = card.querySelector('.feature-title-input');
         const descInput = card.querySelector('.feature-desc-input');
 
-        titleInput?.addEventListener('input', () => updateFeatureCounters(card));
-        descInput?.addEventListener('input', () => updateFeatureCounters(card));
+        titleInput?.addEventListener('input', () => {
+          updateFeatureCounters(card);
+          validateTab3(false);
+        });
+        descInput?.addEventListener('input', () => {
+          updateFeatureCounters(card);
+          validateTab3(false);
+        });
       });
     }
 
@@ -2261,6 +3049,7 @@ const data = {
             refreshFeaturesUI();
             attachRemoveEvents();
             attachFeatureInputEvents();
+            validateTab3(false);
           } else {
             alert(`A minimum of ${MIN_FEATURES} key features is required for store SEO.`);
           }
@@ -2337,6 +3126,7 @@ const data = {
       refreshFeaturesUI();
       attachRemoveEvents();
       attachFeatureInputEvents();
+      validateTab3(false);
     });
 
     attachRemoveEvents();
@@ -2344,12 +3134,6 @@ const data = {
     refreshFeaturesUI();
 
     // 6. Dynamic Internal Workflow (Min 3, Max 5 Stages)
-    const MIN_WORKFLOW = 3;
-    const MAX_WORKFLOW = 5;
-    const workflowContainer = document.getElementById('workflow-list-container');
-    const addWorkflowBtn = document.getElementById('add-workflow-btn') as HTMLButtonElement | null;
-    const workflowBadge = document.getElementById('workflow-count-badge');
-
     function updateWorkflowCounters(card: Element) {
       const titleInput = card.querySelector('.workflow-title-input') as HTMLInputElement | null;
       const titleCount = card.querySelector('.workflow-title-count');
@@ -2407,8 +3191,14 @@ const data = {
         const titleInput = card.querySelector('.workflow-title-input');
         const descInput = card.querySelector('.workflow-desc-input');
 
-        titleInput?.addEventListener('input', () => updateWorkflowCounters(card));
-        descInput?.addEventListener('input', () => updateWorkflowCounters(card));
+        titleInput?.addEventListener('input', () => {
+          updateWorkflowCounters(card);
+          validateTab3(false);
+        });
+        descInput?.addEventListener('input', () => {
+          updateWorkflowCounters(card);
+          validateTab3(false);
+        });
       });
     }
 
@@ -2427,6 +3217,7 @@ const data = {
             refreshWorkflowUI();
             attachWorkflowRemoveEvents();
             attachWorkflowInputEvents();
+            validateTab3(false);
           } else {
             alert(`A minimum of ${MIN_WORKFLOW} execution workflow stages is required for store SEO.`);
           }
@@ -2503,6 +3294,7 @@ const data = {
       refreshWorkflowUI();
       attachWorkflowRemoveEvents();
       attachWorkflowInputEvents();
+      validateTab3(false);
     });
 
     attachWorkflowRemoveEvents();
@@ -2510,12 +3302,6 @@ const data = {
     refreshWorkflowUI();
 
     // 7. Dynamic Comparison Matrix (Min 3, Max 5 Rows)
-    const MIN_COMPARISON = 3;
-    const MAX_COMPARISON = 5;
-    const comparisonContainer = document.getElementById('comparison-list-container');
-    const addComparisonBtn = document.getElementById('add-comparison-btn') as HTMLButtonElement | null;
-    const comparisonBadge = document.getElementById('comparison-count-badge');
-
     function updateComparisonCounters(card: Element) {
       const featInput = card.querySelector('.comp-feature-input') as HTMLInputElement | null;
       const featCount = card.querySelector('.comp-feature-count');
@@ -2581,9 +3367,18 @@ const data = {
         const currInput = card.querySelector('.comp-current-input');
         const otherInput = card.querySelector('.comp-others-input');
 
-        featInput?.addEventListener('input', () => updateComparisonCounters(card));
-        currInput?.addEventListener('input', () => updateComparisonCounters(card));
-        otherInput?.addEventListener('input', () => updateComparisonCounters(card));
+        featInput?.addEventListener('input', () => {
+          updateComparisonCounters(card);
+          validateTab3(false);
+        });
+        currInput?.addEventListener('input', () => {
+          updateComparisonCounters(card);
+          validateTab3(false);
+        });
+        otherInput?.addEventListener('input', () => {
+          updateComparisonCounters(card);
+          validateTab3(false);
+        });
       });
     }
 
@@ -2602,6 +3397,7 @@ const data = {
             refreshComparisonUI();
             attachComparisonRemoveEvents();
             attachComparisonInputEvents();
+            validateTab3(false);
           } else {
             alert(`A minimum of ${MIN_COMPARISON} comparison rows is required for store SEO.`);
           }
@@ -2699,6 +3495,7 @@ const data = {
       refreshComparisonUI();
       attachComparisonRemoveEvents();
       attachComparisonInputEvents();
+      validateTab3(false);
     });
 
     attachComparisonRemoveEvents();
@@ -2873,16 +3670,6 @@ const data = {
 
     // 9. Visual Media Direct File Uploads & Live Previews
     // 9.1 Extension Icon Upload
-    const iconFileInput = document.getElementById('ext-icon-file-input') as HTMLInputElement | null;
-    const iconDropzone = document.getElementById('icon-upload-dropzone');
-    const iconEmptyState = document.getElementById('icon-empty-state');
-    const iconPreviewState = document.getElementById('icon-preview-state');
-    const iconPreviewImg = document.getElementById('icon-preview-img') as HTMLImageElement | null;
-    const iconFileName = document.getElementById('icon-file-name');
-    const iconFileSize = document.getElementById('icon-file-size');
-    const iconUrlVal = document.getElementById('ext-icon-url-val') as HTMLInputElement | null;
-    const removeIconBtn = document.getElementById('remove-icon-btn');
-
     iconDropzone?.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('#remove-icon-btn')) return;
       iconFileInput?.click();
@@ -2911,28 +3698,27 @@ const data = {
       }
     });
 
-    function handleIconFile(file: File) {
+    async function handleIconFile(file: File) {
       if (!file.type.startsWith('image/')) {
         alert('Please upload a valid image file (PNG, WebP, SVG, JPG).');
         return;
       }
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Icon image file size must not exceed 2MB.');
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Icon image file size must not exceed 5MB.');
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (iconPreviewImg) iconPreviewImg.src = result;
-        if (iconFileName) iconFileName.textContent = file.name;
-        if (iconFileSize) iconFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-        if (iconUrlVal) iconUrlVal.value = result;
+      const result = await compressImageFile(file, 256, 256, 0.9);
+      if (!result) return;
 
-        iconEmptyState?.classList.add('hidden');
-        iconPreviewState?.classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
+      if (iconPreviewImg) iconPreviewImg.src = result;
+      if (iconFileName) iconFileName.textContent = file.name;
+      if (iconFileSize) iconFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+      if (iconUrlVal) iconUrlVal.value = result;
+
+      iconEmptyState?.classList.add('hidden');
+      iconPreviewState?.classList.remove('hidden');
+      validateTab2(false);
     }
 
     removeIconBtn?.addEventListener('click', (e) => {
@@ -2942,19 +3728,10 @@ const data = {
       if (iconPreviewImg) iconPreviewImg.src = '';
       iconPreviewState?.classList.add('hidden');
       iconEmptyState?.classList.remove('hidden');
+      validateTab2(false);
     });
 
     // 9.2 Promo Banner Upload
-    const promoFileInput = document.getElementById('ext-promo-file-input') as HTMLInputElement | null;
-    const promoDropzone = document.getElementById('promo-upload-dropzone');
-    const promoEmptyState = document.getElementById('promo-empty-state');
-    const promoPreviewState = document.getElementById('promo-preview-state');
-    const promoPreviewImg = document.getElementById('promo-preview-img') as HTMLImageElement | null;
-    const promoFileName = document.getElementById('promo-file-name');
-    const promoFileSize = document.getElementById('promo-file-size');
-    const promoUrlVal = document.getElementById('ext-promo-url-val') as HTMLInputElement | null;
-    const removePromoBtn = document.getElementById('remove-promo-btn');
-
     promoDropzone?.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('#remove-promo-btn')) return;
       promoFileInput?.click();
@@ -2983,28 +3760,27 @@ const data = {
       }
     });
 
-    function handlePromoFile(file: File) {
+    async function handlePromoFile(file: File) {
       if (!file.type.startsWith('image/')) {
         alert('Please upload a valid image file (PNG, WebP, JPG).');
         return;
       }
-      if (file.size > 3 * 1024 * 1024) {
-        alert('Promotional banner file size must not exceed 3MB.');
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Promotional banner file size must not exceed 5MB.');
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        if (promoPreviewImg) promoPreviewImg.src = result;
-        if (promoFileName) promoFileName.textContent = file.name;
-        if (promoFileSize) promoFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-        if (promoUrlVal) promoUrlVal.value = result;
+      const result = await compressImageFile(file, 880, 560, 0.85);
+      if (!result) return;
 
-        promoEmptyState?.classList.add('hidden');
-        promoPreviewState?.classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
+      if (promoPreviewImg) promoPreviewImg.src = result;
+      if (promoFileName) promoFileName.textContent = file.name;
+      if (promoFileSize) promoFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+      if (promoUrlVal) promoUrlVal.value = result;
+
+      promoEmptyState?.classList.add('hidden');
+      promoPreviewState?.classList.remove('hidden');
+      validateTab2(false);
     }
 
     removePromoBtn?.addEventListener('click', (e) => {
@@ -3014,16 +3790,10 @@ const data = {
       if (promoPreviewImg) promoPreviewImg.src = '';
       promoPreviewState?.classList.add('hidden');
       promoEmptyState?.classList.remove('hidden');
+      validateTab2(false);
     });
 
     // 9.3 Store Screenshots Management
-    const MIN_SCREENSHOTS = 2;
-    const MAX_SCREENSHOTS = 5;
-    const screenshotsFileInput = document.getElementById('ext-screenshots-file-input') as HTMLInputElement | null;
-    const screenshotsDropzone = document.getElementById('add-screenshots-dropzone');
-    const screenshotsContainer = document.getElementById('screenshots-grid-container');
-    const screenshotsBadge = document.getElementById('screenshots-count-badge');
-
     function refreshScreenshotsUI() {
       if (!screenshotsContainer) return;
       const cards = screenshotsContainer.querySelectorAll('.screenshot-card');
@@ -3059,6 +3829,7 @@ const data = {
           card?.remove();
           refreshScreenshotsUI();
           attachScreenshotRemoveEvents();
+          validateTab2(false);
         });
       });
     }
@@ -3090,74 +3861,61 @@ const data = {
       }
     });
 
-    function handleScreenshotFiles(files: FileList) {
+    async function handleScreenshotFiles(files: FileList) {
       if (!screenshotsContainer) return;
       
-      Array.from(files).forEach((file) => {
+      for (const file of Array.from(files)) {
         const total = screenshotsContainer.querySelectorAll('.screenshot-card').length;
         if (total >= MAX_SCREENSHOTS) {
           alert(`You can upload a maximum of ${MAX_SCREENSHOTS} screenshots.`);
-          return;
+          break;
         }
 
         if (!file.type.startsWith('image/')) {
           alert(`File "${file.name}" is not a supported image.`);
-          return;
+          continue;
         }
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          const nextIndex = screenshotsContainer.querySelectorAll('.screenshot-card').length + 1;
-          const card = document.createElement('div');
-          card.className = 'screenshot-card p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs relative group';
-          card.innerHTML = `
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
-              <img
-                src="${result}"
-                alt="Screenshot #${nextIndex}"
-                class="w-full h-full object-cover screenshot-preview-img"
-              />
-              <button
-                type="button"
-                class="remove-screenshot-btn absolute top-2 right-2 p-1.5 bg-slate-900/80 hover:bg-red-600 text-white rounded-lg transition-colors cursor-pointer shadow-sm"
-                title="Remove Screenshot"
-              >
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-              </button>
-            </div>
-            <div class="flex items-center justify-between text-xs">
-              <span class="font-bold text-slate-800 screenshot-number-label">
-                Screenshot #${nextIndex}
-              </span>
-              <span class="text-[10px] font-mono text-slate-400">${(file.size / 1024).toFixed(1)} KB</span>
-            </div>
-          `;
+        const result = await compressImageFile(file, 1280, 800, 0.85);
+        if (!result) continue;
 
-          screenshotsContainer.appendChild(card);
-          refreshScreenshotsUI();
-          attachScreenshotRemoveEvents();
-        };
-        reader.readAsDataURL(file);
-      });
+        const nextIndex = screenshotsContainer.querySelectorAll('.screenshot-card').length + 1;
+        const card = document.createElement('div');
+        card.className = 'screenshot-card p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs relative group';
+        card.innerHTML = `
+          <div class="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+            <img
+              src="${result}"
+              alt="Screenshot #${nextIndex}"
+              class="w-full h-full object-cover screenshot-preview-img"
+            />
+            <button
+              type="button"
+              class="remove-screenshot-btn absolute top-2 right-2 p-1.5 bg-slate-900/80 hover:bg-red-600 text-white rounded-lg transition-colors cursor-pointer shadow-sm"
+              title="Remove Screenshot"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-800 screenshot-number-label">
+              Screenshot #${nextIndex}
+            </span>
+            <span class="text-[10px] font-mono text-slate-400">${(file.size / 1024).toFixed(1)} KB</span>
+          </div>
+        `;
+
+        screenshotsContainer.appendChild(card);
+        refreshScreenshotsUI();
+        attachScreenshotRemoveEvents();
+        validateTab2(false);
+      }
     }
 
     attachScreenshotRemoveEvents();
     refreshScreenshotsUI();
 
     // 9.4 YouTube Video Preview Handler
-    const youtubeInput = document.getElementById('ext-youtube-input') as HTMLInputElement | null;
-    const youtubePreviewContainer = document.getElementById('youtube-preview-container');
-    const youtubeIframe = document.getElementById('youtube-preview-iframe') as HTMLIFrameElement | null;
-    const youtubeBadge = document.getElementById('youtube-video-id-badge');
-
-    function extractYouTubeId(url: string): string | null {
-      if (!url) return null;
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2].length === 11) ? match[2] : null;
-    }
-
     function syncYouTubePreview() {
       if (!youtubeInput || !youtubePreviewContainer || !youtubeIframe) return;
       const videoId = extractYouTubeId(youtubeInput.value.trim());
@@ -3172,7 +3930,10 @@ const data = {
       }
     }
 
-    youtubeInput?.addEventListener('input', syncYouTubePreview);
+    youtubeInput?.addEventListener('input', () => {
+      syncYouTubePreview();
+      validateTab2(false);
+    });
     syncYouTubePreview();
 
     // 10. Monetag Test Link Button

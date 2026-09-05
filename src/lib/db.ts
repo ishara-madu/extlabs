@@ -57,6 +57,9 @@ export interface DbExtension {
   docs_url?: string | null;
   screenshots?: string | null;
   youtube_video_url?: string | null;
+  features?: string | null;
+  workflow?: string | null;
+  comparison?: string | null;
   created_at: string;
   updated_at: string;
 }
