@@ -1,18 +1,23 @@
 ---
-// index.astro
+export const prerender = false;
+
 import "../styles/global.css";
 import Navbar from "../components/Navbar.astro";
 import CategoryBar from "../components/CategoryBar.astro";
 import FeaturedCard from "../components/FeaturedCard.astro";
 import ExtensionCard from "../components/ExtensionCard.astro";
 import Footer from "../components/Footer.astro";
-import { EXTENSIONS, CATEGORIES } from "../data/extensions";
+import { CATEGORIES } from "../data/extensions";
+import { getDb, getStoreExtensions } from "../lib/db";
 import { Search, ArrowRight, Check } from '@lucide/astro';
 
-const featuredExtensions = EXTENSIONS.filter(ext => ext.featured);
-const devExtensions = EXTENSIONS.filter(ext => ext.category === 'dev');
-const aiAndProdExtensions = EXTENSIONS.filter(ext => ext.category === 'ai' || ext.category === 'productivity');
-const privacyAndUtilExtensions = EXTENSIONS.filter(ext => ext.category === 'privacy' || ext.category === 'utilities');
+const db = getDb();
+const allStoreExtensions = await getStoreExtensions(db);
+
+const featuredExtensions = allStoreExtensions.filter(ext => ext.featured);
+const devExtensions = allStoreExtensions.filter(ext => ext.category === 'dev');
+const aiAndProdExtensions = allStoreExtensions.filter(ext => ext.category === 'ai' || ext.category === 'productivity');
+const privacyAndUtilExtensions = allStoreExtensions.filter(ext => ext.category === 'privacy' || ext.category === 'utilities');
 ---
 
 <html lang="en" data-theme="light">

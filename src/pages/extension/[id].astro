@@ -1,24 +1,22 @@
 ---
-// src/pages/extension/[id].astro
+export const prerender = false;
+
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import { EXTENSIONS, getExtensionWithDefaults, getRelatedExtensions } from "../../data/extensions";
+import { getDb, getStoreExtensionByIdOrSlug } from "../../lib/db";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ArrowRight, HelpCircle, CheckCircle2 } from '@lucide/astro';
 
-export function getStaticPaths() {
-  return EXTENSIONS.map((item) => ({
-    params: { id: item.id },
-    props: { rawExtension: item },
-  }));
+const requestedId = Astro.params.id || '';
+const db = getDb();
+const rawExtension = await getStoreExtensionByIdOrSlug(db, requestedId);
+
+if (!rawExtension) {
+  return Astro.redirect('/');
 }
 
-interface Props {
-  rawExtension: (typeof EXTENSIONS)[0];
-}
-
-const { rawExtension } = Astro.props;
 const ext = getExtensionWithDefaults(rawExtension);
 const relatedExtensions = getRelatedExtensions(ext.id, ext.category, 3);
 

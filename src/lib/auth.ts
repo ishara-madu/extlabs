@@ -21,7 +21,7 @@ export interface GitHubUserProfile {
 export function getGitHubAuthUrl(clientId: string, state: string, redirectUri?: string): string {
   const url = new URL('https://github.com/login/oauth/authorize');
   url.searchParams.set('client_id', clientId);
-  url.searchParams.set('scope', 'read:user user:email public_repo');
+  url.searchParams.set('scope', 'read:user user:email repo');
   url.searchParams.set('prompt', 'consent');
   url.searchParams.set('state', state);
   if (redirectUri) {
@@ -182,8 +182,8 @@ export async function createOrUpdateUserSession(
           )
           .run();
         updated = true;
-      } catch {
-        // Fallback if github_access_token column does not exist yet
+      } catch (tokenErr) {
+        console.error('Failed to update user with github_access_token:', tokenErr);
       }
     }
 
@@ -227,8 +227,8 @@ export async function createOrUpdateUserSession(
           )
           .run();
         inserted = true;
-      } catch {
-        // Fallback if github_access_token column does not exist yet
+      } catch (insertErr) {
+        console.error('Failed to insert user with github_access_token:', insertErr);
       }
     }
 

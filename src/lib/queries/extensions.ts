@@ -1,6 +1,6 @@
-// src/lib/queries/extensions.ts
 import type { D1Database } from '@cloudflare/workers-types';
 import type { DbExtension } from '../db';
+import { EXTENSIONS, type Extension } from '../../data/extensions';
 
 export interface ExtensionWithDeveloper extends DbExtension {
   developer_name: string;
@@ -11,10 +11,19 @@ export interface ExtensionWithDeveloper extends DbExtension {
 /**
  * Fetch all live extensions from D1
  */
-export async function getLiveExtensions(db: D1Database): Promise<DbExtension[]> {
-  const { results } = await db
-    .prepare('SELECT * FROM extensions WHERE is_active = 1 AND is_suspended = 0 ORDER BY rating DESC')
-    .all<DbExtension>();
+export async function getLiveExtensions(db: D1Database): Promise<ExtensionWithDeveloper[]> {
+  const query = `
+    SELECT 
+      e.*, 
+      COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
+      COALESCE(d.slug, 'developer') AS developer_slug, 
+      COALESCE(d.is_verified, 1) AS developer_verified
+    FROM extensions e
+    LEFT JOIN developers d ON e.developer_id = d.id
+    WHERE e.is_active = 1 AND e.is_suspended = 0
+    ORDER BY e.is_featured DESC, e.rating DESC, e.weekly_active_users DESC
+  `;
+  const { results } = await db.prepare(query).all<ExtensionWithDeveloper>();
   return results || [];
 }
 
@@ -27,9 +36,13 @@ export async function getExtensionBySlug(
 ): Promise<ExtensionWithDeveloper | null> {
   const result = await db
     .prepare(`
-      SELECT e.*, d.display_name AS developer_name, d.slug AS developer_slug, d.is_verified AS developer_verified
+      SELECT 
+        e.*, 
+        COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
+        COALESCE(d.slug, 'developer') AS developer_slug, 
+        COALESCE(d.is_verified, 1) AS developer_verified
       FROM extensions e
-      JOIN developers d ON e.developer_id = d.id
+      LEFT JOIN developers d ON e.developer_id = d.id
       WHERE e.slug = ?
     `)
     .bind(slug)
@@ -57,12 +70,199 @@ export async function getExtensionById(
 export async function getExtensionsByCategory(
   db: D1Database,
   category: string
-): Promise<DbExtension[]> {
-  const { results } = await db
-    .prepare('SELECT * FROM extensions WHERE category = ? AND is_active = 1 AND is_suspended = 0 ORDER BY rating DESC')
-    .bind(category)
-    .all<DbExtension>();
+): Promise<ExtensionWithDeveloper[]> {
+  const query = `
+    SELECT 
+      e.*, 
+      COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
+      COALESCE(d.slug, 'developer') AS developer_slug, 
+      COALESCE(d.is_verified, 1) AS developer_verified
+    FROM extensions e
+    LEFT JOIN developers d ON e.developer_id = d.id
+    WHERE e.category = ? AND e.is_active = 1 AND e.is_suspended = 0
+    ORDER BY e.is_featured DESC, e.rating DESC, e.weekly_active_users DESC
+  `;
+  const { results } = await db.prepare(query).bind(category).all<ExtensionWithDeveloper>();
   return results || [];
+}
+
+/**
+ * Generate a clean SVG visual banner for real extensions
+ */
+export function generateExtensionBannerSvg(name: string, category: string): string {
+  const gradients: Record<string, [string, string]> = {
+    ai: ['#0c4a6e', '#0369a1'],
+    dev: ['#0f172a', '#1e293b'],
+    productivity: ['#14532d', '#059669'],
+    privacy: ['#4c1d95', '#6d28d9'],
+    utilities: ['#1f2937', '#374151'],
+    social: ['#831843', '#be185d'],
+  };
+  const [c1, c2] = gradients[category] || ['#0f172a', '#1e293b'];
+  const safeName = (name || 'Browser Extension').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<svg viewBox="0 0 460 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
+    <defs>
+      <linearGradient id="banner-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${c1}" />
+        <stop offset="100%" stop-color="${c2}" />
+      </linearGradient>
+    </defs>
+    <rect width="460" height="260" fill="url(#banner-grad)" />
+    <g transform="translate(45, 60)">
+      <rect width="370" height="140" rx="12" fill="#0f172a" fill-opacity="0.85" stroke="#475569" stroke-width="1" />
+      <circle cx="24" cy="24" r="4" fill="#ef4444" />
+      <circle cx="38" cy="24" r="4" fill="#f59e0b" />
+      <circle cx="52" cy="24" r="4" fill="#10b981" />
+      <text x="185" y="80" fill="#ffffff" font-size="16" font-family="sans-serif" font-weight="bold" text-anchor="middle">${safeName}</text>
+      <text x="185" y="105" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Chromium Manifest V3 • Verified</text>
+    </g>
+  </svg>`;
+}
+
+/**
+ * Map database extension to store frontend Extension format
+ */
+export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extension {
+  let tags: string[] = [];
+  try {
+    tags = JSON.parse(dbExt.tags || '[]');
+  } catch {}
+  if (!Array.isArray(tags) || tags.length === 0) {
+    tags = [dbExt.category.toUpperCase(), 'Manifest V3', 'Verified'];
+  }
+
+  let features: any[] = [];
+  try {
+    features = JSON.parse(dbExt.features || '[]');
+  } catch {}
+
+  let workflow: any[] = [];
+  try {
+    workflow = JSON.parse(dbExt.workflow || '[]');
+  } catch {}
+
+  let comparison: any[] = [];
+  try {
+    comparison = JSON.parse(dbExt.comparison || '[]');
+  } catch {}
+
+  let faqs: any[] = [];
+  try {
+    faqs = JSON.parse(dbExt.faqs || '[]');
+  } catch {}
+
+  const categoryLabels: Record<string, string> = {
+    ai: 'AI & Machine Learning',
+    dev: 'Developer Tools',
+    productivity: 'Productivity',
+    privacy: 'Privacy & Security',
+    utilities: 'Utilities & System',
+    social: 'Social & Communication',
+  };
+
+  const usersCountFormatted = (dbExt.weekly_active_users || 0) >= 1000
+    ? `${((dbExt.weekly_active_users || 0) / 1000).toFixed(1)}k users`
+    : `${dbExt.weekly_active_users || 120} users`;
+
+  const existingMock = EXTENSIONS.find((e) => e.id === dbExt.slug || e.id === dbExt.id);
+  const bannerSvg = existingMock?.bannerSvg || (dbExt.header_image_url
+    ? `<img src="${dbExt.header_image_url}" alt="${dbExt.name}" class="w-full h-full object-cover" />`
+    : generateExtensionBannerSvg(dbExt.name, dbExt.category));
+
+  return {
+    id: dbExt.slug || dbExt.id,
+    name: dbExt.name,
+    tagline: dbExt.short_description || 'Modern browser extension for high performance and privacy.',
+    description: dbExt.full_description || dbExt.short_description || '',
+    category: (dbExt.category || 'productivity') as any,
+    categoryLabel: categoryLabels[dbExt.category] || 'Productivity',
+    developer: dbExt.developer_name || 'ExtLabs Developer',
+    isVerified: Boolean(dbExt.developer_verified),
+    rating: dbExt.rating || 5.0,
+    reviewCount: dbExt.review_count || 12,
+    userCount: usersCountFormatted,
+    version: dbExt.current_version || '1.0.0',
+    updatedDate: dbExt.updated_at ? dbExt.updated_at.split(' ')[0] : '2026-09-01',
+    size: '2.4 MB',
+    featured: Boolean(dbExt.is_featured),
+    editorsPick: Boolean(dbExt.is_editors_pick),
+    badge: dbExt.is_featured ? 'Featured' : undefined,
+    iconUrl: dbExt.icon_url || existingMock?.iconUrl || '/icons/extension-placeholder.avif',
+    bannerSvg,
+    tags,
+    permissions: dbExt.permissions ? JSON.parse(dbExt.permissions || '[]') : [],
+    overview: [dbExt.full_description || dbExt.short_description || ''],
+    features: features.length > 0 ? features : existingMock?.features,
+    howItWorks: workflow.length > 0 ? workflow.map((w: any) => ({ step: w.step, title: w.title, description: w.description })) : existingMock?.howItWorks,
+    comparison: comparison.length > 0 ? comparison : existingMock?.comparison,
+    faqs: faqs.length > 0 ? faqs.map((f: any) => ({ question: f.q || f.question, answer: f.a || f.answer })) : existingMock?.faqs,
+    developerSupport: {
+      email: dbExt.support_email || 'support@extlabs.io',
+      website: dbExt.developer_website || 'https://extlabs.io',
+      github: dbExt.github_url || undefined,
+      supportUrl: dbExt.docs_url || 'https://extlabs.io',
+      privacyPolicy: dbExt.privacy_policy_url || 'https://extlabs.io/privacy',
+    },
+    downloadUrl: dbExt.crx_download_url || dbExt.zip_download_url || dbExt.download_url || '#',
+    monetagUrl: dbExt.monetag_direct_link || undefined,
+  };
+}
+
+/**
+ * Fetch all live extensions for the store, mapping real D1 database rows
+ */
+export async function getStoreExtensions(db: D1Database | null): Promise<Extension[]> {
+  if (!db) return EXTENSIONS;
+  try {
+    const liveExtensions = await getLiveExtensions(db);
+    if (liveExtensions && liveExtensions.length > 0) {
+      return liveExtensions.map(mapDbExtensionToStoreItem);
+    }
+  } catch (err) {
+    console.warn('Failed to fetch extensions from D1, using fallback:', err);
+  }
+  return EXTENSIONS;
+}
+
+/**
+ * Fetch live store extensions for a specific category
+ */
+export async function getStoreExtensionsByCategory(db: D1Database | null, category: string): Promise<Extension[]> {
+  if (!db) return EXTENSIONS.filter((e) => e.category === category);
+  try {
+    const liveCatExtensions = await getExtensionsByCategory(db, category);
+    if (liveCatExtensions && liveCatExtensions.length > 0) {
+      return liveCatExtensions.map(mapDbExtensionToStoreItem);
+    }
+  } catch (err) {
+    console.warn('Failed to fetch category extensions from D1:', err);
+  }
+  return EXTENSIONS.filter((e) => e.category === category);
+}
+
+/**
+ * Fetch a single store extension by slug or ID from D1
+ */
+export async function getStoreExtensionByIdOrSlug(db: D1Database | null, idOrSlug: string): Promise<Extension | null> {
+  if (!db) return EXTENSIONS.find((e) => e.id === idOrSlug) || null;
+  try {
+    const ext = await getExtensionBySlug(db, idOrSlug);
+    if (ext) {
+      return mapDbExtensionToStoreItem(ext);
+    }
+    const extById = await getExtensionById(db, idOrSlug);
+    if (extById) {
+      return mapDbExtensionToStoreItem({
+        ...extById,
+        developer_name: 'ExtLabs Developer',
+        developer_slug: 'developer',
+        developer_verified: 1,
+      });
+    }
+  } catch (err) {
+    console.warn('Failed to fetch extension by slug from D1:', err);
+  }
+  return EXTENSIONS.find((e) => e.id === idOrSlug) || null;
 }
 
 export interface ManageExtensionDetail extends DbExtension {

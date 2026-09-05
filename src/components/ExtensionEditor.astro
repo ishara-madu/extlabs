@@ -3149,6 +3149,10 @@ const data = {
     const magicStatus = document.getElementById('magic-status-text');
 
     let userRepos: any[] = [];
+    let allUserRepos: any[] = [];
+    let showExtensionsOnly = true;
+    let totalRepoCount = 0;
+    let extensionCount = 0;
     let connectedUsername = '';
 
     function openDropdown() {
@@ -3166,29 +3170,65 @@ const data = {
 
       if (reposToRender.length === 0) {
         dropdownList.innerHTML = `
-          <div class="px-4 py-3 text-center text-xs text-slate-400">
-            ${connectedUsername ? `No matching repositories found in @${connectedUsername}` : 'No repositories found.'}
+          <div class="px-4 py-4 text-center text-xs text-slate-400">
+            ${showExtensionsOnly ? `No browser extension repositories detected in @${connectedUsername}` : 'No repositories found.'}
+            ${allUserRepos.length > 0 && showExtensionsOnly ? `<div class="mt-2"><button type="button" id="magic-toggle-empty-btn" class="text-blue-600 underline font-medium">Show all repositories (${allUserRepos.length})</button></div>` : ''}
           </div>
         `;
+        document.getElementById('magic-toggle-empty-btn')?.addEventListener('click', () => {
+          showExtensionsOnly = false;
+          renderDropdown(allUserRepos);
+        });
         return;
       }
 
-      dropdownList.innerHTML = reposToRender
+      const itemsHtml = reposToRender
         .map(
           (r: any) => `
-          <div class="magic-repo-item px-3.5 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors" data-url="${r.url}">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-semibold text-slate-800 font-mono flex items-center gap-1.5 truncate">
-                <span class="text-blue-600 font-bold">${r.name}</span>
-                ${r.isPrivate ? '<span class="text-[10px] text-slate-400">🔒</span>' : ''}
+          <div class="magic-repo-item px-3.5 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-100/60 last:border-b-0" data-url="${r.url}">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-xs font-semibold text-blue-600 font-mono truncate flex items-center gap-1.5">
+                <span>${r.name}</span>
+                ${r.isExtension ? '<span class="text-[10px] text-emerald-600 font-mono font-medium">extension</span>' : ''}
               </span>
-              <span class="text-[10px] font-mono text-slate-400 shrink-0">@${connectedUsername || r.fullName.split('/')[0]}</span>
+              <div class="flex items-center gap-2 shrink-0">
+                ${r.isPrivate ? `
+                  <span class="inline-flex items-center gap-1 text-[11px] font-mono text-slate-500" title="Private Repository">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 shrink-0"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>private</span>
+                  </span>
+                ` : `
+                  <span class="text-[11px] font-mono text-slate-400">public</span>
+                `}
+                <span class="text-slate-300 text-xs">·</span>
+                <span class="text-[11px] font-mono text-slate-400">@${connectedUsername || r.fullName.split('/')[0]}</span>
+              </div>
             </div>
             ${r.description ? `<p class="text-[11px] text-slate-500 truncate mt-0.5">${r.description}</p>` : ''}
           </div>
         `
         )
         .join('');
+
+      const footerHtml = allUserRepos.length > userRepos.length
+        ? `
+          <div class="px-3.5 py-2 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-500 sticky bottom-0">
+            <span>${showExtensionsOnly ? `Showing ${userRepos.length} extensions` : `Showing all ${allUserRepos.length} repos`}</span>
+            <button type="button" id="magic-toggle-all-btn" class="text-blue-600 hover:text-blue-700 font-semibold cursor-pointer underline">
+              ${showExtensionsOnly ? `Show all (${totalRepoCount})` : 'Show extensions only'}
+            </button>
+          </div>
+        `
+        : '';
+
+      dropdownList.innerHTML = itemsHtml + footerHtml;
+
+      // Add toggle handler
+      document.getElementById('magic-toggle-all-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showExtensionsOnly = !showExtensionsOnly;
+        renderDropdown(showExtensionsOnly ? userRepos : allUserRepos);
+      });
 
       // Add click handlers for each repository item
       dropdownList.querySelectorAll('.magic-repo-item').forEach((el) => {
@@ -3211,6 +3251,9 @@ const data = {
         if (data.success) {
           connectedUsername = (data.username || '').toLowerCase();
           userRepos = Array.isArray(data.repos) ? data.repos : [];
+          allUserRepos = Array.isArray(data.allRepos) ? data.allRepos : userRepos;
+          extensionCount = data.extensionCount || userRepos.length;
+          totalRepoCount = data.totalCount || allUserRepos.length;
           renderDropdown(userRepos);
         } else if (dropdownList) {
           dropdownList.innerHTML = `<div class="px-4 py-3 text-center text-xs text-slate-400">Please connect your GitHub account to load repositories.</div>`;
@@ -3249,8 +3292,9 @@ const data = {
 
     function filterAndRender() {
       const q = (magicInput?.value || '').trim().toLowerCase();
+      const currentSource = showExtensionsOnly ? userRepos : allUserRepos;
       if (!q) {
-        renderDropdown(userRepos);
+        renderDropdown(currentSource);
         return;
       }
 
@@ -3271,7 +3315,7 @@ const data = {
       }
 
       const cleanQuery = q.replace(/^https?:\/\/github\.com\//i, '').replace(/^[a-z0-9_-]+\//i, '');
-      const filtered = userRepos.filter(
+      const filtered = currentSource.filter(
         (r) =>
           r.name.toLowerCase().includes(cleanQuery) ||
           r.fullName.toLowerCase().includes(cleanQuery) ||
@@ -3482,8 +3526,15 @@ const data = {
 
         magicBtn.innerHTML = `<span>✓ Auto-Filled!</span>`;
         if (magicStatus) {
-          const syncSource = d.hasManifest && d.hasReadme ? 'Manifest & README' : d.hasManifest ? 'Manifest V3' : 'GitHub Repository';
-          magicStatus.textContent = `✓ Synced with ${syncSource}`;
+          if (d.isAiGenerated) {
+            const filesCount = Array.isArray(d.analyzedFiles) ? d.analyzedFiles.length : 0;
+            magicStatus.textContent = filesCount > 0
+              ? `✓ Gemini 3.8 Flash parsed ${filesCount} code files + SEO-optimized`
+              : '✓ Gemini 3.8 Flash SEO-optimized';
+          } else {
+            const syncSource = d.hasManifest && d.hasReadme ? 'Manifest & README' : d.hasManifest ? 'Manifest V3' : 'GitHub Repository';
+            magicStatus.textContent = `✓ Synced with ${syncSource}`;
+          }
           magicStatus.className = 'text-[11px] font-mono text-emerald-600 font-semibold hidden sm:block';
         }
 

@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb } from '../../../../lib/db';
+import { generateSeoStoreListing, type CodeSnippet } from '../../../../lib/gemini';
 
 export const prerender = false;
 
@@ -14,6 +15,52 @@ interface GitHubRepoInfo {
   default_branch: string;
   license?: { spdx_id?: string; key?: string; name?: string } | null;
   topics?: string[];
+}
+
+/**
+ * Safely decode base64 strings across Node and Edge runtimes
+ */
+function decodeBase64(b64: string): string {
+  try {
+    const clean = b64.replace(/\s/g, '');
+    if (typeof Buffer !== 'undefined') {
+      return Buffer.from(clean, 'base64').toString('utf-8');
+    }
+    return decodeURIComponent(escape(atob(clean)));
+  } catch {
+    try {
+      return atob(b64.replace(/\s/g, ''));
+    } catch {
+      return '';
+    }
+  }
+}
+
+/**
+ * Fetch a single file's content from a GitHub repository (supports public and private repos)
+ */
+async function fetchFileContent(
+  owner: string,
+  repo: string,
+  filePath: string,
+  branch: string,
+  headers: Record<string, string>
+): Promise<string | null> {
+  try {
+    const cleanPath = filePath.replace(/^\.?\/+/, '');
+    const res = await fetch(
+      `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${cleanPath}?ref=${encodeURIComponent(branch)}`,
+      { headers }
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as { content?: string; encoding?: string };
+    if (json.content && json.encoding === 'base64') {
+      return decodeBase64(json.content);
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -113,23 +160,21 @@ export const POST: APIRoute = async ({ request }) => {
     const repoInfo = (await repoRes.json()) as GitHubRepoInfo;
     const defaultBranch = repoInfo.default_branch || 'main';
 
-    // 2. Fetch manifest.json (try root, src/, public/)
+    // 2. Fetch manifest.json (try root, src/, public/, extension/)
     let manifestData: any = null;
-    const manifestPaths = ['manifest.json', 'src/manifest.json', 'public/manifest.json', 'extension/manifest.json'];
+    let manifestBaseDir = '';
+    const manifestPaths = ['manifest.json', 'src/manifest.json', 'public/manifest.json', 'extension/manifest.json', 'app/manifest.json'];
 
     for (const mPath of manifestPaths) {
       try {
-        const mRes = await fetch(
-          `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${mPath}?ref=${encodeURIComponent(defaultBranch)}`,
-          { headers }
-        );
-        if (mRes.ok) {
-          const mJson = (await mRes.json()) as { content?: string; encoding?: string };
-          if (mJson.content && mJson.encoding === 'base64') {
-            const rawContent = atob(mJson.content.replace(/\s/g, ''));
-            manifestData = JSON.parse(rawContent);
-            break;
+        const rawContent = await fetchFileContent(owner, repo, mPath, defaultBranch, headers);
+        if (rawContent) {
+          manifestData = JSON.parse(rawContent);
+          const slashIdx = mPath.lastIndexOf('/');
+          if (slashIdx !== -1) {
+            manifestBaseDir = mPath.substring(0, slashIdx);
           }
+          break;
         }
       } catch {}
     }
@@ -144,10 +189,105 @@ export const POST: APIRoute = async ({ request }) => {
       if (readmeRes.ok) {
         const rmJson = (await readmeRes.json()) as { content?: string; encoding?: string };
         if (rmJson.content && rmJson.encoding === 'base64') {
-          readmeText = decodeURIComponent(escape(atob(rmJson.content.replace(/\s/g, ''))));
+          readmeText = decodeBase64(rmJson.content);
         }
       }
     } catch {}
+
+    // 3.5 Fetch Actual Extension Source Code Files (Background, Content Scripts, Popup, package.json)
+    const codeSnippets: CodeSnippet[] = [];
+    const filesToFetch: Array<{ path: string; role: CodeSnippet['role'] }> = [];
+
+    const resolveCandidatePaths = (p: string): string[] => {
+      const clean = p.replace(/^\.?\/+/, '');
+      if (manifestBaseDir && !clean.startsWith(manifestBaseDir + '/')) {
+        return [`${manifestBaseDir}/${clean}`, clean];
+      }
+      return [clean];
+    };
+
+    // A. Background service worker or scripts
+    if (manifestData?.background?.service_worker && typeof manifestData.background.service_worker === 'string') {
+      filesToFetch.push({ path: manifestData.background.service_worker, role: 'background' });
+    } else if (Array.isArray(manifestData?.background?.scripts)) {
+      for (const s of manifestData.background.scripts.slice(0, 2)) {
+        if (typeof s === 'string') filesToFetch.push({ path: s, role: 'background' });
+      }
+    }
+
+    // B. Content scripts
+    if (Array.isArray(manifestData?.content_scripts)) {
+      for (const cs of manifestData.content_scripts) {
+        if (Array.isArray(cs.js)) {
+          for (const jsPath of cs.js.slice(0, 2)) {
+            if (typeof jsPath === 'string') filesToFetch.push({ path: jsPath, role: 'content_script' });
+          }
+        }
+      }
+    }
+
+    // C. Popup (HTML & JS)
+    const popupHtml = manifestData?.action?.default_popup || manifestData?.browser_action?.default_popup;
+    if (popupHtml && typeof popupHtml === 'string') {
+      filesToFetch.push({ path: popupHtml, role: 'popup' });
+      const popupJs = popupHtml.replace(/\.html$/i, '.js');
+      const popupTs = popupHtml.replace(/\.html$/i, '.ts');
+      if (popupJs !== popupHtml) filesToFetch.push({ path: popupJs, role: 'popup' });
+      if (popupTs !== popupHtml) filesToFetch.push({ path: popupTs, role: 'popup' });
+    }
+
+    // D. Options page
+    const optionsHtml = manifestData?.options_ui?.page || manifestData?.options_page;
+    if (optionsHtml && typeof optionsHtml === 'string') {
+      filesToFetch.push({ path: optionsHtml, role: 'options' });
+    }
+
+    // Fallbacks if no manifest scripts were declared or manifest is absent
+    if (filesToFetch.length === 0) {
+      filesToFetch.push(
+        { path: 'background.js', role: 'background' },
+        { path: 'src/background.ts', role: 'background' },
+        { path: 'src/background.js', role: 'background' },
+        { path: 'content.js', role: 'content_script' },
+        { path: 'src/content.ts', role: 'content_script' },
+        { path: 'src/content.js', role: 'content_script' },
+        { path: 'popup.js', role: 'popup' },
+        { path: 'src/popup.ts', role: 'popup' }
+      );
+    }
+
+    // Always fetch package.json to inspect dependencies and tools
+    filesToFetch.push({ path: 'package.json', role: 'package' });
+
+    // Deduplicate and fetch up to 5 source files
+    const seenPaths = new Set<string>();
+    for (const item of filesToFetch) {
+      if (codeSnippets.length >= 5) break;
+      if (seenPaths.has(item.path)) continue;
+      seenPaths.add(item.path);
+
+      if (item.path.endsWith('.min.js') || item.path.includes('node_modules/')) continue;
+
+      const candidates = resolveCandidatePaths(item.path);
+      let content: string | null = null;
+      let matchedPath = item.path;
+
+      for (const cand of candidates) {
+        content = await fetchFileContent(owner, repo, cand, defaultBranch, headers);
+        if (content) {
+          matchedPath = cand;
+          break;
+        }
+      }
+
+      if (content && content.trim().length > 20) {
+        codeSnippets.push({
+          filename: matchedPath,
+          role: item.role,
+          content: content.slice(0, 3000),
+        });
+      }
+    }
 
     // Derive name and clean title
     const rawName = manifestData?.name || repoInfo.name || repo;
@@ -228,7 +368,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Derive Feature Highlights
     const permissions: string[] = Array.isArray(manifestData?.permissions) ? manifestData.permissions : [];
-    const features = [
+    let features = [
       {
         title: 'Native Browser Integration',
         description: `Directly hooks into modern Chromium APIs for zero-friction background operations.`,
@@ -246,7 +386,7 @@ export const POST: APIRoute = async ({ request }) => {
     ];
 
     // Derive Workflow Stages
-    const workflow = [
+    let workflow = [
       {
         step: 1,
         title: 'Install & Pin',
@@ -265,7 +405,7 @@ export const POST: APIRoute = async ({ request }) => {
     ];
 
     // Derive FAQs
-    const faqs = [
+    let faqs = [
       {
         q: `Is ${cleanName} completely free and open source?`,
         a: `Yes, ${cleanName} is distributed under the open-source ${cleanLicense} license and is free to download and inspect on GitHub.`,
@@ -279,6 +419,40 @@ export const POST: APIRoute = async ({ request }) => {
         a: `No. All operations run locally within your browser sandbox, and no telemetry or personal usage statistics are harvested.`,
       },
     ];
+
+    // 4. Generate High-Converting SEO-Optimized Listing with Gemini 3.8 Flash (Rotating Keys & Failover)
+    let isAiGenerated = false;
+    try {
+      const aiListing = await generateSeoStoreListing({
+        name: cleanName,
+        repoName: repo,
+        owner,
+        repoDescription: repoInfo.description || '',
+        topics,
+        manifest: manifestData,
+        readme: readmeText,
+        license: cleanLicense,
+        codeSnippets,
+      });
+
+      if (aiListing) {
+        if (aiListing.tagline) tagline = aiListing.tagline;
+        if (aiListing.category) detectedCategory = aiListing.category;
+        if (aiListing.description) description = aiListing.description;
+        if (Array.isArray(aiListing.features) && aiListing.features.length >= 3) {
+          features = aiListing.features;
+        }
+        if (Array.isArray(aiListing.workflow) && aiListing.workflow.length >= 3) {
+          workflow = aiListing.workflow;
+        }
+        if (Array.isArray(aiListing.faqs) && aiListing.faqs.length >= 3) {
+          faqs = aiListing.faqs;
+        }
+        isAiGenerated = true;
+      }
+    } catch (aiErr) {
+      console.warn('Gemini SEO generation error (falling back to deterministic metadata):', aiErr);
+    }
 
     const downloadUrl = `https://github.com/${owner}/${repo}/releases/latest/download/${repo}.zip`;
     const developerWebsite = repoInfo.homepage?.trim() || `https://github.com/${owner}`;
@@ -308,6 +482,8 @@ export const POST: APIRoute = async ({ request }) => {
           faqs,
           hasManifest: Boolean(manifestData),
           hasReadme: Boolean(readmeText),
+          analyzedFiles: codeSnippets.map((s) => ({ filename: s.filename, role: s.role })),
+          isAiGenerated,
         },
       }),
       {

@@ -1,27 +1,29 @@
 ---
-// src/pages/category/[id].astro
+export const prerender = false;
+
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import Footer from "../../components/Footer.astro";
-import { EXTENSIONS, CATEGORIES, type CategoryInfo } from "../../data/extensions";
+import { CATEGORIES, type CategoryInfo } from "../../data/extensions";
+import { getDb, getStoreExtensionsByCategory } from "../../lib/db";
 import { Home, BadgeCheck, Star, Search, ArrowRight } from '@lucide/astro';
 
-export function getStaticPaths() {
-  return CATEGORIES.map((cat) => ({
-    params: { id: cat.id },
-    props: { category: cat },
-  }));
-}
+const categoryId = Astro.params.id || 'productivity';
+const category = CATEGORIES.find(c => c.id === categoryId) || {
+  id: categoryId,
+  label: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
+  count: 0,
+  description: 'Verified browser extensions in this category.',
+  subtitle: 'Discover high quality extensions.',
+  tags: [categoryId],
+  colorAccent: 'text-blue-600 bg-blue-50 border-blue-200',
+  heroIllustrationSvg: '',
+};
 
-interface Props {
-  category: CategoryInfo;
-}
-
-const { category } = Astro.props;
-
-// Filter extensions belonging to this category
-const categoryExtensions = EXTENSIONS.filter(ext => ext.category === category.id);
+const db = getDb();
+// Filter real extensions belonging to this category from D1
+const categoryExtensions = await getStoreExtensionsByCategory(db, category.id);
 const topFeatured = categoryExtensions.find(ext => ext.featured) || categoryExtensions[0];
 ---
 
@@ -263,9 +265,9 @@ const topFeatured = categoryExtensions.find(ext => ext.featured) || categoryExte
     <Footer />
 
     <!-- Client-side Filtering & Sorting Logic (Vanilla JS) -->
-    <script define:vars={{ EXTENSIONS }}>
+    <script define:vars={{ categoryExtensions }}>
       window.__EXTENSIONS_MAP__ = {};
-      EXTENSIONS.forEach(ext => {
+      (categoryExtensions || []).forEach(ext => {
         window.__EXTENSIONS_MAP__[ext.id] = ext;
       });
 
