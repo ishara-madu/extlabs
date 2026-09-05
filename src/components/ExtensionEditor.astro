@@ -63,6 +63,7 @@ export interface FAQItem {
 
 interface ExtensionData {
   id?: string;
+  slug?: string;
   name?: string;
   version?: string;
   category?: string;
@@ -108,96 +109,87 @@ const rawFeatures = initialData.features || [
   },
   {
     title: "YouTube Video Transcript Parsing",
-    description: "Automatically extracts video timestamps and generates time-stamped TL;DR outlines without watching the entire video."
+    description: "Converts long video transcripts into high-signal takeaways with indexed timestamps."
   },
   {
-    title: "100% Client-Side Privacy",
-    description: "Operates fully with local Manifest V3 background workers with zero user data logging and private API key support."
+    title: "Zero-Data Retention Architecture",
+    description: "All parsing and summary embeddings occur locally with zero remote data storage."
   }
 ];
 
-const normalizedFeatures: FeatureData[] = rawFeatures.map((item) => {
+const normalizedFeatures: FeatureData[] = rawFeatures.map(item => {
   if (typeof item === 'string') {
-    return {
-      title: item.split(':')[0] || item,
-      description: item.split(':')[1]?.trim() || item
-    };
+    return { title: item, description: '' };
   }
   return item;
 });
 
-// Normalize workflow stages into { step, title, description } format
+// Normalize workflow stages
 const rawWorkflow = initialData.workflow || [
   {
     step: 1,
-    title: "Client-Side DOM Ingestion & Parsing",
-    description: "The lightweight content script intercepts page text, strips boilerplate scripts and ads, and packages clean semantic text in memory."
+    title: "Local DOM & Content Parsing",
+    description: "The background content script extracts readable article text and stripped DOM trees without telemetry."
   },
   {
     step: 2,
-    title: "Privacy-Preserving Execution Pipeline",
-    description: "Processes text through high-speed on-device models or private encrypted cloud endpoints without storing user telemetry."
+    title: "On-Device Inference & Chunking",
+    description: "Long payloads are chunked and evaluated using privacy-preserving token pipelines."
   },
   {
     step: 3,
-    title: "Structured Markdown Output Rendering",
-    description: "Streams executive summaries, bullet points, and actionable takeaways directly into a clean non-intrusive floating sidebar."
+    title: "Clean Markdown Summary Projection",
+    description: "The sidebar UI displays instant point-form summaries with one-click export controls."
   }
 ];
 
 const normalizedWorkflow: WorkflowStageData[] = rawWorkflow.map((item, idx) => {
   if (typeof item === 'string') {
-    return {
-      step: idx + 1,
-      title: item.split(':')[0] || item,
-      description: item.split(':')[1]?.trim() || item
-    };
+    return { step: idx + 1, title: item, description: '' };
   }
-  return { ...item, step: idx + 1 };
+  return { step: item.step || (idx + 1), title: item.title, description: item.description };
 });
 
-// Normalize comparison matrix
+// Normalize comparison table rows
 const rawComparison: ComparisonItem[] = initialData.comparison || [
-  {
-    feature: "Privacy & Data Storage",
-    current: "100% Client-side RAM execution, zero telemetry logging",
-    others: "Third-party cloud storage with marketing trackers"
-  },
-  {
-    feature: "Execution Latency",
-    current: "Sub-2-second streaming summaries on any active webpage",
-    others: "Slow 8-15 second external API roundtrips"
-  },
-  {
-    feature: "Pricing & Access",
-    current: "100% Free & Open Source without locked paywalls",
-    others: "Freemium with strict daily request paywalls ($19/mo)"
-  }
+  { feature: "Privacy-Preserving On-Device Parsing", current: "Yes (Strict)", others: "No (Cloud Scraping)" },
+  { feature: "Sub-Second Summary Generation", current: "Instant (<2s)", others: "Slow (8-15s)" },
+  { feature: "Zero Tracking & Zero Cookies", current: "100% Offline", others: "Telemetry Injected" },
+  { feature: "Direct Markdown & Notion Sync", current: "Native 1-Click", others: "Manual Copy-Paste" }
 ];
 
-// Normalize FAQs (SEO Schema.org FAQPage)
+// Normalize FAQ entries
 const rawFaqs: FAQItem[] = initialData.faqs || [
   {
-    q: "How does this extension protect my browsing privacy?",
-    a: "All page text parsing and tokenization run entirely within your local browser memory using Manifest V3 background workers. No browsing history or prompt contents are ever logged or sent to third-party ad brokers."
+    q: "Does this extension store or read my private web pages?",
+    a: "No. All text parsing runs inside your Chromium sandboxed tab environment. No text or browsing history is ever transmitted to external servers."
   },
   {
-    q: "Can I use my own OpenAI, Anthropic, or Gemini API keys?",
-    a: "Yes. You can switch to Direct Custom Key Mode inside the settings popup, allowing unlimited high-speed summaries directly billed to your own private developer account."
+    q: "What browsers are supported?",
+    a: "Google Chrome, Brave, Arc, Microsoft Edge, and Opera (Manifest V3 Chromium standard)."
   },
   {
-    q: "Does this work on YouTube video transcripts and PDF files?",
-    a: "Yes. The extension automatically detects embedded video captions and local PDF documents, extracting timestamped outlines and key takeaways in under two seconds."
+    q: "Is an OpenAI or Anthropic API key required?",
+    a: "No API key is required out of the box. Users can optionally attach a personal key for custom enterprise model tuning."
   }
 ];
 
 // Screenshots normalization
-const initialScreenshots: string[] = initialData.screenshots || [
-  initialData.screenshot1 || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
-  initialData.screenshot2 || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80"
-].filter(Boolean);
+const initialScreenshots: string[] = initialData.screenshots || (initialData.screenshot1 && initialData.screenshot2 
+  ? [initialData.screenshot1, initialData.screenshot2]
+  : [
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&auto=format&fit=crop&q=80"
+    ]);
 
-const allAvailableBrowsers = [
+export interface SupportedBrowserOption {
+  id: string;
+  name: string;
+  checkedByDefault: boolean;
+}
+
+const allAvailableBrowsers: SupportedBrowserOption[] = [
   { id: "chrome", name: "Chrome", checkedByDefault: true },
   { id: "brave", name: "Brave", checkedByDefault: true },
   { id: "edge", name: "Edge", checkedByDefault: true },
@@ -209,26 +201,27 @@ const allAvailableBrowsers = [
 
 const data = {
   id: initialData.id || "",
+  slug: initialData.slug || initialData.id || "",
   name: initialData.name || "",
   version: initialData.version || "1.0.0",
-  category: initialData.category || "AI & Machine Learning",
+  category: initialData.category || "ai",
   tagline: initialData.tagline || "",
   description: initialData.description || "",
-  githubUrl: initialData.githubUrl || (isEdit && initialData.id ? `https://github.com/neural-labs/${initialData.id}` : ""),
+  githubUrl: initialData.githubUrl || "",
   downloadUrl: initialData.downloadUrl || "",
   docsUrl: initialData.docsUrl || "",
-  supportEmail: initialData.supportEmail || "support@neurallabs.dev",
+  supportEmail: initialData.supportEmail || "",
   developerWebsite: initialData.developerWebsite || "",
-  monetagUrl: initialData.monetagUrl || (isEdit && initialData.id ? `https://monetag.com/direct/${initialData.id.replace(/-/g, '_')}_live_8912` : "https://monetag.com/direct/54829103"),
+  monetagUrl: initialData.monetagUrl || "",
   frequency: initialData.frequency || "24h",
   manifestVersion: initialData.manifestVersion || "v3",
   license: initialData.license || "MIT",
   supportedBrowsers: initialData.supportedBrowsers || ["chrome", "brave", "edge", "firefox", "arc", "opera"],
-  privacyPolicyUrl: initialData.privacyPolicyUrl || (isEdit && initialData.id ? `https://github.com/neural-labs/${initialData.id}/blob/main/PRIVACY.md` : ""),
+  privacyPolicyUrl: initialData.privacyPolicyUrl || "",
   iconUrl: initialData.iconUrl || (isEdit ? "/icons/extension-placeholder.avif" : ""),
-  promoTileUrl: initialData.promoTileUrl || (isEdit ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80" : ""),
+  promoTileUrl: initialData.promoTileUrl || "",
   screenshots: isEdit ? initialScreenshots : [],
-  youtubeVideoUrl: initialData.youtubeVideoUrl || (isEdit ? "https://www.youtube.com/watch?v=dQw4w9WgXcQ" : ""),
+  youtubeVideoUrl: initialData.youtubeVideoUrl || "",
   features: normalizedFeatures,
   workflow: normalizedWorkflow,
   comparison: rawComparison,
@@ -364,7 +357,7 @@ const data = {
   </div>
 
   <!-- Extension Editor Form Body -->
-  <form id="extension-editor-form">
+  <form id="extension-editor-form" data-is-edit={isEdit ? "true" : "false"} data-extension-id={data.id} data-extension-slug={data.slug}>
 
     <!-- ========================================================================= -->
     <!-- TAB PANE 1: ESSENTIALS & SOURCE CODE -->
@@ -402,6 +395,7 @@ const data = {
               placeholder="e.g. Deep Summarize AI"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-medium"
             />
+            <p id="err-ext-name" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Directory Slug -->
@@ -417,11 +411,12 @@ const data = {
                 id="ext-slug-input"
                 type="text"
                 required
-                value={data.id}
+                value={data.slug || data.id}
                 placeholder="deep-summarize-ai"
                 class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-r-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
               />
             </div>
+            <p id="err-ext-slug" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Category -->
@@ -433,12 +428,13 @@ const data = {
               id="ext-category-input"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
             >
-              <option value="AI & Machine Learning" selected={data.category.includes("AI")}>AI & Machine Learning</option>
-              <option value="Developer Tools" selected={data.category.includes("Dev")}>Developer Tools</option>
-              <option value="Productivity" selected={data.category.includes("Productivity")}>Productivity</option>
-              <option value="Privacy & Security" selected={data.category.includes("Privacy")}>Privacy & Security</option>
-              <option value="Workflow & Utilities" selected={data.category.includes("Utilities")}>Workflow & Utilities</option>
+              <option value="ai" selected={data.category === "ai" || data.category.toLowerCase().includes("ai")}>AI & Machine Learning</option>
+              <option value="dev" selected={data.category === "dev" || data.category.toLowerCase().includes("dev")}>Developer Tools</option>
+              <option value="productivity" selected={data.category === "productivity" || data.category.toLowerCase().includes("prod")}>Productivity</option>
+              <option value="privacy" selected={data.category === "privacy" || data.category.toLowerCase().includes("priv")}>Privacy & Security</option>
+              <option value="utilities" selected={data.category === "utilities" || data.category.toLowerCase().includes("util")}>Workflow & Utilities</option>
             </select>
+            <p id="err-ext-category" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Version -->
@@ -454,6 +450,7 @@ const data = {
               placeholder="e.g. 1.0.0"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
             />
+            <p id="err-ext-version" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Tagline -->
@@ -475,6 +472,7 @@ const data = {
               placeholder="e.g. Instant AI summaries for research papers, articles, and video transcripts."
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900"
             />
+            <p id="err-ext-tagline" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
         </div>
       </section>
@@ -506,12 +504,13 @@ const data = {
               placeholder="https://github.com/your-username/your-extension"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
             />
+            <p id="err-ext-github" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Direct ZIP Asset -->
           <div class="space-y-1.5">
             <label for="ext-download-input" class="block text-xs font-semibold text-slate-700">
-              Direct Package (.zip / .crx) Release Asset
+              Direct Package (.zip / .crx) Release Asset (Optional)
             </label>
             <input
               id="ext-download-input"
@@ -529,7 +528,7 @@ const data = {
                 Support Center Email <span class="text-red-500">*</span>
               </label>
               <span id="support-email-source-badge" class="text-[10px] font-mono text-blue-600 font-medium">
-                Auto-filled from Settings
+                {data.supportEmail ? 'Auto-filled from Settings' : 'Manual entry required'}
               </span>
             </div>
             <input
@@ -537,9 +536,10 @@ const data = {
               type="email"
               required
               value={data.supportEmail}
-              placeholder="support@yourdomain.com"
+              placeholder="support@example.com"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
             />
+            <p id="err-ext-support-email" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Developer Website -->
@@ -549,7 +549,7 @@ const data = {
                 Developer / Studio Website <span class="text-red-500">*</span>
               </label>
               <span id="dev-website-source-badge" class="text-[10px] font-mono text-blue-600 font-medium">
-                Auto-filled from Settings
+                {data.developerWebsite ? 'Auto-filled from Settings' : 'Manual entry required'}
               </span>
             </div>
             <input
@@ -560,6 +560,7 @@ const data = {
               placeholder="https://github.com/..."
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
             />
+            <p id="err-ext-dev-website" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Docs URL -->
@@ -571,7 +572,7 @@ const data = {
               id="ext-docs-input"
               type="url"
               value={data.docsUrl}
-              placeholder="https://neurallabs.dev/docs/deep-summarize"
+              placeholder="https://github.com/your-username/your-repo#readme"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
             />
           </div>
@@ -579,15 +580,25 @@ const data = {
       </section>
 
       <!-- Step Navigation Footer -->
-      <div class="flex items-center justify-end pt-4 border-t border-slate-200">
-        <button
-          type="button"
-          class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-          data-next="2"
-        >
-          <span>Next: Visual Media</span>
-          <ArrowRight class="w-3.5 h-3.5" />
-        </button>
+      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+        <div id="tab1-save-status" class="text-xs text-slate-500 font-mono"></div>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            id="tab1-save-btn"
+            class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>{isEdit ? "Save Basic Details" : "Save Draft"}</span>
+          </button>
+          <button
+            type="button"
+            class="next-tab-btn px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            data-next="2"
+          >
+            <span>Next: Visual Media</span>
+            <ArrowRight class="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1613,19 +1624,271 @@ const data = {
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('extension-editor-form') as HTMLFormElement | null;
     const topSaveBtn = document.getElementById('top-save-btn');
+    const tab1SaveBtn = document.getElementById('tab1-save-btn');
+    const tab1Status = document.getElementById('tab1-save-status');
     const testBtn = document.getElementById('test-editor-link-btn');
     const monetagInput = document.getElementById('ext-monetag-input') as HTMLInputElement | null;
-    
-    // Top Save Button triggers form submission
-    topSaveBtn?.addEventListener('click', () => {
-      form?.requestSubmit();
+
+    // Tab 1 input elements
+    const nameInput = document.getElementById('ext-name-input') as HTMLInputElement | null;
+    const slugInput = document.getElementById('ext-slug-input') as HTMLInputElement | null;
+    const categoryInput = document.getElementById('ext-category-input') as HTMLSelectElement | null;
+    const versionInput = document.getElementById('ext-version-input') as HTMLInputElement | null;
+    const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
+    const githubInput = document.getElementById('ext-github-input') as HTMLInputElement | null;
+    const downloadInput = document.getElementById('ext-download-input') as HTMLInputElement | null;
+    const emailInput = document.getElementById('ext-support-email-input') as HTMLInputElement | null;
+    const websiteInput = document.getElementById('ext-dev-website-input') as HTMLInputElement | null;
+    const docsInput = document.getElementById('ext-docs-input') as HTMLInputElement | null;
+
+    // Tab 1 error message elements
+    const errName = document.getElementById('err-ext-name');
+    const errSlug = document.getElementById('err-ext-slug');
+    const errCategory = document.getElementById('err-ext-category');
+    const errVersion = document.getElementById('err-ext-version');
+    const errTagline = document.getElementById('err-ext-tagline');
+    const errGithub = document.getElementById('err-ext-github');
+    const errEmail = document.getElementById('err-ext-support-email');
+    const errWebsite = document.getElementById('err-ext-dev-website');
+
+    function validateInput(
+      input: HTMLInputElement | HTMLSelectElement | null,
+      errEl: HTMLElement | null,
+      isValid: boolean,
+      errMsg: string
+    ): boolean {
+      if (!input) return true;
+      if (!isValid) {
+        input.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+        input.classList.remove('border-slate-200', 'focus:border-blue-400');
+        if (errEl) {
+          errEl.textContent = errMsg;
+          errEl.classList.remove('hidden');
+        }
+        return false;
+      } else {
+        input.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+        input.classList.add('border-slate-200', 'focus:border-blue-400');
+        if (errEl) {
+          errEl.textContent = '';
+          errEl.classList.add('hidden');
+        }
+        return true;
+      }
+    }
+
+    function validateTab1(focusFirst = true): boolean {
+      const vName = validateInput(nameInput, errName, (nameInput?.value.trim().length || 0) >= 3, 'Extension display name is required (min 3 characters).');
+      
+      const slugVal = (slugInput?.value || '').trim().toLowerCase();
+      const isSlugFormat = slugVal.length >= 2 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugVal);
+      const vSlug = validateInput(slugInput, errSlug, isSlugFormat, 'Directory slug must contain only lowercase letters, numbers, and hyphens (min 2 chars).');
+      
+      const vCat = validateInput(categoryInput, errCategory, Boolean(categoryInput?.value.trim()), 'Please select a primary store category.');
+      
+      const verVal = (versionInput?.value || '').trim();
+      const vVer = validateInput(versionInput, errVersion, verVal.length > 0 && /^\d+(\.\d+)*$/.test(verVal), 'Release version is required (e.g. 1.0.0).');
+      
+      const vTagline = validateInput(taglineInput, errTagline, (taglineInput?.value.trim().length || 0) >= 10, 'Catchy tagline is required (min 10 characters).');
+      
+      const ghVal = (githubInput?.value || '').trim();
+      const isGhUrl = ghVal.length >= 10 && ghVal.startsWith('http');
+      const vGh = validateInput(githubInput, errGithub, isGhUrl, 'Valid GitHub repository URL is required (e.g. https://github.com/user/repo).');
+      
+      const emailVal = (emailInput?.value || '').trim();
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+      const vEmail = validateInput(emailInput, errEmail, isEmail, 'Valid support center email address is required.');
+      
+      const webVal = (websiteInput?.value || '').trim();
+      const isWeb = webVal.length >= 4 && (webVal.startsWith('http') || webVal.includes('.'));
+      const vWeb = validateInput(websiteInput, errWebsite, isWeb, 'Valid developer website or GitHub profile URL is required.');
+
+      const allValid = vName && vSlug && vCat && vVer && vTagline && vGh && vEmail && vWeb;
+
+      if (!allValid) {
+        if (tab1Status) {
+          tab1Status.textContent = '⚠ Complete all required fields above to proceed.';
+          tab1Status.className = 'text-xs text-amber-600 font-medium';
+        }
+        if (focusFirst) {
+          const fieldList = [
+            { ok: vName, el: nameInput },
+            { ok: vSlug, el: slugInput },
+            { ok: vCat, el: categoryInput },
+            { ok: vVer, el: versionInput },
+            { ok: vTagline, el: taglineInput },
+            { ok: vGh, el: githubInput },
+            { ok: vEmail, el: emailInput },
+            { ok: vWeb, el: websiteInput },
+          ];
+          const firstBad = fieldList.find(f => !f.ok)?.el;
+          if (firstBad) {
+            firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstBad.focus();
+          }
+        }
+      } else {
+        if (tab1Status && tab1Status.textContent.includes('⚠')) {
+          tab1Status.textContent = '';
+        }
+      }
+
+      return allValid;
+    }
+
+    // Live real-time re-validation on input & change
+    [nameInput, slugInput, categoryInput, versionInput, taglineInput, githubInput, emailInput, websiteInput].forEach(inp => {
+      inp?.addEventListener('input', () => validateTab1(false));
+      inp?.addEventListener('change', () => validateTab1(false));
     });
 
-    // 1. Tab Switching Logic
+    // Auto-generate slug from name if new extension
+    let isSlugManuallyEdited = false;
+    slugInput?.addEventListener('input', () => {
+      isSlugManuallyEdited = true;
+    });
+
+    const isEditMode = form?.getAttribute('data-is-edit') === 'true';
+    if (!isEditMode && nameInput && slugInput) {
+      nameInput.addEventListener('input', () => {
+        if (!isSlugManuallyEdited && slugInput && nameInput) {
+          slugInput.value = nameInput.value
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+      });
+    }
+
+    // Save Basic & Source to Cloudflare D1
+    async function saveBasicToDb(silent = false): Promise<boolean> {
+      if (!validateTab1(true)) {
+        return false;
+      }
+
+      let currentExtId = form?.getAttribute('data-extension-id') || '';
+      const currentIsEdit = form?.getAttribute('data-is-edit') === 'true';
+
+      const payload = {
+        isEdit: currentIsEdit,
+        id: currentExtId || undefined,
+        name: nameInput?.value.trim() || '',
+        slug: slugInput?.value.trim().toLowerCase() || '',
+        category: categoryInput?.value.trim() || 'productivity',
+        version: versionInput?.value.trim() || '1.0.0',
+        tagline: taglineInput?.value.trim() || '',
+        githubUrl: githubInput?.value.trim() || '',
+        downloadUrl: downloadInput?.value.trim() || null,
+        supportEmail: emailInput?.value.trim() || '',
+        developerWebsite: websiteInput?.value.trim() || '',
+        docsUrl: docsInput?.value.trim() || null,
+      };
+
+      if (tab1Status) {
+        tab1Status.textContent = 'Saving to database...';
+        tab1Status.className = 'text-xs text-blue-600 font-mono';
+      }
+
+      const originalSaveHtml = topSaveBtn ? topSaveBtn.innerHTML : '';
+      if (topSaveBtn && !silent) {
+        topSaveBtn.setAttribute('disabled', 'true');
+        topSaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+
+      try {
+        const res = await fetch('/api/developers/extensions/save-basic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          if (data.error && data.error.includes('slug') && slugInput) {
+            validateInput(slugInput, errSlug, false, data.error);
+            slugInput.focus();
+          }
+          if (tab1Status) {
+            tab1Status.textContent = `Error: ${data.error || 'Failed to save'}`;
+            tab1Status.className = 'text-xs text-red-600 font-medium';
+          }
+          if (!silent) {
+            alert(data.error || 'Failed to save extension to database.');
+          }
+          return false;
+        }
+
+        // Store returned ID and slug on the form
+        if (data.id) {
+          form?.setAttribute('data-extension-id', data.id);
+          currentExtId = data.id;
+        }
+        if (data.slug) {
+          form?.setAttribute('data-extension-slug', data.slug);
+        }
+        form?.setAttribute('data-is-edit', 'true');
+
+        if (tab1Status) {
+          tab1Status.textContent = '✓ Saved to ExtLabs database';
+          tab1Status.className = 'text-xs text-emerald-600 font-mono';
+        }
+
+        if (!silent && topSaveBtn) {
+          topSaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+          setTimeout(() => {
+            topSaveBtn.innerHTML = originalSaveHtml;
+            topSaveBtn.removeAttribute('disabled');
+          }, 2000);
+        }
+
+        // If newly created and manually saved, update location to the edit URL
+        if (!currentIsEdit && !silent) {
+          window.location.href = `/developers/manage/${data.slug}/edit?saved=true`;
+        }
+
+        return true;
+      } catch (err: any) {
+        console.error('Error saving to D1:', err);
+        if (tab1Status) {
+          tab1Status.textContent = 'Network error saving to database.';
+          tab1Status.className = 'text-xs text-red-600 font-medium';
+        }
+        if (!silent) {
+          alert('Network or database error while saving.');
+        }
+        return false;
+      } finally {
+        if (topSaveBtn && !silent && topSaveBtn.hasAttribute('disabled')) {
+          topSaveBtn.removeAttribute('disabled');
+          topSaveBtn.innerHTML = originalSaveHtml;
+        }
+      }
+    }
+
+    // Top Save Button triggers save
+    topSaveBtn?.addEventListener('click', async () => {
+      await saveBasicToDb(false);
+    });
+
+    // Tab 1 footer save draft button
+    tab1SaveBtn?.addEventListener('click', async () => {
+      await saveBasicToDb(false);
+    });
+
+    // 1. Tab Switching Logic with Guard
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
     const nextTabBtns = document.querySelectorAll('.next-tab-btn');
     const prevTabBtns = document.querySelectorAll('.prev-tab-btn');
+
+    function getCurrentActiveTab(): number {
+      const currentActivePane = document.querySelector('.tab-pane:not(.hidden)');
+      return currentActivePane ? parseInt(currentActivePane.id.replace('tab-pane-', ''), 10) : 1;
+    }
 
     function switchTab(targetIndex: number) {
       tabBtns.forEach((btn) => {
@@ -1652,17 +1915,29 @@ const data = {
       window.scrollTo({ top: 120, behavior: 'smooth' });
     }
 
+    function trySwitchTab(targetIndex: number) {
+      const currentIdx = getCurrentActiveTab();
+      // Guard: Cannot leave Tab 1 forward to 2, 3, or 4 if mandatory fields are incomplete
+      if (currentIdx === 1 && targetIndex > 1) {
+        const isValid = validateTab1(true);
+        if (!isValid) return; // Strictly block!
+        // Save basic in background to persist progress
+        saveBasicToDb(true);
+      }
+      switchTab(targetIndex);
+    }
+
     tabBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.getAttribute('data-tab') || '1', 10);
-        switchTab(idx);
+        trySwitchTab(idx);
       });
     });
 
     nextTabBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         const nextIdx = parseInt(btn.getAttribute('data-next') || '1', 10);
-        switchTab(nextIdx);
+        trySwitchTab(nextIdx);
       });
     });
 
@@ -1752,9 +2027,7 @@ const data = {
     });
 
     // 3. Tagline & Name Counters
-    const nameInput = document.getElementById('ext-name-input') as HTMLInputElement | null;
     const nameCounter = document.getElementById('name-char-counter');
-    const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
     const taglineCounter = document.getElementById('tagline-char-counter');
 
     nameInput?.addEventListener('input', () => {
@@ -1770,9 +2043,7 @@ const data = {
     });
 
     // Support Center Email & Developer Website
-    const emailInput = document.getElementById('ext-support-email-input') as HTMLInputElement | null;
     const emailBadge = document.getElementById('support-email-source-badge');
-    const websiteInput = document.getElementById('ext-dev-website-input') as HTMLInputElement | null;
     const websiteBadge = document.getElementById('dev-website-source-badge');
 
     const savedSettings = localStorage.getItem('extlabs_dev_profile');
