@@ -31,7 +31,15 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      id?: string;
+      slug?: string;
+      iconUrl?: string;
+      headerImageUrl?: string;
+      promoTileUrl?: string;
+      screenshots?: any[];
+      youtubeVideoUrl?: string;
+    };
     const {
       id,
       slug,

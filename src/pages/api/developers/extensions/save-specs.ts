@@ -31,7 +31,18 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      id?: string;
+      slug?: string;
+      monetagUrl?: string;
+      frequency?: string;
+      faqs?: any[];
+      manifestVersion?: string;
+      license?: string;
+      supportedBrowsers?: string[];
+      privacyPolicyUrl?: string;
+      publish?: boolean;
+    };
     const {
       id,
       slug,
@@ -66,7 +77,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Validate Frequency
     const validFreqs = ['24h', 'download', '12h', 'session'];
-    const cleanFrequency = validFreqs.includes(frequency) ? frequency : '24h';
+    const cleanFrequency = (frequency && validFreqs.includes(frequency)) ? frequency : '24h';
 
     // Validate FAQs (Min 3, Max 6)
     if (!Array.isArray(faqs) || faqs.length < 3) {

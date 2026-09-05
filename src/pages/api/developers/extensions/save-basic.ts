@@ -31,7 +31,20 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      id?: string;
+      name?: string;
+      slug?: string;
+      category?: string;
+      version?: string;
+      tagline?: string;
+      githubUrl?: string;
+      downloadUrl?: string;
+      supportEmail?: string;
+      developerWebsite?: string;
+      docsUrl?: string;
+      isEdit?: boolean;
+    };
     const {
       id,
       name,
