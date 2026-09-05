@@ -455,3 +455,90 @@ export async function saveExtensionStory(
   return { id: existing.id, success: true };
 }
 
+export interface FAQInput {
+  q: string;
+  a: string;
+}
+
+export interface SaveExtensionSpecsInput {
+  id?: string;
+  slug?: string;
+  developerId: string;
+  monetagUrl: string;
+  frequency: string;
+  faqs: FAQInput[];
+  manifestVersion: string;
+  license: string;
+  supportedBrowsers: string[];
+  privacyPolicyUrl?: string | null;
+  publish?: boolean;
+}
+
+/**
+ * Save or update monetization stream, FAQs, technical specs, and compliance (Tab 4) in Cloudflare D1
+ */
+export async function saveExtensionSpecs(
+  db: D1Database,
+  data: SaveExtensionSpecsInput
+): Promise<{ id: string; success: boolean }> {
+  const cleanId = (data.id || '').trim();
+  const cleanSlug = (data.slug || '').trim().toLowerCase();
+
+  if (!cleanId && !cleanSlug) {
+    throw new Error('Extension ID or directory slug is required.');
+  }
+
+  // Find extension belonging to this developer
+  const existing = await db
+    .prepare('SELECT id FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
+    .bind(cleanId || cleanSlug, cleanSlug || cleanId, data.developerId)
+    .first<{ id: string }>();
+
+  if (!existing) {
+    throw new Error('Extension not found or permission denied.');
+  }
+
+  const faqsJson = JSON.stringify(data.faqs || []);
+  const browsersJson = JSON.stringify(data.supportedBrowsers || []);
+
+  await db
+    .prepare(`
+      UPDATE extensions
+      SET 
+        monetag_direct_link = ?,
+        ad_frequency = ?,
+        faqs = ?,
+        manifest_version = ?,
+        license = ?,
+        supported_browsers = ?,
+        privacy_policy_url = ?,
+        updated_at = DATETIME('now')
+      WHERE id = ? AND developer_id = ?
+    `)
+    .bind(
+      data.monetagUrl.trim(),
+      data.frequency || '24h',
+      faqsJson,
+      data.manifestVersion || 'v3',
+      data.license || 'MIT',
+      browsersJson,
+      data.privacyPolicyUrl?.trim() || null,
+      existing.id,
+      data.developerId
+    )
+    .run();
+
+  if (data.publish) {
+    await db
+      .prepare(`
+        UPDATE extension_versions
+        SET review_status = 'pending', submitted_at = DATETIME('now')
+        WHERE extension_id = ?
+      `)
+      .bind(existing.id)
+      .run();
+  }
+
+  return { id: existing.id, success: true };
+}
+

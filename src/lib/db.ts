@@ -26,6 +26,8 @@ export interface DbDeveloper {
   primary_focus: string | null;
   is_verified: number;
   status: 'active' | 'flagged' | 'suspended';
+  default_monetag_url?: string | null;
+  default_frequency?: string | null;
   member_since: string;
   created_at: string;
 }
@@ -53,6 +55,7 @@ export interface DbExtension {
   zip_download_url: string | null;
   source_repo_url?: string | null;
   monetag_direct_link?: string | null;
+  ad_frequency?: string | null;
   support_email?: string | null;
   docs_url?: string | null;
   screenshots?: string | null;
@@ -60,6 +63,11 @@ export interface DbExtension {
   features?: string | null;
   workflow?: string | null;
   comparison?: string | null;
+  faqs?: string | null;
+  manifest_version?: string | null;
+  license?: string | null;
+  supported_browsers?: string | null;
+  privacy_policy_url?: string | null;
   created_at: string;
   updated_at: string;
 }

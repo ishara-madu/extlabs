@@ -325,7 +325,7 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                 <input
                   id="default-monetag-url"
                   type="url"
-                  value="https://monetag.com/direct/54829103"
+                  value={developer?.default_monetag_url || "https://monetag.com/direct/54829103"}
                   placeholder="https://monetag.com/direct/your-publisher-link"
                   class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono font-medium"
                 />
@@ -855,13 +855,20 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
             const nameInput = document.getElementById('dev-name') as HTMLInputElement | null;
             const emailInput = document.getElementById('dev-email') as HTMLInputElement | null;
             const websiteInput = document.getElementById('dev-website') as HTMLInputElement | null;
+            const monetagInput = document.getElementById('default-monetag-url') as HTMLInputElement | null;
+            const freqInput = document.getElementById('default-frequency-input') as HTMLInputElement | null;
             
             const profileData = {
               name: nameInput?.value || 'Developer',
               email: emailInput?.value || '',
-              website: websiteInput?.value || ''
+              website: websiteInput?.value || '',
+              defaultMonetagUrl: monetagInput?.value?.trim() || '',
+              defaultFrequency: freqInput?.value?.trim() || '24h'
             };
             localStorage.setItem('extlabs_dev_profile', JSON.stringify(profileData));
+            if (profileData.defaultMonetagUrl) {
+              localStorage.setItem('extlabs_default_monetag_url', profileData.defaultMonetagUrl);
+            }
 
             try {
               const res = await fetch('/api/developers/settings', {

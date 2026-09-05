@@ -101,6 +101,30 @@ if (!parsedComparison && fallbackExt?.comparison) {
   parsedComparison = fallbackExt.comparison;
 }
 
+// Normalize faqs
+let parsedFaqs = undefined;
+if (dbExtension?.faqs) {
+  try {
+    const f = typeof dbExtension.faqs === 'string' ? JSON.parse(dbExtension.faqs) : dbExtension.faqs;
+    if (Array.isArray(f) && f.length > 0) parsedFaqs = f;
+  } catch {}
+}
+if (!parsedFaqs && fallbackExt?.faqs) {
+  parsedFaqs = fallbackExt.faqs;
+}
+
+// Normalize supported browsers
+let parsedBrowsers = undefined;
+if (dbExtension?.supported_browsers) {
+  try {
+    const b = typeof dbExtension.supported_browsers === 'string' ? JSON.parse(dbExtension.supported_browsers) : dbExtension.supported_browsers;
+    if (Array.isArray(b) && b.length > 0) parsedBrowsers = b;
+  } catch {}
+}
+if (!parsedBrowsers && (fallbackExt as any)?.supportedBrowsers) {
+  parsedBrowsers = (fallbackExt as any).supportedBrowsers;
+}
+
 const ext = {
   id: dbExtension?.id || fallbackExt?.id || id,
   slug: dbExtension?.slug || fallbackExt?.slug || id,
@@ -114,8 +138,13 @@ const ext = {
   supportEmail: dbExtension?.support_email || user?.email || '',
   developerWebsite: developer?.website || (user?.username ? `https://github.com/${user.username}` : ''),
   docsUrl: dbExtension?.docs_url || '',
-  monetagUrl: dbExtension?.monetag_direct_link || (fallbackExt?.monetagDirectLink) || '',
-  frequency: "24h",
+  monetagUrl: dbExtension?.monetag_direct_link || (fallbackExt?.monetagDirectLink) || developer?.default_monetag_url || "https://monetag.com/direct/54829103",
+  frequency: dbExtension?.ad_frequency || developer?.default_frequency || "24h",
+  manifestVersion: dbExtension?.manifest_version || "v3",
+  license: dbExtension?.license || "MIT",
+  supportedBrowsers: parsedBrowsers,
+  privacyPolicyUrl: dbExtension?.privacy_policy_url || '',
+  faqs: parsedFaqs,
   iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || '',
   promoTileUrl: dbExtension?.header_image_url || (fallbackExt as any)?.promoTileUrl || '',
   screenshots: parsedScreenshots.length > 0 ? parsedScreenshots : undefined,
@@ -197,8 +226,18 @@ const ext = {
           docsUrl: ext.docsUrl,
           monetagUrl: ext.monetagUrl,
           frequency: ext.frequency,
+          manifestVersion: ext.manifestVersion,
+          license: ext.license,
+          supportedBrowsers: ext.supportedBrowsers,
+          privacyPolicyUrl: ext.privacyPolicyUrl,
+          faqs: ext.faqs,
           iconUrl: ext.iconUrl,
           promoTileUrl: ext.promoTileUrl,
+          screenshots: ext.screenshots,
+          youtubeVideoUrl: ext.youtubeVideoUrl,
+          features: ext.features,
+          workflow: ext.workflow,
+          comparison: ext.comparison,
           status: ext.status
         }}
       />

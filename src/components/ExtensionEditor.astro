@@ -1389,9 +1389,14 @@ const data = {
 
         <div class="space-y-4">
           <div class="space-y-1.5">
-            <label for="ext-monetag-input" class="block text-xs font-semibold text-slate-700">
-              Monetag Direct Link URL <span class="text-red-500">*</span>
-            </label>
+            <div class="flex items-center justify-between">
+              <label for="ext-monetag-input" class="block text-xs font-semibold text-slate-700">
+                Monetag Direct Link URL <span class="text-red-500">*</span>
+              </label>
+              <span id="monetag-source-badge" class="text-[10px] font-mono text-blue-600 font-medium">
+                Default from Settings
+              </span>
+            </div>
             <div class="flex gap-2">
               <input
                 id="ext-monetag-input"
@@ -1409,6 +1414,7 @@ const data = {
                 Test Link
               </button>
             </div>
+            <p id="err-ext-monetag" class="text-[11px] text-red-600 hidden font-medium"></p>
             <span class="text-[11px] text-slate-400 block">
               Obtain this direct link from your <a href="https://monetag.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-medium">Monetag Publisher Hub</a>.
             </span>
@@ -1514,6 +1520,8 @@ const data = {
           ))}
         </div>
 
+        <p id="err-ext-faqs" class="text-[11px] text-red-600 hidden font-medium"></p>
+
         <div class="pt-1">
           <button
             type="button"
@@ -1605,6 +1613,7 @@ const data = {
                 );
               })}
             </div>
+            <p id="err-ext-browsers" class="text-[11px] text-red-600 hidden font-medium"></p>
           </div>
 
           <!-- Privacy Policy URL -->
@@ -1624,27 +1633,42 @@ const data = {
               placeholder="https://github.com/your-username/repo/blob/main/PRIVACY.md or https://yourdomain.com/privacy"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
             />
+            <p id="err-ext-privacy" class="text-[11px] text-red-600 hidden font-medium"></p>
           </div>
         </div>
       </section>
 
       <!-- Step Navigation Footer -->
-      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
         <button
           type="button"
-          class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer"
+          class="prev-tab-btn px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition-colors cursor-pointer text-center"
           data-prev="3"
         >
           ← Store Story & SEO
         </button>
 
-        <button
-          type="submit"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-        >
-          <Save class="w-3.5 h-3.5 text-white" />
-          <span>{isEdit ? "Save All Changes" : "Publish Extension to Directory"}</span>
-        </button>
+        <div class="flex items-center justify-end gap-3">
+          <span id="tab4-save-status" class="text-xs font-mono text-slate-400 hidden sm:inline-block"></span>
+          
+          <button
+            type="button"
+            id="tab4-save-btn"
+            class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Save class="w-3.5 h-3.5 text-slate-500" />
+            <span>Save Specs Draft</span>
+          </button>
+
+          <button
+            type="submit"
+            id="publish-extension-btn"
+            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          >
+            <CheckCircle2 class="w-3.5 h-3.5 text-white" />
+            <span>{isEdit ? "Save & Publish Changes" : "Publish Extension to Directory"}</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1753,6 +1777,26 @@ const data = {
     const addComparisonBtn = document.getElementById('add-comparison-btn') as HTMLButtonElement | null;
     const comparisonBadge = document.getElementById('comparison-count-badge');
     const errComparison = document.getElementById('err-ext-comparison');
+
+    // Tab 4 Monetization & Technical Specs elements
+    const tab4SaveBtn = document.getElementById('tab4-save-btn');
+    const tab4Status = document.getElementById('tab4-save-status');
+    const publishBtn = document.getElementById('publish-extension-btn');
+    const freqInput = document.getElementById('ext-freq-input') as HTMLSelectElement | null;
+    const manifestInput = document.getElementById('ext-manifest-input') as HTMLSelectElement | null;
+    const licenseInput = document.getElementById('ext-license-input') as HTMLSelectElement | null;
+    const privacyInput = document.getElementById('ext-privacy-input') as HTMLInputElement | null;
+    const monetagBadge = document.getElementById('monetag-source-badge');
+    const errMonetag = document.getElementById('err-ext-monetag');
+    const errFaqs = document.getElementById('err-ext-faqs');
+    const errBrowsers = document.getElementById('err-ext-browsers');
+    const errPrivacy = document.getElementById('err-ext-privacy');
+
+    const MIN_FAQS = 3;
+    const MAX_FAQS = 6;
+    const faqsContainer = document.getElementById('faqs-list-container');
+    const addFaqBtn = document.getElementById('add-faq-btn') as HTMLButtonElement | null;
+    const faqsBadge = document.getElementById('faqs-count-badge');
 
     function validateInput(
       input: HTMLInputElement | HTMLSelectElement | null,
@@ -2190,10 +2234,150 @@ const data = {
       return allValid;
     }
 
+    function validateTab4(focusFirst = true): boolean {
+      // 1. Monetag Direct Link URL
+      const monetagVal = (monetagInput?.value || '').trim();
+      const isMonetagValid = monetagVal.length >= 8 && (monetagVal.startsWith('http://') || monetagVal.startsWith('https://'));
+      const vMonetag = validateInput(
+        monetagInput,
+        errMonetag,
+        isMonetagValid,
+        'Valid Monetag Direct Link URL is required (starting with https://).'
+      );
+
+      // 2. Frequently Asked Questions (Min 3, Max 6)
+      let vFaqs = true;
+      const faqCards = faqsContainer?.querySelectorAll('.faq-card') || [];
+      if (faqCards.length < MIN_FAQS) {
+        vFaqs = false;
+        if (errFaqs) {
+          errFaqs.textContent = `At least ${MIN_FAQS} frequently asked questions are required (currently ${faqCards.length}).`;
+          errFaqs.classList.remove('hidden');
+        }
+      } else {
+        let firstInvalidFaqInput: HTMLElement | null = null;
+        let faqErrMsg = '';
+        faqCards.forEach((card, idx) => {
+          const qInput = card.querySelector('.faq-q-input') as HTMLInputElement | null;
+          const aInput = card.querySelector('.faq-a-input') as HTMLTextAreaElement | null;
+          const qVal = (qInput?.value || '').trim();
+          const aVal = (aInput?.value || '').trim();
+          const isQValid = qVal.length >= 10 && qVal.length <= 100;
+          const isAValid = aVal.length >= 20 && aVal.length <= 300;
+
+          if (qInput) {
+            if (!isQValid) {
+              qInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              qInput.classList.remove('border-slate-200', 'focus:border-blue-400');
+              if (!firstInvalidFaqInput) firstInvalidFaqInput = qInput;
+              if (!faqErrMsg) faqErrMsg = `FAQ #${idx + 1} question must be between 10 and 100 characters.`;
+            } else {
+              qInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              qInput.classList.add('border-slate-200', 'focus:border-blue-400');
+            }
+          }
+
+          if (aInput) {
+            if (!isAValid) {
+              aInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              aInput.classList.remove('border-slate-200', 'focus:border-blue-400');
+              if (!firstInvalidFaqInput) firstInvalidFaqInput = aInput;
+              if (!faqErrMsg) faqErrMsg = `FAQ #${idx + 1} answer must be between 20 and 300 characters.`;
+            } else {
+              aInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+              aInput.classList.add('border-slate-200', 'focus:border-blue-400');
+            }
+          }
+
+          if (!isQValid || !isAValid) {
+            vFaqs = false;
+          }
+        });
+
+        if (errFaqs) {
+          if (!vFaqs) {
+            errFaqs.textContent = faqErrMsg || 'Please complete all FAQ entries according to character constraints.';
+            errFaqs.classList.remove('hidden');
+          } else {
+            errFaqs.textContent = '';
+            errFaqs.classList.add('hidden');
+          }
+        }
+      }
+
+      // 3. Supported Browsers (At least 1)
+      const selectedBrowsers = form?.querySelectorAll('input[name="supported-browsers"]:checked') || [];
+      const vBrowsers = selectedBrowsers.length > 0;
+      if (errBrowsers) {
+        if (!vBrowsers) {
+          errBrowsers.textContent = 'Please select at least one supported browser.';
+          errBrowsers.classList.remove('hidden');
+        } else {
+          errBrowsers.textContent = '';
+          errBrowsers.classList.add('hidden');
+        }
+      }
+
+      // 4. Privacy Policy URL (Optional, but if provided must be valid)
+      const privacyVal = (privacyInput?.value || '').trim();
+      const isPrivacyValid = !privacyVal || (privacyVal.length >= 8 && (privacyVal.startsWith('http://') || privacyVal.startsWith('https://')));
+      const vPrivacy = validateInput(
+        privacyInput,
+        errPrivacy,
+        isPrivacyValid,
+        'Privacy policy URL must be a valid web address starting with http:// or https://.'
+      );
+
+      const allValid = vMonetag && vFaqs && vBrowsers && vPrivacy;
+
+      if (!allValid) {
+        if (tab4Status) {
+          tab4Status.textContent = '⚠ Complete all required specifications above to proceed.';
+          tab4Status.className = 'text-xs text-amber-600 font-medium';
+        }
+        if (focusFirst) {
+          const list = [
+            { ok: vMonetag, el: monetagInput },
+            { ok: vFaqs, el: faqsContainer },
+            { ok: vBrowsers, el: errBrowsers },
+            { ok: vPrivacy, el: privacyInput },
+          ];
+          const firstBad = list.find(item => !item.ok)?.el;
+          if (firstBad) {
+            firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (firstBad instanceof HTMLInputElement || firstBad instanceof HTMLTextAreaElement) {
+              firstBad.focus();
+            }
+          }
+        }
+      } else {
+        if (tab4Status && tab4Status.textContent.includes('⚠')) {
+          tab4Status.textContent = '';
+        }
+      }
+
+      return allValid;
+    }
+
     // Live real-time re-validation on input & change
     [nameInput, slugInput, categoryInput, versionInput, taglineInput, githubInput, emailInput, websiteInput].forEach(inp => {
       inp?.addEventListener('input', () => validateTab1(false));
       inp?.addEventListener('change', () => validateTab1(false));
+    });
+
+    // Tab 4 Live real-time re-validation
+    monetagInput?.addEventListener('input', () => {
+      validateTab4(false);
+      syncMonetagBadge();
+    });
+    monetagInput?.addEventListener('change', () => validateTab4(false));
+    privacyInput?.addEventListener('input', () => validateTab4(false));
+    privacyInput?.addEventListener('change', () => validateTab4(false));
+    freqInput?.addEventListener('change', () => validateTab4(false));
+    manifestInput?.addEventListener('change', () => validateTab4(false));
+    licenseInput?.addEventListener('change', () => validateTab4(false));
+    document.querySelectorAll('input[name="supported-browsers"]').forEach(cb => {
+      cb.addEventListener('change', () => validateTab4(false));
     });
 
     // Auto-generate slug from name if new extension
@@ -2602,10 +2786,188 @@ const data = {
       }
     }
 
+    // Save Monetization & Technical Specs (Tab 4) to Cloudflare D1
+    async function saveSpecsToDb(silent = false, publish = false): Promise<boolean> {
+      if (!validateTab4(true)) {
+        return false;
+      }
+
+      if (publish) {
+        // Pre-publish integrity check across Tabs 1, 2, 3
+        if (!validateTab1(true)) {
+          switchTab(1);
+          return false;
+        }
+        if (!validateTab2(true)) {
+          switchTab(2);
+          return false;
+        }
+        if (!validateTab3(true)) {
+          switchTab(3);
+          return false;
+        }
+      }
+
+      let currentExtId = form?.getAttribute('data-extension-id') || '';
+      let currentSlug = form?.getAttribute('data-extension-slug') || '';
+
+      // If extension record not created in D1 yet, save basic details first
+      if (!currentExtId) {
+        const savedBasic = await saveBasicToDb(true);
+        if (!savedBasic) {
+          if (tab4Status) {
+            tab4Status.textContent = '⚠ Complete required Basic details in Tab 1 first.';
+            tab4Status.className = 'text-xs text-amber-600 font-medium';
+          }
+          return false;
+        }
+        currentExtId = form?.getAttribute('data-extension-id') || '';
+        currentSlug = form?.getAttribute('data-extension-slug') || '';
+      }
+
+      if (publish) {
+        // Persist visual media & story to database before final publishing
+        await saveMediaToDb(true);
+        await saveStoryToDb(true);
+      }
+
+      const faqCards = faqsContainer?.querySelectorAll('.faq-card') || [];
+      const faqsList = Array.from(faqCards).map(card => {
+        const qInput = card.querySelector('.faq-q-input') as HTMLInputElement | null;
+        const aInput = card.querySelector('.faq-a-input') as HTMLTextAreaElement | null;
+        return {
+          q: (qInput?.value || '').trim(),
+          a: (aInput?.value || '').trim(),
+        };
+      });
+
+      const browserCheckboxes = form?.querySelectorAll('input[name="supported-browsers"]:checked') as NodeListOf<HTMLInputElement> | undefined;
+      const supportedBrowsers = Array.from(browserCheckboxes || []).map(cb => cb.value);
+
+      const specsPayload = {
+        id: currentExtId,
+        slug: currentSlug,
+        monetagUrl: (monetagInput?.value || '').trim(),
+        frequency: freqInput?.value || '24h',
+        manifestVersion: manifestInput?.value || 'v3',
+        license: licenseInput?.value || 'MIT',
+        supportedBrowsers,
+        privacyPolicyUrl: (privacyInput?.value || '').trim(),
+        publish,
+      };
+
+      if (tab4Status) {
+        tab4Status.textContent = publish ? 'Submitting to ExtLabs directory...' : 'Saving specs to database...';
+        tab4Status.className = 'text-xs text-blue-600 font-mono';
+      }
+
+      const originalSaveHtml = topSaveBtn ? topSaveBtn.innerHTML : '';
+      const originalTab4SaveHtml = tab4SaveBtn ? tab4SaveBtn.innerHTML : '';
+      const originalPublishHtml = publishBtn ? publishBtn.innerHTML : '';
+
+      if (topSaveBtn && !silent) {
+        topSaveBtn.setAttribute('disabled', 'true');
+        topSaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+      if (tab4SaveBtn && !silent && !publish) {
+        tab4SaveBtn.setAttribute('disabled', 'true');
+        tab4SaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-slate-700 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+      if (publishBtn && publish) {
+        publishBtn.setAttribute('disabled', 'true');
+        publishBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Publishing...</span>
+        `;
+      }
+
+      try {
+        const res = await fetch('/api/developers/extensions/save-specs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(specsPayload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          if (tab4Status) {
+            tab4Status.textContent = `Error: ${data.error || 'Failed to save specs'}`;
+            tab4Status.className = 'text-xs text-red-600 font-medium';
+          }
+          if (!silent) {
+            alert(data.error || 'Failed to save specifications to database.');
+          }
+          return false;
+        }
+
+        if (tab4Status) {
+          tab4Status.textContent = publish ? '✓ Submitted to Directory' : '✓ Saved to ExtLabs database';
+          tab4Status.className = 'text-xs text-emerald-600 font-mono';
+        }
+
+        if (publish) {
+          alert(`🎉 Extension "${nameInput?.value || 'Untitled'}" has been published and submitted to ExtLabs Directory successfully!`);
+          window.location.href = `/developers/manage/${currentSlug || currentExtId}?published=true`;
+          return true;
+        }
+
+        if (!silent) {
+          if (topSaveBtn) {
+            topSaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              topSaveBtn.innerHTML = originalSaveHtml;
+              topSaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
+          if (tab4SaveBtn) {
+            tab4SaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              tab4SaveBtn.innerHTML = originalTab4SaveHtml;
+              tab4SaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
+        }
+
+        return true;
+      } catch (err: any) {
+        console.error('Error saving specs to D1:', err);
+        if (tab4Status) {
+          tab4Status.textContent = 'Network error saving specs to database.';
+          tab4Status.className = 'text-xs text-red-600 font-medium';
+        }
+        if (!silent) {
+          alert('Network or database error while saving specifications.');
+        }
+        return false;
+      } finally {
+        if (topSaveBtn && !silent && topSaveBtn.hasAttribute('disabled')) {
+          topSaveBtn.removeAttribute('disabled');
+          topSaveBtn.innerHTML = originalSaveHtml;
+        }
+        if (tab4SaveBtn && !silent && tab4SaveBtn.hasAttribute('disabled')) {
+          tab4SaveBtn.removeAttribute('disabled');
+          tab4SaveBtn.innerHTML = originalTab4SaveHtml;
+        }
+        if (publishBtn && publish && publishBtn.hasAttribute('disabled')) {
+          publishBtn.removeAttribute('disabled');
+          publishBtn.innerHTML = originalPublishHtml;
+        }
+      }
+    }
+
     // Top Save Button triggers save for active tab
     topSaveBtn?.addEventListener('click', async () => {
       const activeTab = getCurrentActiveTab();
-      if (activeTab === 3) {
+      if (activeTab === 4) {
+        await saveSpecsToDb(false, false);
+      } else if (activeTab === 3) {
         await saveStoryToDb(false);
       } else if (activeTab === 2) {
         await saveMediaToDb(false);
@@ -2627,6 +2989,11 @@ const data = {
     // Tab 3 footer save draft button
     tab3SaveBtn?.addEventListener('click', async () => {
       await saveStoryToDb(false);
+    });
+
+    // Tab 4 footer save draft button
+    tab4SaveBtn?.addEventListener('click', async () => {
+      await saveSpecsToDb(false, false);
     });
 
     // 1. Tab Switching Logic with Guard
@@ -2836,6 +3203,8 @@ const data = {
     const websiteBadge = document.getElementById('dev-website-source-badge');
 
     const savedSettings = localStorage.getItem('extlabs_dev_profile');
+    const savedMonetag = localStorage.getItem('extlabs_default_monetag_url');
+
     if (savedSettings) {
       try {
         const profile = JSON.parse(savedSettings);
@@ -2845,7 +3214,17 @@ const data = {
         if (websiteInput && (!websiteInput.value || websiteInput.value === 'https://neurallabs.dev') && profile.website) {
           websiteInput.value = profile.website;
         }
+        if (monetagInput && (!monetagInput.value || (!isEditMode && monetagInput.value === 'https://monetag.com/direct/54829103')) && profile.defaultMonetagUrl) {
+          monetagInput.value = profile.defaultMonetagUrl;
+        }
+        if (freqInput && profile.defaultFrequency && !isEditMode) {
+          freqInput.value = profile.defaultFrequency;
+        }
       } catch (e) {}
+    }
+
+    if (savedMonetag && monetagInput && (!monetagInput.value || (!isEditMode && monetagInput.value === 'https://monetag.com/direct/54829103'))) {
+      monetagInput.value = savedMonetag;
     }
 
     // Auto-fill from authenticated developer profile if still unpopulated
@@ -2863,6 +3242,13 @@ const data = {
             emailInput.value = data.user.email;
             syncSupportBadges();
           }
+          if (data.user.defaultMonetagUrl && monetagInput && (!monetagInput.value || (!isEditMode && monetagInput.value === 'https://monetag.com/direct/54829103'))) {
+            monetagInput.value = data.user.defaultMonetagUrl;
+          }
+          if (data.user.defaultFrequency && freqInput && !isEditMode) {
+            freqInput.value = data.user.defaultFrequency;
+          }
+          syncMonetagBadge();
         }
       })
       .catch(() => {});
@@ -2889,9 +3275,22 @@ const data = {
       }
     }
 
+    function syncMonetagBadge() {
+      if (!monetagBadge || !monetagInput) return;
+      if (monetagInput.value.trim().length > 0) {
+        monetagBadge.textContent = 'Default from Settings';
+        monetagBadge.className = 'text-[10px] font-mono text-blue-600 font-medium';
+      } else {
+        monetagBadge.textContent = 'Direct link required';
+        monetagBadge.className = 'text-[10px] font-mono text-amber-600 font-medium';
+      }
+    }
+
     emailInput?.addEventListener('input', syncSupportBadges);
     websiteInput?.addEventListener('input', syncSupportBadges);
+    monetagInput?.addEventListener('input', syncMonetagBadge);
     syncSupportBadges();
+    syncMonetagBadge();
 
     // 4. Overview Description & Markdown Toolbar
     function updateCharCount() {
@@ -3503,12 +3902,6 @@ const data = {
     refreshComparisonUI();
 
     // 8. Dynamic FAQs (Min 3, Max 6)
-    const MIN_FAQS = 3;
-    const MAX_FAQS = 6;
-    const faqsContainer = document.getElementById('faqs-list-container');
-    const addFaqBtn = document.getElementById('add-faq-btn') as HTMLButtonElement | null;
-    const faqsBadge = document.getElementById('faqs-count-badge');
-
     function updateFaqCounters(card: Element) {
       const qInput = card.querySelector('.faq-q-input') as HTMLInputElement | null;
       const qCount = card.querySelector('.faq-q-count');
@@ -3566,8 +3959,14 @@ const data = {
         const qInput = card.querySelector('.faq-q-input');
         const aInput = card.querySelector('.faq-a-input');
 
-        qInput?.addEventListener('input', () => updateFaqCounters(card));
-        aInput?.addEventListener('input', () => updateFaqCounters(card));
+        qInput?.addEventListener('input', () => {
+          updateFaqCounters(card);
+          validateTab4(false);
+        });
+        aInput?.addEventListener('input', () => {
+          updateFaqCounters(card);
+          validateTab4(false);
+        });
       });
     }
 
@@ -3586,6 +3985,7 @@ const data = {
             refreshFaqsUI();
             attachFaqRemoveEvents();
             attachFaqInputEvents();
+            validateTab4(false);
           } else {
             alert(`A minimum of ${MIN_FAQS} FAQs is required for store SEO and Schema.org rich results.`);
           }
@@ -3662,6 +4062,7 @@ const data = {
       refreshFaqsUI();
       attachFaqRemoveEvents();
       attachFaqInputEvents();
+      validateTab4(false);
     });
 
     attachFaqRemoveEvents();
@@ -3945,76 +4346,10 @@ const data = {
       }
     });
 
-    // 11. Form Submit Validation
-    form?.addEventListener('submit', (e) => {
+    // 11. Form Submit & Publish Action
+    form?.addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      if (descTextarea && descTextarea.value.length < 100) {
-        alert('Please provide at least 100 characters for the extension overview description.');
-        switchTab(3);
-        descTextarea.focus();
-        return;
-      }
-
-      const featureCards = featuresContainer?.querySelectorAll('.feature-card') || [];
-      if (featureCards.length < MIN_FEATURES) {
-        alert(`Please define at least ${MIN_FEATURES} key features in Tab 3.`);
-        switchTab(3);
-        return;
-      }
-
-      const workflowCards = workflowContainer?.querySelectorAll('.workflow-card') || [];
-      if (workflowCards.length < MIN_WORKFLOW) {
-        alert(`Please define at least ${MIN_WORKFLOW} internal execution workflow stages in Tab 3.`);
-        switchTab(3);
-        return;
-      }
-
-      const comparisonCards = comparisonContainer?.querySelectorAll('.comparison-card') || [];
-      if (comparisonCards.length < MIN_COMPARISON) {
-        alert(`Please define at least ${MIN_COMPARISON} comparison rows for store SEO in Tab 3.`);
-        switchTab(3);
-        return;
-      }
-
-      const faqCards = faqsContainer?.querySelectorAll('.faq-card') || [];
-      if (faqCards.length < MIN_FAQS) {
-        alert(`Please define at least ${MIN_FAQS} FAQs in Tab 4.`);
-        switchTab(4);
-        return;
-      }
-
-      const selectedBrowsers = form.querySelectorAll('input[name="supported-browsers"]:checked');
-      if (selectedBrowsers.length === 0) {
-        alert('Please select at least one supported browser in Tab 4.');
-        switchTab(4);
-        return;
-      }
-
-      const hasIcon = (iconUrlVal && iconUrlVal.value.trim().length > 0) || (iconFileInput && iconFileInput.files && iconFileInput.files.length > 0);
-      if (!hasIcon) {
-        alert('Please upload an Extension Logo / Icon image in Tab 2.');
-        switchTab(2);
-        return;
-      }
-
-      const hasPromo = (promoUrlVal && promoUrlVal.value.trim().length > 0) || (promoFileInput && promoFileInput.files && promoFileInput.files.length > 0);
-      if (!hasPromo) {
-        alert('Please upload a Promotional Shelf Banner in Tab 2.');
-        switchTab(2);
-        return;
-      }
-
-      const screenshotCards = screenshotsContainer?.querySelectorAll('.screenshot-card') || [];
-      if (screenshotCards.length < MIN_SCREENSHOTS) {
-        alert(`Please upload at least ${MIN_SCREENSHOTS} Store Showcase Screenshots in Tab 2.`);
-        switchTab(2);
-        return;
-      }
-
-      const nameVal = (document.getElementById('ext-name-input') as HTMLInputElement | null)?.value || 'Extension';
-      alert(`🎉 "${nameVal}" has been successfully saved and published!`);
-      window.location.href = '/developers/dashboard';
+      await saveSpecsToDb(false, true);
     });
   });
 </script>

@@ -31,6 +31,8 @@ if (db && user) {
 
 const defaultDevWebsite = developer?.website || (user?.username ? `https://github.com/${user.username}` : '');
 const defaultSupportEmail = user?.email || '';
+const defaultMonetagUrl = developer?.default_monetag_url || "https://monetag.com/direct/54829103";
+const defaultFrequency = developer?.default_frequency || "24h";
 ---
 
 <html lang="en" data-theme="light">
@@ -82,12 +84,14 @@ const defaultSupportEmail = user?.email || '';
         </a>
       </div>
 
-      <!-- Unified Editor Component (Pre-filled with authenticated developer support defaults) -->
+      <!-- Unified Editor Component (Pre-filled with authenticated developer support defaults & Monetag settings) -->
       <ExtensionEditor 
         isEdit={false} 
         initialData={{
           supportEmail: defaultSupportEmail,
-          developerWebsite: defaultDevWebsite
+          developerWebsite: defaultDevWebsite,
+          monetagUrl: defaultMonetagUrl,
+          frequency: defaultFrequency
         }}
       />
 

@@ -28,6 +28,8 @@ export const POST: APIRoute = async ({ request }) => {
       email?: string;
       website?: string;
       bio?: string;
+      defaultMonetagUrl?: string;
+      defaultFrequency?: string;
     };
 
     let website = body.website?.trim() || '';
@@ -42,10 +44,21 @@ export const POST: APIRoute = async ({ request }) => {
     await db
       .prepare(`
         UPDATE developers 
-        SET website = ?, display_name = COALESCE(?, display_name)
+        SET 
+          website = ?, 
+          display_name = COALESCE(?, display_name),
+          default_monetag_url = COALESCE(?, default_monetag_url),
+          default_frequency = COALESCE(?, default_frequency)
         WHERE user_id = ? OR slug = ?
       `)
-      .bind(website, body.name?.trim() || null, user.id, user.username)
+      .bind(
+        website,
+        body.name?.trim() || null,
+        body.defaultMonetagUrl?.trim() || null,
+        body.defaultFrequency?.trim() || null,
+        user.id,
+        user.username
+      )
       .run();
 
     // Update users table if email/name provided
