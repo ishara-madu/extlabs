@@ -11,7 +11,7 @@ import { ArrowRight } from '@lucide/astro';
 
 const db = getDb();
 const allStoreExtensions = await getStoreExtensions(db);
-const visibleCategories = CATEGORIES.filter(cat => allStoreExtensions.some(e => e.category === cat.id));
+const visibleCategories = CATEGORIES;
 ---
 
 <html lang="en" data-theme="light">
@@ -110,17 +110,21 @@ const visibleCategories = CATEGORIES.filter(cat => allStoreExtensions.some(e => 
                 </div>
 
                 <!-- Bottom highlight sample -->
-                {topExt && (
-                  <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  {topExt ? (
                     <span class="text-[11px] text-slate-500 truncate max-w-[180px]">
                       Top: <strong class="text-slate-700 font-semibold">{topExt.name}</strong>
                     </span>
-                    <span class="text-xs font-semibold text-blue-600 flex items-center gap-1 group-hover:underline">
-                      <span>Explore</span>
-                      <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
+                  ) : (
+                    <span class="text-[11px] text-slate-400 font-mono">
+                      {catExtensions.length} listed
                     </span>
-                  </div>
-                )}
+                  )}
+                  <span class="text-xs font-semibold text-blue-600 flex items-center gap-1 group-hover:underline">
+                    <span>Explore</span>
+                    <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
+                  </span>
+                </div>
               </div>
             </a>
           );

@@ -3,8 +3,7 @@
 export const prerender = false;
 import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
-import Footer from "../../../components/Footer.astro";
-import { EXTENSIONS } from "../../../data/extensions";
+import { getDb, getLiveExtensionsCount } from "../../../lib/db";
 import { DEVELOPERS_DATA } from "../../../data/developers";
 import { 
   DAILY_TELEMETRY_DATA, 
@@ -19,6 +18,9 @@ import {
   EXTLABS_SHARE,
   MOST_POPULAR_CATEGORY
 } from "../../../data/statistics";
+
+const db = getDb();
+const liveExtensionsCount = await getLiveExtensionsCount(db);
 import { 
   ShieldCheck, 
   Check, 
@@ -136,7 +138,7 @@ import {
           >
             <Box class="w-4 h-4 text-slate-400" />
             <span>Live Directory</span>
-            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{liveExtensionsCount}</span>
           </a>
 
           <!-- 4. Developers -->
@@ -230,7 +232,7 @@ import {
             </div>
             <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
               <span class="text-slate-500">Live Catalog</span>
-              <span class="font-mono font-semibold text-slate-700">{EXTENSIONS.length} Extensions</span>
+              <span class="font-mono font-semibold text-slate-700">{liveExtensionsCount} Extensions</span>
             </div>
           </div>
 

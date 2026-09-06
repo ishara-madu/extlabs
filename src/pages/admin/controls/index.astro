@@ -4,7 +4,7 @@ export const prerender = false;
 import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
-import { EXTENSIONS } from "../../../data/extensions";
+import { getDb, getLiveExtensionsCount } from "../../../lib/db";
 import { DEVELOPERS_DATA } from "../../../data/developers";
 import { OPEN_REPORTS_COUNT } from "../../../data/reports";
 import { 
@@ -39,6 +39,9 @@ import {
   Trash2,
   X
 } from '@lucide/astro';
+
+const db = getDb();
+const liveExtensionsCount = await getLiveExtensionsCount(db);
 
 const totalStaff = ADMIN_MEMBERS_DATA.length;
 const activeStaff = ADMIN_MEMBERS_DATA.filter(a => a.status === 'active').length;
@@ -125,7 +128,7 @@ const activeStaff = ADMIN_MEMBERS_DATA.filter(a => a.status === 'active').length
           >
             <Box class="w-4 h-4 text-slate-400" />
             <span>Live Directory</span>
-            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{liveExtensionsCount}</span>
           </a>
 
           <!-- 4. Developers -->

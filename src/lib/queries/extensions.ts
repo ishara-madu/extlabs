@@ -131,8 +131,8 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
   try {
     tags = JSON.parse(dbExt.tags || '[]');
   } catch {}
-  if (!Array.isArray(tags) || tags.length === 0) {
-    tags = [dbExt.category.toUpperCase(), 'Manifest V3', 'Verified'];
+  if (!Array.isArray(tags)) {
+    tags = [];
   }
 
   let features: any[] = [];
@@ -170,7 +170,18 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
 
   const usersCountFormatted = (dbExt.weekly_active_users || 0) >= 1000
     ? `${((dbExt.weekly_active_users || 0) / 1000).toFixed(1)}k users`
-    : `${dbExt.weekly_active_users || 120} users`;
+    : (dbExt.weekly_active_users ? `${dbExt.weekly_active_users} users` : '');
+
+  let screenshots: string[] = [];
+  try {
+    screenshots = JSON.parse(dbExt.screenshots || '[]');
+  } catch {}
+
+  let youtubeVideoId: string | undefined = undefined;
+  if (dbExt.youtube_video_url) {
+    const match = dbExt.youtube_video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (match) youtubeVideoId = match[1];
+  }
 
   const bannerSvg = dbExt.header_image_url
     ? `<img src="${dbExt.header_image_url}" alt="${dbExt.name}" class="w-full h-full object-cover" />`
@@ -179,37 +190,39 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
   return {
     id: dbExt.slug || dbExt.id,
     name: dbExt.name,
-    tagline: dbExt.short_description || 'Modern browser extension for high performance and privacy.',
+    tagline: dbExt.short_description || '',
     description: dbExt.full_description || dbExt.short_description || '',
     category: (dbExt.category || 'productivity') as any,
     categoryLabel: categoryLabels[dbExt.category] || 'Productivity',
-    developer: dbExt.developer_name || 'ExtLabs Developer',
+    developer: dbExt.developer_name || 'Developer',
     isVerified: Boolean(dbExt.developer_verified),
-    rating: dbExt.rating || 5.0,
-    reviewCount: dbExt.review_count || 12,
+    rating: typeof dbExt.rating === 'number' ? dbExt.rating : 0,
+    reviewCount: typeof dbExt.review_count === 'number' ? dbExt.review_count : 0,
     userCount: usersCountFormatted,
     version: dbExt.current_version || '1.0.0',
-    updatedDate: dbExt.updated_at ? dbExt.updated_at.split(' ')[0] : '2026-09-01',
-    size: '2.4 MB',
+    updatedDate: dbExt.updated_at ? dbExt.updated_at.split(' ')[0] : '',
+    size: undefined,
     featured: Boolean(dbExt.is_featured),
     editorsPick: Boolean(dbExt.is_editors_pick),
     badge: dbExt.is_featured ? 'Featured' : undefined,
     iconUrl: dbExt.icon_url || '/icons/extension-placeholder.avif',
     bannerSvg,
+    screenshots: Array.isArray(screenshots) && screenshots.length > 0 ? screenshots : undefined,
+    youtubeVideoId,
     tags,
     permissions: dbExt.permissions ? JSON.parse(dbExt.permissions || '[]') : [],
-    overview: [dbExt.full_description || dbExt.short_description || ''],
-    features: features.length > 0 ? features : undefined,
-    howItWorks: workflow.length > 0 ? workflow.map((w: any) => ({ step: w.step, title: w.title, description: w.description })) : undefined,
-    comparison: comparison.length > 0 ? comparison : undefined,
-    faqs: faqs.length > 0 ? faqs.map((f: any) => ({ question: f.q || f.question, answer: f.a || f.answer })) : undefined,
-    developerSupport: {
-      email: dbExt.support_email || 'support@extlabs.io',
-      website: dbExt.developer_website || 'https://extlabs.io',
+    overview: [],
+    features: Array.isArray(features) && features.length > 0 ? features : undefined,
+    howItWorks: Array.isArray(workflow) && workflow.length > 0 ? workflow.map((w: any) => ({ step: w.step, title: w.title, description: w.description })) : undefined,
+    comparison: Array.isArray(comparison) && comparison.length > 0 ? comparison : undefined,
+    faqs: Array.isArray(faqs) && faqs.length > 0 ? faqs.map((f: any) => ({ question: f.q || f.question, answer: f.a || f.answer })) : undefined,
+    developerSupport: (dbExt.support_email || dbExt.developer_website || dbExt.github_url || dbExt.docs_url || dbExt.privacy_policy_url) ? {
+      email: dbExt.support_email || '',
+      website: dbExt.developer_website || '',
       github: dbExt.github_url || undefined,
-      supportUrl: dbExt.docs_url || 'https://extlabs.io',
-      privacyPolicy: dbExt.privacy_policy_url || 'https://extlabs.io/privacy',
-    },
+      supportUrl: dbExt.docs_url || undefined,
+      privacyPolicy: dbExt.privacy_policy_url || undefined,
+    } : undefined,
     downloadUrl: dbExt.crx_download_url || dbExt.zip_download_url || dbExt.download_url || '#',
     monetagUrl: dbExt.monetag_direct_link || undefined,
   };

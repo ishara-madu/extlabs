@@ -5,7 +5,6 @@ import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
-import { getExtensionWithDefaults } from "../../data/extensions";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory } from "../../lib/db";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ArrowRight, HelpCircle, CheckCircle2 } from '@lucide/astro';
 
@@ -17,53 +16,63 @@ if (!rawExtension) {
   return Astro.redirect('/');
 }
 
-const ext = getExtensionWithDefaults(rawExtension);
+const ext = rawExtension;
 const categoryExtensions = await getStoreExtensionsByCategory(db, ext.category);
 const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id !== rawExtension.id).slice(0, 3);
 
+const hasReviews = Boolean(ext.reviews && ext.reviews.length > 0);
+const hasFaqs = Boolean(ext.faqs && ext.faqs.length > 0);
+
 // JSON-LD Schema.org Structured Data for SEO
-const jsonLdSchema = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "SoftwareApplication",
-      "name": ext.name,
-      "operatingSystem": "Chromium Browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi)",
-      "applicationCategory": "BrowserExtension",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
+const jsonLdGraph: any[] = [
+  {
+    "@type": "SoftwareApplication",
+    "name": ext.name,
+    "operatingSystem": "Chromium Browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi)",
+    "applicationCategory": "BrowserExtension",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    ...(ext.reviewCount > 0 ? {
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": ext.rating.toFixed(1),
         "reviewCount": ext.reviewCount,
         "bestRating": "5",
         "worstRating": "1"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": ext.developer,
-        "url": ext.developerSupport?.website
-      },
-      "softwareVersion": ext.version,
-      "fileSize": ext.size,
-      "dateModified": ext.updatedDate,
-      "description": ext.description
+      }
+    } : {}),
+    "author": {
+      "@type": "Organization",
+      "name": ext.developer,
+      ...(ext.developerSupport?.website ? { "url": ext.developerSupport.website } : {})
     },
-    {
-      "@type": "FAQPage",
-      "mainEntity": ext.faqs?.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    }
-  ]
+    "softwareVersion": ext.version,
+    "fileSize": ext.size,
+    "dateModified": ext.updatedDate,
+    "description": ext.description
+  }
+];
+
+if (hasFaqs && ext.faqs) {
+  jsonLdGraph.push({
+    "@type": "FAQPage",
+    "mainEntity": ext.faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  });
+}
+
+const jsonLdSchema = {
+  "@context": "https://schema.org",
+  "@graph": jsonLdGraph
 };
 ---
 
@@ -158,17 +167,31 @@ const jsonLdSchema = {
 
               <!-- Metrics -->
               <div class="flex items-center gap-3 text-xs text-slate-500 flex-wrap pt-0.5">
-                <div class="flex items-center gap-1 font-semibold text-slate-800">
-                  <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span>{ext.rating.toFixed(1)}</span>
-                  <a href="#reviews-section" class="text-slate-500 hover:text-slate-900 underline font-normal">
-                    ({ext.reviewCount.toLocaleString()})
-                  </a>
-                </div>
+                {ext.reviewCount > 0 && (
+                  <>
+                    <div class="flex items-center gap-1 font-semibold text-slate-800">
+                      <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      <span>{ext.rating.toFixed(1)}</span>
+                      {hasReviews && (
+                        <a href="#reviews-section" class="text-slate-500 hover:text-slate-900 underline font-normal">
+                          ({ext.reviewCount.toLocaleString()})
+                        </a>
+                      )}
+                      {!hasReviews && (
+                        <span>({ext.reviewCount.toLocaleString()})</span>
+                      )}
+                    </div>
+                    <span class="text-slate-300">•</span>
+                  </>
+                )}
 
-                <span class="text-slate-300">•</span>
-                <span>{ext.userCount} users</span>
-                <span class="text-slate-300">•</span>
+                {ext.userCount ? (
+                  <>
+                    <span>{ext.userCount}</span>
+                    <span class="text-slate-300">•</span>
+                  </>
+                ) : null}
+
                 <span>By <strong class="text-slate-800 font-medium">{ext.developer}</strong></span>
               </div>
             </div>
@@ -209,26 +232,28 @@ const jsonLdSchema = {
 
       <!-- 2. Media Showcase: Direct Screenshot & Video Player -->
       <section class="space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <button
-              type="button"
-              id="tab-screenshot-btn"
-              class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-slate-900 text-white cursor-pointer transition-colors"
-            >
-              Screenshot
-            </button>
-            <button
-              type="button"
-              id="tab-video-btn"
-              class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
-            >
-              Video Demo
-            </button>
-          </div>
+        {ext.youtubeVideoId && (
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                id="tab-screenshot-btn"
+                class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-slate-900 text-white cursor-pointer transition-colors"
+              >
+                Screenshot
+              </button>
+              <button
+                type="button"
+                id="tab-video-btn"
+                class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+              >
+                Video Demo
+              </button>
+            </div>
 
-          <span class="hidden sm:inline-block text-[11px] text-slate-400 font-mono">16:9 Preview</span>
-        </div>
+            <span class="hidden sm:inline-block text-[11px] text-slate-400 font-mono">16:9 Preview</span>
+          </div>
+        )}
 
         <!-- Media View 1: Screenshot Graphic Banner -->
         <div id="media-screenshot-view" class="w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
@@ -236,16 +261,18 @@ const jsonLdSchema = {
         </div>
 
         <!-- Media View 2: YouTube Video Player Embed -->
-        <div id="media-video-view" class="hidden w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative">
-          <iframe
-            id="youtube-iframe"
-            class="w-full h-full"
-            src={`https://www.youtube-nocookie.com/embed/${ext.youtubeVideoId}?rel=0&modestbranding=1`}
-            title={`${ext.name} Video Demo`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          ></iframe>
-        </div>
+        {ext.youtubeVideoId && (
+          <div id="media-video-view" class="hidden w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative">
+            <iframe
+              id="youtube-iframe"
+              class="w-full h-full"
+              src={`https://www.youtube-nocookie.com/embed/${ext.youtubeVideoId}?rel=0&modestbranding=1`}
+              title={`${ext.name} Video Demo`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+        )}
       </section>
 
       <!-- 3. Top 2-Column Section (Content Left + Clean Specs Right) -->
@@ -263,62 +290,68 @@ const jsonLdSchema = {
               {ext.description}
             </p>
 
-            <div class="pt-1 space-y-1.5">
-              <span class="text-xs font-semibold text-slate-800 block">Highlights:</span>
-              <ul class="space-y-1.5 text-xs text-slate-600">
-                {ext.overview.map((item) => (
-                  <li class="flex items-start gap-2">
-                    <span class="text-slate-400 font-medium">─</span>
-                    <span class="leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {ext.overview && ext.overview.length > 0 && (
+              <div class="pt-1 space-y-1.5">
+                <span class="text-xs font-semibold text-slate-800 block">Highlights:</span>
+                <ul class="space-y-1.5 text-xs text-slate-600">
+                  {ext.overview.map((item) => (
+                    <li class="flex items-start gap-2">
+                      <span class="text-slate-400 font-medium">─</span>
+                      <span class="leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </section>
 
-          <!-- Core Features (Open Typographic Grid - No Card Fatigue) -->
-          <section class="space-y-4">
-            <h2 class="text-base font-bold text-slate-900 tracking-tight border-b border-slate-200 pb-2">
-              Features & Capabilities
-            </h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              {ext.features?.map((feat) => (
-                <div class="space-y-1">
-                  <h3 class="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
-                    <span>{feat.title}</span>
-                  </h3>
-                  <p class="text-xs text-slate-500 leading-relaxed pl-3">
-                    {feat.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <!-- Internal Execution Flow (Open Stage Breakdown) -->
-          <section class="space-y-4">
-            <div class="border-b border-slate-200 pb-2">
-              <h2 class="text-base font-bold text-slate-900 tracking-tight">
-                Internal Execution Workflow
+          <!-- Core Features (Open Typographic Grid - Only if features exist) -->
+          {ext.features && ext.features.length > 0 && (
+            <section class="space-y-4">
+              <h2 class="text-base font-bold text-slate-900 tracking-tight border-b border-slate-200 pb-2">
+                Features & Capabilities
               </h2>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {ext.howItWorks?.map((step) => (
-                <div class="space-y-1.5">
-                  <span class="text-[11px] font-mono font-medium text-slate-400">Stage 0{step.step}</span>
-                  <h3 class="text-xs font-semibold text-slate-900">
-                    {step.title}
-                  </h3>
-                  <p class="text-xs text-slate-500 leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {ext.features.map((feat) => (
+                  <div class="space-y-1">
+                    <h3 class="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
+                      <span>{feat.title}</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 leading-relaxed pl-3">
+                      {feat.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <!-- Internal Execution Flow (Only if workflow exists) -->
+          {ext.howItWorks && ext.howItWorks.length > 0 && (
+            <section class="space-y-4">
+              <div class="border-b border-slate-200 pb-2">
+                <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                  Internal Execution Workflow
+                </h2>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {ext.howItWorks.map((step) => (
+                  <div class="space-y-1.5">
+                    <span class="text-[11px] font-mono font-medium text-slate-400">Stage 0{step.step}</span>
+                    <h3 class="text-xs font-semibold text-slate-900">
+                      {step.title}
+                    </h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
         </div>
 
@@ -334,20 +367,26 @@ const jsonLdSchema = {
               </h3>
 
               <dl class="divide-y divide-slate-100 text-xs">
-                <div class="flex items-center justify-between py-1.5">
-                  <dt class="text-slate-500">Version</dt>
-                  <dd class="font-mono text-slate-800 font-medium">{ext.version}</dd>
-                </div>
+                {ext.version && (
+                  <div class="flex items-center justify-between py-1.5">
+                    <dt class="text-slate-500">Version</dt>
+                    <dd class="font-mono text-slate-800 font-medium">{ext.version}</dd>
+                  </div>
+                )}
 
-                <div class="flex items-center justify-between py-1.5">
-                  <dt class="text-slate-500">Size</dt>
-                  <dd class="font-mono text-slate-800">{ext.size}</dd>
-                </div>
+                {ext.size && (
+                  <div class="flex items-center justify-between py-1.5">
+                    <dt class="text-slate-500">Size</dt>
+                    <dd class="font-mono text-slate-800">{ext.size}</dd>
+                  </div>
+                )}
 
-                <div class="flex items-center justify-between py-1.5">
-                  <dt class="text-slate-500">Updated</dt>
-                  <dd class="text-slate-700">{ext.updatedDate}</dd>
-                </div>
+                {ext.updatedDate && (
+                  <div class="flex items-center justify-between py-1.5">
+                    <dt class="text-slate-500">Updated</dt>
+                    <dd class="text-slate-700">{ext.updatedDate}</dd>
+                  </div>
+                )}
 
                 <div class="flex items-center justify-between py-1.5">
                   <dt class="text-slate-500">Standard</dt>
@@ -356,7 +395,7 @@ const jsonLdSchema = {
 
                 <div class="flex items-center justify-between py-1.5">
                   <dt class="text-slate-500">License</dt>
-                  <dd class="text-slate-700">Open License</dd>
+                  <dd class="text-slate-700">Free</dd>
                 </div>
               </dl>
             </div>
@@ -373,61 +412,71 @@ const jsonLdSchema = {
             </div>
 
             <!-- Permissions -->
-            <div class="pt-3 border-t border-slate-100 space-y-2">
-              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Permissions</span>
-              <div class="flex flex-wrap gap-1">
-                {ext.permissions.map((perm) => (
-                  <span class="text-[11px] font-mono bg-slate-50 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                    {perm}
-                  </span>
-                ))}
+            {ext.permissions && ext.permissions.length > 0 && (
+              <div class="pt-3 border-t border-slate-100 space-y-2">
+                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Permissions</span>
+                <div class="flex flex-wrap gap-1">
+                  {ext.permissions.map((perm) => (
+                    <span class="text-[11px] font-mono bg-slate-50 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                      {perm}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <!-- Developer Links -->
-            <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
-              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Developer Links</span>
-              
-              <div class="space-y-1 text-slate-600">
-                <a
-                  href={ext.developerSupport?.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
-                >
-                  <span>Website</span>
-                  <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
-                </a>
+            {ext.developerSupport && (ext.developerSupport.website || ext.developerSupport.supportUrl || ext.developerSupport.privacyPolicy) && (
+              <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
+                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Developer Links</span>
+                
+                <div class="space-y-1 text-slate-600">
+                  {ext.developerSupport.website && (
+                    <a
+                      href={ext.developerSupport.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
+                    >
+                      <span>Website</span>
+                      <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
+                    </a>
+                  )}
 
-                <a
-                  href={ext.developerSupport?.supportUrl}
-                  class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
-                >
-                  <span>Support Center</span>
-                  <ArrowRight class="w-3.5 h-3.5 text-slate-400" />
-                </a>
+                  {ext.developerSupport.supportUrl && (
+                    <a
+                      href={ext.developerSupport.supportUrl}
+                      class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
+                    >
+                      <span>Support Center</span>
+                      <ArrowRight class="w-3.5 h-3.5 text-slate-400" />
+                    </a>
+                  )}
 
-                <a
-                  href={ext.developerSupport?.privacyPolicy}
-                  class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
-                >
-                  <span>Privacy Policy</span>
-                  <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
-                </a>
+                  {ext.developerSupport.privacyPolicy && (
+                    <a
+                      href={ext.developerSupport.privacyPolicy}
+                      class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
+                    >
+                      <span>Privacy Policy</span>
+                      <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
+                    </a>
+                  )}
+                </div>
+
+                <!-- Report Button -->
+                <div class="pt-2">
+                  <button
+                    type="button"
+                    id="report-abuse-btn"
+                    class="text-xs text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1 cursor-pointer"
+                  >
+                    <AlertTriangle class="w-3 h-3" />
+                    <span>Report issue</span>
+                  </button>
+                </div>
               </div>
-
-              <!-- Report Button -->
-              <div class="pt-2">
-                <button
-                  type="button"
-                  id="report-abuse-btn"
-                  class="text-xs text-rose-600 hover:text-rose-700 font-medium flex items-center gap-1 cursor-pointer"
-                >
-                  <AlertTriangle class="w-3 h-3" />
-                  <span>Report issue</span>
-                </button>
-              </div>
-            </div>
+            )}
 
           </div>
 
@@ -436,256 +485,173 @@ const jsonLdSchema = {
       </div>
 
       <!-- 4. HyperUI Minimalist Comparison Table -->
-      <section class="space-y-4 pt-4 border-t border-slate-200">
-        <div class="border-b border-slate-200 pb-2">
-          <h2 class="text-base font-bold text-slate-900 tracking-tight">
-            Comparison Overview
-          </h2>
-          <p class="text-xs text-slate-500">Key architectural differences compared to generic extensions.</p>
-        </div>
-
-        <!-- HyperUI Clean Table -->
-        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-          <table class="min-w-full divide-y-2 divide-slate-200 text-xs">
-            <thead class="bg-slate-50 text-left">
-              <tr>
-                <th class="px-4 py-3 font-semibold text-slate-900 w-1/4">Capability & Metric</th>
-                <th class="px-4 py-3 font-semibold text-slate-900 bg-slate-100/60 w-3/8 border-x border-slate-200">
-                  {ext.name} (ExtLabs)
-                </th>
-                <th class="px-4 py-3 font-medium text-slate-500 w-3/8">
-                  Traditional / Other Tools
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200">
-              {ext.comparison?.map((row) => (
-                <tr class="hover:bg-slate-50/50">
-                  <td class="px-4 py-3 font-medium text-slate-800 align-top">
-                    {row.feature}
-                  </td>
-                  <td class="px-4 py-3 text-slate-900 bg-slate-50/30 border-x border-slate-200 align-top leading-relaxed">
-                    <div class="flex items-start gap-1.5">
-                      <span class="text-emerald-600 font-bold shrink-0 mt-0.5">✓</span>
-                      <span>{row.current}</span>
-                    </div>
-                  </td>
-                  <td class="px-4 py-3 text-slate-500 align-top leading-relaxed">
-                    <div class="flex items-start gap-1.5">
-                      <span class="text-slate-400 font-bold shrink-0 mt-0.5">✕</span>
-                      <span>{row.others}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- 5. 2-Column Grid: Ratings & Reviews (Left) vs FAQs (Right) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start pt-4 border-t border-slate-200">
-        
-        <!-- Left Column (6 Cols): Ratings & Reviews -->
-        <section id="reviews-section" class="lg:col-span-6 space-y-5">
-          <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-            <div>
-              <h2 class="text-base font-bold text-slate-900 tracking-tight">
-                Ratings & Reviews
-              </h2>
-              <p class="text-xs text-slate-500">Feedback from active users.</p>
-            </div>
-
-            <button
-              type="button"
-              id="open-review-form-btn"
-              class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-medium rounded cursor-pointer transition-colors"
-            >
-              Write Review
-            </button>
-          </div>
-
-          <!-- Score & Distribution -->
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-            <div class="sm:col-span-4 text-center sm:text-left space-y-0.5">
-              <span class="text-3xl font-bold text-slate-900 font-mono">
-                {ext.rating.toFixed(1)}
-              </span>
-              <div class="flex items-center justify-center sm:justify-start gap-1 text-amber-500">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star class={`w-3.5 h-3.5 ${s <= Math.round(ext.rating) ? 'text-amber-500 fill-amber-500' : 'text-slate-200 fill-slate-200'}`} />
-                ))}
-              </div>
-              <span class="text-[11px] text-slate-400 block">
-                {ext.reviewCount.toLocaleString()} ratings
-              </span>
-            </div>
-
-            <!-- Rating Bars -->
-            <div class="sm:col-span-8 space-y-1 text-xs text-slate-500">
-              {[5, 4, 3, 2, 1].map((star) => {
-                const count = ext.ratingBreakdown ? (ext.ratingBreakdown as any)[star] : 0;
-                const percent = Math.round((count / ext.reviewCount) * 100);
-
-                return (
-                  <div class="flex items-center gap-2">
-                    <span class="w-6 font-mono text-slate-600 text-[11px]">{star}★</span>
-                    <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div class="h-full bg-amber-400 rounded-full" style={`width: ${percent}%;`}></div>
-                    </div>
-                    <span class="w-7 text-right font-mono text-slate-400 text-[10px]">{percent}%</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <!-- Write Review Form (Collapsible) -->
-          <form id="write-review-form" class="hidden p-4 bg-white rounded-lg border border-slate-200 space-y-3">
-            <span class="text-xs font-semibold text-slate-900 block">Leave Feedback</span>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <input
-                id="review-name"
-                type="text"
-                required
-                placeholder="Your Name"
-                class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none"
-              />
-              <select
-                id="review-rating"
-                class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none cursor-pointer"
-              >
-                <option value="5">5 Stars (Excellent)</option>
-                <option value="4">4 Stars (Very Good)</option>
-                <option value="3">3 Stars (Good)</option>
-                <option value="2">2 Stars (Fair)</option>
-                <option value="1">1 Star (Poor)</option>
-              </select>
-            </div>
-
-            <textarea
-              id="review-comment"
-              rows="3"
-              required
-              placeholder="Your review..."
-              class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none leading-relaxed"
-            ></textarea>
-
-            <button
-              type="submit"
-              class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-medium rounded cursor-pointer"
-            >
-              Submit Review
-            </button>
-          </form>
-
-          <!-- Rating Filter Pills -->
-          <div class="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100">
-            <span class="text-[11px] font-medium text-slate-400 mr-1">Filter:</span>
-            <button
-              type="button"
-              data-filter-rating="all"
-              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-900 text-white cursor-pointer transition-colors"
-            >
-              All ({ext.reviews?.length || 0})
-            </button>
-            <button
-              type="button"
-              data-filter-rating="5"
-              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
-            >
-              5 ★
-            </button>
-            <button
-              type="button"
-              data-filter-rating="4"
-              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
-            >
-              4 ★
-            </button>
-            <button
-              type="button"
-              data-filter-rating="3"
-              class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
-            >
-              3 ★
-            </button>
-          </div>
-
-          <!-- Reviews List (Top 3 Featured by default) -->
-          <div id="reviews-list-container" class="divide-y divide-slate-100">
-            {ext.reviews?.map((rev, index) => (
-              <div
-                class={`review-entry py-3 space-y-1 ${index >= 3 ? 'hidden extra-review' : ''}`}
-                data-rating={rev.rating}
-              >
-                <div class="flex items-center justify-between text-xs">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-medium text-slate-900">{rev.author}</span>
-                    {rev.verified && (
-                      <span class="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded">
-                        Verified
-                      </span>
-                    )}
-                  </div>
-                  <span class="text-[11px] text-slate-400">{rev.date}</span>
-                </div>
-
-                <div class="flex items-center gap-0.5 text-amber-500">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star class={`w-3 h-3 ${s <= rev.rating ? 'text-amber-500 fill-amber-500' : 'text-slate-200 fill-slate-200'}`} />
-                  ))}
-                </div>
-
-                <p class="text-xs text-slate-600 leading-relaxed">
-                  "{rev.comment}"
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <!-- Show More / Show Fewer Reviews Toggle -->
-          {ext.reviews && ext.reviews.length > 3 && (
-            <div class="pt-1">
-              <button
-                type="button"
-                id="toggle-more-reviews-btn"
-                data-expanded="false"
-                data-extra-count={ext.reviews.length - 3}
-                class="w-full py-2 text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer transition-colors"
-              >
-                Show more reviews ({ext.reviews.length - 3})
-              </button>
-            </div>
-          )}
-        </section>
-
-        <!-- Right Column (6 Cols): HyperUI FAQ Accordion -->
-        <section class="lg:col-span-6 space-y-4">
+      {ext.comparison && ext.comparison.length > 0 && (
+        <section class="space-y-4 pt-4 border-t border-slate-200">
           <div class="border-b border-slate-200 pb-2">
             <h2 class="text-base font-bold text-slate-900 tracking-tight">
-              Frequently Asked Questions
+              Comparison Overview
             </h2>
-            <p class="text-xs text-slate-500">Common questions about this extension.</p>
+            <p class="text-xs text-slate-500">Key architectural differences compared to generic extensions.</p>
           </div>
 
-          <div class="divide-y divide-slate-100">
-            {ext.faqs?.map((faq) => (
-              <details class="group py-3 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-                <summary class="flex items-center justify-between text-xs font-semibold text-slate-900 select-none">
-                  <span>{faq.question}</span>
-                  <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform" />
-                </summary>
-                <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
+          <!-- HyperUI Clean Table -->
+          <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+            <table class="min-w-full divide-y-2 divide-slate-200 text-xs">
+              <thead class="bg-slate-50 text-left">
+                <tr>
+                  <th class="px-4 py-3 font-semibold text-slate-900 w-1/4">Capability & Metric</th>
+                  <th class="px-4 py-3 font-semibold text-slate-900 bg-slate-100/60 w-3/8 border-x border-slate-200">
+                    {ext.name} (ExtLabs)
+                  </th>
+                  <th class="px-4 py-3 font-medium text-slate-500 w-3/8">
+                    Traditional / Other Tools
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                {ext.comparison.map((row) => (
+                  <tr class="hover:bg-slate-50/50">
+                    <td class="px-4 py-3 font-medium text-slate-800 align-top">
+                      {row.feature}
+                    </td>
+                    <td class="px-4 py-3 text-slate-900 bg-slate-50/30 border-x border-slate-200 align-top leading-relaxed">
+                      <div class="flex items-start gap-1.5">
+                        <span class="text-emerald-600 font-bold shrink-0 mt-0.5">✓</span>
+                        <span>{row.current}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-slate-500 align-top leading-relaxed">
+                      <div class="flex items-start gap-1.5">
+                        <span class="text-slate-400 font-bold shrink-0 mt-0.5">✕</span>
+                        <span>{row.others}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
+      )}
 
-      </div>
+      <!-- 5. Ratings & Reviews / FAQs (Only rendered if real reviews or FAQs exist) -->
+      {(hasReviews || hasFaqs) && (
+        <div class={`grid grid-cols-1 ${hasReviews && hasFaqs ? 'lg:grid-cols-12 gap-10' : 'max-w-3xl gap-8'} items-start pt-4 border-t border-slate-200`}>
+          
+          <!-- Reviews Column -->
+          {hasReviews && (
+            <section id="reviews-section" class={`${hasFaqs ? 'lg:col-span-6' : 'w-full'} space-y-5`}>
+              <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                <div>
+                  <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                    Ratings & Reviews
+                  </h2>
+                  <p class="text-xs text-slate-500">Feedback from active users.</p>
+                </div>
+              </div>
+
+              <!-- Score & Distribution -->
+              {ext.reviewCount > 0 && (
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                  <div class="sm:col-span-4 text-center sm:text-left space-y-0.5">
+                    <span class="text-3xl font-bold text-slate-900 font-mono">
+                      {ext.rating.toFixed(1)}
+                    </span>
+                    <div class="flex items-center justify-center sm:justify-start gap-1 text-amber-500">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star class={`w-3.5 h-3.5 ${s <= Math.round(ext.rating) ? 'text-amber-500 fill-amber-500' : 'text-slate-200 fill-slate-200'}`} />
+                      ))}
+                    </div>
+                    <span class="text-[11px] text-slate-400 block">
+                      {ext.reviewCount.toLocaleString()} ratings
+                    </span>
+                  </div>
+
+                  {ext.ratingBreakdown && (
+                    <div class="sm:col-span-8 space-y-1 text-xs text-slate-500">
+                      {[5, 4, 3, 2, 1].map((star) => {
+                        const count = (ext.ratingBreakdown as any)[star] || 0;
+                        const percent = ext.reviewCount > 0 ? Math.round((count / ext.reviewCount) * 100) : 0;
+
+                        return (
+                          <div class="flex items-center gap-2">
+                            <span class="w-6 font-mono text-slate-600 text-[11px]">{star}★</span>
+                            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div class="h-full bg-amber-400 rounded-full" style={`width: ${percent}%;`}></div>
+                            </div>
+                            <span class="w-7 text-right font-mono text-slate-400 text-[10px]">{percent}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <!-- Reviews List -->
+              {ext.reviews && ext.reviews.length > 0 && (
+                <div id="reviews-list-container" class="divide-y divide-slate-100">
+                  {ext.reviews.map((rev, index) => (
+                    <div
+                      class={`review-entry py-3 space-y-1 ${index >= 3 ? 'hidden extra-review' : ''}`}
+                      data-rating={rev.rating}
+                    >
+                      <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-medium text-slate-900">{rev.author}</span>
+                          {rev.verified && (
+                            <span class="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                        <span class="text-[11px] text-slate-400">{rev.date}</span>
+                      </div>
+
+                      <div class="flex items-center gap-0.5 text-amber-500">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star class={`w-3 h-3 ${s <= rev.rating ? 'text-amber-500 fill-amber-500' : 'text-slate-200 fill-slate-200'}`} />
+                        ))}
+                      </div>
+
+                      <p class="text-xs text-slate-600 leading-relaxed">
+                        "{rev.comment}"
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          <!-- FAQs Column -->
+          {hasFaqs && ext.faqs && ext.faqs.length > 0 && (
+            <section class={`${hasReviews ? 'lg:col-span-6' : 'w-full'} space-y-4`}>
+              <div class="border-b border-slate-200 pb-2">
+                <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                  Frequently Asked Questions
+                </h2>
+                <p class="text-xs text-slate-500">Common questions about this extension.</p>
+              </div>
+
+              <div class="divide-y divide-slate-100">
+                {ext.faqs.map((faq) => (
+                  <details class="group py-3 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                    <summary class="flex items-center justify-between text-xs font-semibold text-slate-900 select-none">
+                      <span>{faq.question}</span>
+                      <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+                      {faq.answer}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </section>
+          )}
+
+        </div>
+      )}
 
       <!-- 6. Related Extensions Shelf -->
       {relatedExtensions.length > 0 && (

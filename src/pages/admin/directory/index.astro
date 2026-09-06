@@ -4,7 +4,7 @@ export const prerender = false;
 import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
-import { EXTENSIONS } from "../../../data/extensions";
+import { getDb, getStoreExtensions } from "../../../lib/db";
 import { 
   ShieldCheck, 
   Check, 
@@ -26,11 +26,14 @@ import {
   Key
 } from '@lucide/astro';
 
+const db = getDb();
+const liveExtensions = await getStoreExtensions(db);
+
 const ITEMS_PER_PAGE = 20;
-const totalExtensions = EXTENSIONS.length;
+const totalExtensions = liveExtensions.length;
 const totalPages = Math.max(1, Math.ceil(totalExtensions / ITEMS_PER_PAGE));
-const featuredCount = EXTENSIONS.filter(e => e.featured).length;
-const verifiedCount = EXTENSIONS.filter(e => e.isVerified).length;
+const featuredCount = liveExtensions.filter(e => e.featured).length;
+const verifiedCount = liveExtensions.filter(e => e.isVerified).length;
 ---
 
 <html lang="en" data-theme="light">
@@ -229,7 +232,7 @@ const verifiedCount = EXTENSIONS.filter(e => e.isVerified).length;
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100" id="directory-table-body">
-              {EXTENSIONS.map((ext, index) => {
+              {liveExtensions.map((ext, index) => {
                 const pageNumber = Math.floor(index / ITEMS_PER_PAGE) + 1;
                 return (
                   <tr 

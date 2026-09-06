@@ -16,7 +16,6 @@ import {
   Check,
   Eye
 } from '@lucide/astro';
-import { EXTENSIONS, getExtensionWithDefaults } from "../../../../data/extensions";
 
 import { 
   getDb, 
@@ -56,33 +55,28 @@ if (db) {
   }
 }
 
-// Fallback to static catalog if record not in D1 (e.g. offline dev or seed testing)
-const rawExtension = EXTENSIONS.find((item) => item.id === id || item.slug === id);
-
-if (!dbExtension && !rawExtension) {
+if (!dbExtension) {
   return Astro.redirect('/developers/dashboard', 302);
 }
 
-const fallbackExt = rawExtension ? getExtensionWithDefaults(rawExtension) : null;
-
 // Normalize extension detail
 const ext = {
-  id: dbExtension?.id || fallbackExt?.id || id,
-  name: dbExtension?.name || fallbackExt?.name || 'Untitled Extension',
-  version: dbExtension?.version_name || fallbackExt?.version || '1.0.0',
-  downloadCount: typeof dbExtension?.downloads_count === 'number' 
+  id: dbExtension.id || id,
+  name: dbExtension.name || 'Untitled Extension',
+  version: dbExtension.version_name || '1.0.0',
+  downloadCount: typeof dbExtension.downloads_count === 'number' 
     ? dbExtension.downloads_count 
-    : (fallbackExt?.downloadCount ?? 0),
-  rating: typeof dbExtension?.rating === 'number' 
+    : 0,
+  rating: typeof dbExtension.rating === 'number' 
     ? dbExtension.rating 
-    : (fallbackExt?.rating ?? 5.0),
-  reviewCount: typeof dbExtension?.reviews_count === 'number' 
+    : 5.0,
+  reviewCount: typeof dbExtension.reviews_count === 'number' 
     ? dbExtension.reviews_count 
-    : (fallbackExt?.reviewCount ?? 0),
-  category: dbExtension?.category || fallbackExt?.category || 'Productivity',
-  tagline: dbExtension?.tagline || fallbackExt?.tagline || fallbackExt?.shortDescription || '',
-  iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || '',
-  status: dbExtension?.status || 'Production'
+    : 0,
+  category: dbExtension.category || 'Productivity',
+  tagline: dbExtension.tagline || dbExtension.short_description || '',
+  iconUrl: dbExtension.icon_url || '/icons/extension-placeholder.avif',
+  status: dbExtension.status || 'Production'
 };
 
 // Rating distribution data

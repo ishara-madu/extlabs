@@ -18,7 +18,6 @@ import {
   FolderGit2,
   BarChart3
 } from '@lucide/astro';
-import { EXTENSIONS, getExtensionWithDefaults } from "../../../data/extensions";
 import { 
   getDb, 
   getDeveloperByUserIdOrSlug, 
@@ -61,39 +60,34 @@ if (db) {
   }
 }
 
-// Fallback to static catalog if record not in D1 (e.g. offline dev or seed testing)
-const rawExtension = EXTENSIONS.find((item) => item.id === id || item.slug === id);
-
-if (!dbExtension && !rawExtension) {
+if (!dbExtension) {
   return Astro.redirect('/developers/dashboard', 302);
 }
 
-const fallbackExt = rawExtension ? getExtensionWithDefaults(rawExtension) : null;
-
 // Normalize extension detail
 const ext = {
-  id: dbExtension?.id || fallbackExt?.id || id,
-  name: dbExtension?.name || fallbackExt?.name || 'Untitled Extension',
-  version: dbExtension?.version_name || fallbackExt?.version || '1.0.0',
-  downloadCount: typeof dbExtension?.downloads_count === 'number' 
+  id: dbExtension.id || id,
+  name: dbExtension.name || 'Untitled Extension',
+  version: dbExtension.version_name || '1.0.0',
+  downloadCount: typeof dbExtension.downloads_count === 'number' 
     ? dbExtension.downloads_count 
-    : (fallbackExt?.downloadCount ?? 0),
-  rating: typeof dbExtension?.rating === 'number' 
+    : 0,
+  rating: typeof dbExtension.rating === 'number' 
     ? dbExtension.rating 
-    : (fallbackExt?.rating ?? 5.0),
-  reviewCount: typeof dbExtension?.reviews_count === 'number' 
+    : 5.0,
+  reviewCount: typeof dbExtension.reviews_count === 'number' 
     ? dbExtension.reviews_count 
-    : (fallbackExt?.reviewCount ?? 0),
-  weeklyUsers: typeof dbExtension?.weekly_active_users === 'number'
+    : 0,
+  weeklyUsers: typeof dbExtension.weekly_active_users === 'number'
     ? dbExtension.weekly_active_users
-    : (fallbackExt ? Math.round((fallbackExt.downloadCount ?? 0) * 0.34) : 0),
-  category: dbExtension?.category || fallbackExt?.category || 'Productivity',
-  tagline: dbExtension?.tagline || fallbackExt?.tagline || fallbackExt?.shortDescription || 'No description available',
-  status: dbExtension?.status || 'Production',
-  reviewStatus: dbExtension?.review_status || 'approved',
-  monetagUrl: dbExtension?.monetag_direct_link || (fallbackExt?.monetagDirectLink) || `https://monetag.com/direct/${id.replace(/-/g, '_')}_live_8912`,
-  githubRepo: dbExtension?.source_repo_url || (fallbackExt?.githubRepo) || `https://github.com/neural-labs/${id}`,
-  iconUrl: dbExtension?.icon_url || fallbackExt?.iconUrl || ''
+    : 0,
+  category: dbExtension.category || 'productivity',
+  tagline: dbExtension.tagline || dbExtension.short_description || 'No description available',
+  status: dbExtension.status || 'Production',
+  reviewStatus: dbExtension.review_status || 'approved',
+  monetagUrl: dbExtension.monetag_direct_link || `https://monetag.com/direct/${id.replace(/-/g, '_')}_live_8912`,
+  githubRepo: dbExtension.source_repo_url || `https://github.com/extlabs/${id}`,
+  iconUrl: dbExtension.icon_url || '/icons/extension-placeholder.avif'
 };
 
 const hasTelemetry = ext.downloadCount > 0;

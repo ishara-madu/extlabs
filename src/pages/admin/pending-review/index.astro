@@ -5,7 +5,7 @@ import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
 import { PENDING_SUBMISSIONS } from "../../../data/pendingSubmissions";
-import { EXTENSIONS } from "../../../data/extensions";
+import { getDb, getLiveExtensionsCount } from "../../../lib/db";
 import { 
   ShieldCheck, 
   Check, 
@@ -26,6 +26,9 @@ import {
   Box,
   Key
 } from '@lucide/astro';
+
+const db = getDb();
+const liveExtensionsCount = await getLiveExtensionsCount(db);
 
 const ITEMS_PER_PAGE = 20;
 const totalSubmissions = PENDING_SUBMISSIONS.length;
@@ -118,7 +121,7 @@ const totalPages = Math.ceil(totalSubmissions / ITEMS_PER_PAGE);
           >
             <Box class="w-4 h-4 text-slate-400" />
             <span>Live Directory</span>
-            <span class="text-[11px] font-mono font-semibold text-emerald-600">{EXTENSIONS.length}</span>
+            <span class="text-[11px] font-mono font-semibold text-emerald-600">{liveExtensionsCount}</span>
           </a>
 
           <!-- 4. Developers -->
