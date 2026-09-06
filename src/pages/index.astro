@@ -113,7 +113,7 @@ for (const ext of allStoreExtensions) {
               href="/category/dev"
               class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
             >
-              <span>See all ({devExtensions.length})</span>
+              <span>See all</span>
               <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
             </a>
           </div>
@@ -140,7 +140,7 @@ for (const ext of allStoreExtensions) {
               href="/category/ai"
               class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
             >
-              <span>See all ({aiAndProdExtensions.length})</span>
+              <span>See all</span>
               <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
             </a>
           </div>
@@ -167,7 +167,7 @@ for (const ext of allStoreExtensions) {
               href="/category/privacy"
               class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
             >
-              <span>See all ({privacyAndUtilExtensions.length})</span>
+              <span>See all</span>
               <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
             </a>
           </div>
@@ -316,13 +316,10 @@ for (const ext of allStoreExtensions) {
 
           categoryButtons.forEach(btn => {
             const btnCat = btn.getAttribute('data-category-filter');
-            const badge = btn.querySelector('span:last-child');
             if (activeCategory && btnCat === activeCategory) {
-              btn.className = 'category-filter-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-blue-600 text-white border-blue-600 active-category';
-              if (badge) badge.className = 'text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-700 text-blue-100';
+              btn.className = 'category-filter-btn inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-blue-600 text-white border-blue-600 active-category';
             } else {
-              btn.className = 'category-filter-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600';
-              if (badge) badge.className = 'text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600';
+              btn.className = 'category-filter-btn inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600';
             }
           });
           filterExtensions();
@@ -357,9 +354,7 @@ for (const ext of allStoreExtensions) {
           if (desktopSearch) desktopSearch.value = '';
           if (mobileSearch) mobileSearch.value = '';
           categoryButtons.forEach(btn => {
-            btn.className = 'category-filter-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900';
-            const badge = btn.querySelector('span:last-child');
-            if (badge) badge.className = 'text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600';
+            btn.className = 'category-filter-btn inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900';
           });
           filterExtensions();
         }
