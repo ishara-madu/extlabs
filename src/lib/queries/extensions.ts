@@ -1,6 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import type { DbExtension } from '../db';
-import { EXTENSIONS, type Extension } from '../../data/extensions';
+import type { Extension } from '../../data/extensions';
 
 export interface ExtensionWithDeveloper extends DbExtension {
   developer_name: string;
@@ -172,10 +172,9 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
     ? `${((dbExt.weekly_active_users || 0) / 1000).toFixed(1)}k users`
     : `${dbExt.weekly_active_users || 120} users`;
 
-  const existingMock = EXTENSIONS.find((e) => e.id === dbExt.slug || e.id === dbExt.id);
-  const bannerSvg = existingMock?.bannerSvg || (dbExt.header_image_url
+  const bannerSvg = dbExt.header_image_url
     ? `<img src="${dbExt.header_image_url}" alt="${dbExt.name}" class="w-full h-full object-cover" />`
-    : generateExtensionBannerSvg(dbExt.name, dbExt.category));
+    : generateExtensionBannerSvg(dbExt.name, dbExt.category);
 
   return {
     id: dbExt.slug || dbExt.id,
@@ -195,15 +194,15 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
     featured: Boolean(dbExt.is_featured),
     editorsPick: Boolean(dbExt.is_editors_pick),
     badge: dbExt.is_featured ? 'Featured' : undefined,
-    iconUrl: dbExt.icon_url || existingMock?.iconUrl || '/icons/extension-placeholder.avif',
+    iconUrl: dbExt.icon_url || '/icons/extension-placeholder.avif',
     bannerSvg,
     tags,
     permissions: dbExt.permissions ? JSON.parse(dbExt.permissions || '[]') : [],
     overview: [dbExt.full_description || dbExt.short_description || ''],
-    features: features.length > 0 ? features : existingMock?.features,
-    howItWorks: workflow.length > 0 ? workflow.map((w: any) => ({ step: w.step, title: w.title, description: w.description })) : existingMock?.howItWorks,
-    comparison: comparison.length > 0 ? comparison : existingMock?.comparison,
-    faqs: faqs.length > 0 ? faqs.map((f: any) => ({ question: f.q || f.question, answer: f.a || f.answer })) : existingMock?.faqs,
+    features: features.length > 0 ? features : undefined,
+    howItWorks: workflow.length > 0 ? workflow.map((w: any) => ({ step: w.step, title: w.title, description: w.description })) : undefined,
+    comparison: comparison.length > 0 ? comparison : undefined,
+    faqs: faqs.length > 0 ? faqs.map((f: any) => ({ question: f.q || f.question, answer: f.a || f.answer })) : undefined,
     developerSupport: {
       email: dbExt.support_email || 'support@extlabs.io',
       website: dbExt.developer_website || 'https://extlabs.io',
@@ -214,6 +213,22 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
     downloadUrl: dbExt.crx_download_url || dbExt.zip_download_url || dbExt.download_url || '#',
     monetagUrl: dbExt.monetag_direct_link || undefined,
   };
+}
+
+/**
+ * Get count of active live extensions
+ */
+export async function getLiveExtensionsCount(db: D1Database | null): Promise<number> {
+  if (!db) return 0;
+  try {
+    const result = await db
+      .prepare('SELECT COUNT(*) as count FROM extensions WHERE is_active = 1 AND is_suspended = 0')
+      .first<{ count: number }>();
+    return result?.count ?? 0;
+  } catch (err) {
+    console.warn('Failed to count live extensions from D1:', err);
+    return 0;
+  }
 }
 
 /**
