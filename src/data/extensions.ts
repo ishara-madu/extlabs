@@ -84,6 +84,7 @@ export interface CategoryInfo {
   subtitle: string;
   tags: string[];
   colorAccent: string;
+  imageUrl?: string;
   heroIllustrationSvg?: string;
 }
 
@@ -96,6 +97,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Clean, unrestricted browsing with adblockers, paywall bypassers, and anti-tracker shields.',
     tags: ['Ad Blocker', 'Paywall Bypass', 'Link Skipper', 'Anti-Adblock', 'Tracker Shield'],
     colorAccent: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+    imageUrl: '/images/categories/privacy.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -106,6 +108,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Grab video and audio from popular platforms and unlock high-definition media playback.',
     tags: ['Video Downloader', 'Audio Ripper', 'Stream Grabber', 'Volume Booster', 'Media Saver'],
     colorAccent: 'text-rose-600 bg-rose-50 border-rose-200',
+    imageUrl: '/images/categories/media.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -116,6 +119,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Unleash custom user scripts and browser automations with high-efficiency bots and macro runners.',
     tags: ['Userscripts', 'Auto Clicker', 'Web Bot', 'Macro Runner', 'Form Auto-Fill'],
     colorAccent: 'text-purple-600 bg-purple-50 border-purple-200',
+    imageUrl: '/images/categories/automation.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -126,6 +130,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Personalize any website layout, remove clutter, and inject custom CSS/JS styling effortlessly.',
     tags: ['Dark Mode', 'CSS Injector', 'Site Cleaner', 'UI Modder', 'Theme Switcher'],
     colorAccent: 'text-pink-600 bg-pink-50 border-pink-200',
+    imageUrl: '/images/categories/customization.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -136,6 +141,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Supercharge your browsing velocity with cloud and on-device intelligent AI helpers.',
     tags: ['AI Copilot', 'Summarizer', 'Prompt Assistant', 'LLM Injector', 'Chatbot Helper'],
     colorAccent: 'text-sky-600 bg-sky-50 border-sky-200',
+    imageUrl: '/images/categories/ai.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -146,6 +152,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Professional diagnostic and power-user utilities for web engineers, reverse engineers, and testers.',
     tags: ['Header Modifier', 'Request Inspector', 'API Tester', 'Cookie Manager', 'DOM Inspector'],
     colorAccent: 'text-blue-600 bg-blue-50 border-blue-200',
+    imageUrl: '/images/categories/dev.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -156,6 +163,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Reduce system memory consumption, manage infinite tabs, and boost daily browsing speed.',
     tags: ['Tab Suspender', 'Tab Manager', 'RAM Optimizer', 'Markdown Clipper', 'Focus Timer'],
     colorAccent: 'text-amber-600 bg-amber-50 border-amber-200',
+    imageUrl: '/images/categories/productivity.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -166,6 +174,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Fast proxy switchers, VPN clients, DNS resolvers, and geo-block unblockers for free internet.',
     tags: ['Proxy Switcher', 'Geo Bypass', 'VPN Client', 'User-Agent Spoof', 'DNS Unblocker'],
     colorAccent: 'text-teal-600 bg-teal-50 border-teal-200',
+    imageUrl: '/images/categories/networking.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -176,6 +185,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Take full control of social feeds, clean sponsored posts, and unlock private viewing features.',
     tags: ['Ghost Mode', 'Feed Cleaner', 'Story Downloader', 'Bulk Action', 'Social Suite'],
     colorAccent: 'text-indigo-600 bg-indigo-50 border-indigo-200',
+    imageUrl: '/images/categories/social.avif',
     heroIllustrationSvg: '',
   },
   {
@@ -186,6 +196,7 @@ export const CATEGORIES: CategoryInfo[] = [
     subtitle: 'Never overpay online with automatic coupon finders, price drop alerts, and reward auto-claimers.',
     tags: ['Auto Coupon', 'Price Tracker', 'Reward Bot', 'Cashback', 'Deal Finder'],
     colorAccent: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+    imageUrl: '/images/categories/shopping.avif',
     heroIllustrationSvg: '',
   },
 ];
