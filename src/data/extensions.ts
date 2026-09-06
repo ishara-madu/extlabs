@@ -84,304 +84,109 @@ export interface CategoryInfo {
   subtitle: string;
   tags: string[];
   colorAccent: string;
-  heroIllustrationSvg: string;
+  heroIllustrationSvg?: string;
 }
 
 export const CATEGORIES: CategoryInfo[] = [
   {
-    id: 'ai',
-    label: 'AI & Machine Learning',
+    id: 'privacy',
+    label: 'Adblock & Content Filters',
     count: 0,
-    description: 'Explore state-of-the-art AI assistants, LLM page summarizers, voice transcribers, and prompt engineering utilities.',
-    subtitle: 'Automate content research, summarize video transcripts, and write faster with browser-native AI.',
-    tags: ['Summarizer', 'Prompt Assistant', 'Transcription', 'Voice Notes', 'LLM'],
+    description: 'Block intrusive ads, bypass restrictive paywalls, skip ad-links, and neutralize tracking scripts.',
+    subtitle: 'Clean, unrestricted browsing with adblockers, paywall bypassers, and anti-tracker shields.',
+    tags: ['Ad Blocker', 'Paywall Bypass', 'Link Skipper', 'Anti-Adblock', 'Tracker Shield'],
+    colorAccent: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+    heroIllustrationSvg: '',
+  },
+  {
+    id: 'media',
+    label: 'Media & Downloaders',
+    count: 0,
+    description: 'Download videos, extract audio streams, capture full-resolution graphics, and enhance web media players.',
+    subtitle: 'Grab video and audio from popular platforms and unlock high-definition media playback.',
+    tags: ['Video Downloader', 'Audio Ripper', 'Stream Grabber', 'Volume Booster', 'Media Saver'],
+    colorAccent: 'text-rose-600 bg-rose-50 border-rose-200',
+    heroIllustrationSvg: '',
+  },
+  {
+    id: 'automation',
+    label: 'Automation & Scripts',
+    count: 0,
+    description: 'Run userscripts, automate repetitive browser actions, auto-fill forms, and schedule background macros.',
+    subtitle: 'Unleash custom user scripts and browser automations with high-efficiency bots and macro runners.',
+    tags: ['Userscripts', 'Auto Clicker', 'Web Bot', 'Macro Runner', 'Form Auto-Fill'],
+    colorAccent: 'text-purple-600 bg-purple-50 border-purple-200',
+    heroIllustrationSvg: '',
+  },
+  {
+    id: 'customization',
+    label: 'Web Modifiers & Themes',
+    count: 0,
+    description: 'Transform website aesthetics with dark modes, custom styling, layout modifiers, and UI feature unlockers.',
+    subtitle: 'Personalize any website layout, remove clutter, and inject custom CSS/JS styling effortlessly.',
+    tags: ['Dark Mode', 'CSS Injector', 'Site Cleaner', 'UI Modder', 'Theme Switcher'],
+    colorAccent: 'text-pink-600 bg-pink-50 border-pink-200',
+    heroIllustrationSvg: '',
+  },
+  {
+    id: 'ai',
+    label: 'AI & Smart Tools',
+    count: 0,
+    description: 'Integrate intelligent LLM assistants, instant text summarizers, prompt copilots, and smart automation.',
+    subtitle: 'Supercharge your browsing velocity with cloud and on-device intelligent AI helpers.',
+    tags: ['AI Copilot', 'Summarizer', 'Prompt Assistant', 'LLM Injector', 'Chatbot Helper'],
     colorAccent: 'text-sky-600 bg-sky-50 border-sky-200',
-    heroIllustrationSvg: `<svg viewBox="0 0 460 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
-      <defs>
-        <linearGradient id="cat-ai-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0c4a6e" />
-          <stop offset="50%" stop-color="#075985" />
-          <stop offset="100%" stop-color="#0f172a" />
-        </linearGradient>
-      </defs>
-      <rect width="460" height="260" fill="url(#cat-ai-bg)" rx="16" />
-      
-      <!-- Neural Nodes & Ambient Grid -->
-      <g stroke="#38bdf8" stroke-opacity="0.2" stroke-width="1">
-        <line x1="50" y1="50" x2="180" y2="90" />
-        <line x1="180" y1="90" x2="280" y2="60" />
-        <line x1="280" y1="60" x2="390" y2="100" />
-        <line x1="180" y1="90" x2="240" y2="180" />
-        <line x1="240" y1="180" x2="380" y2="200" />
-      </g>
-      
-      <!-- Floating AI Hub Window -->
-      <g transform="translate(45, 35)">
-        <rect width="370" height="190" rx="14" fill="#0f172a" fill-opacity="0.85" stroke="#38bdf8" stroke-width="1.5" />
-        
-        <!-- Header -->
-        <rect width="370" height="34" rx="14" fill="#1e293b" />
-        <circle cx="20" cy="17" r="4" fill="#ef4444" />
-        <circle cx="34" cy="17" r="4" fill="#f59e0b" />
-        <circle cx="48" cy="17" r="4" fill="#10b981" />
-        <text x="185" y="21" fill="#bae6fd" font-size="11" font-family="sans-serif" font-weight="600" text-anchor="middle">✨ Intelligent Model Studio</text>
-
-        <!-- Live AI Waveform & Prompt Cards -->
-        <g transform="translate(20, 50)">
-          <rect width="210" height="42" rx="8" fill="#0369a1" fill-opacity="0.4" stroke="#0284c7" stroke-width="1" />
-          <text x="12" y="18" fill="#e0f2fe" font-size="10" font-family="sans-serif" font-weight="600">Prompt: "Summarize paper into 3 insights"</text>
-          <text x="12" y="32" fill="#7dd3fc" font-size="9" font-family="sans-serif">⚡ Latency 280ms • 4.8k tokens/s</text>
-
-          <rect y="50" width="210" height="75" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1" />
-          <rect x="12" y="14" width="12" height="12" rx="3" fill="#38bdf8" />
-          <text x="30" y="24" fill="#f8fafc" font-size="9" font-family="sans-serif">Key Insight 1: Sub-millisecond latency</text>
-          <rect x="12" y="34" width="12" height="12" rx="3" fill="#10b981" />
-          <text x="30" y="44" fill="#f8fafc" font-size="9" font-family="sans-serif">Key Insight 2: Zero tracking privacy</text>
-          <rect x="12" y="54" width="12" height="12" rx="3" fill="#a855f7" />
-          <text x="30" y="64" fill="#f8fafc" font-size="9" font-family="sans-serif">Key Insight 3: Direct Markdown export</text>
-        </g>
-
-        <!-- Right Side AI Metric Badges -->
-        <g transform="translate(245, 50)">
-          <rect width="105" height="56" rx="8" fill="#0c4a6e" stroke="#0369a1" stroke-width="1" />
-          <text x="52" y="24" fill="#e0f2fe" font-size="18" font-family="monospace" font-weight="bold" text-anchor="middle">99.4%</text>
-          <text x="52" y="42" fill="#7dd3fc" font-size="9" font-family="sans-serif" text-anchor="middle">Extraction Accuracy</text>
-
-          <rect y="64" width="105" height="60" rx="8" fill="#042f2e" stroke="#059669" stroke-width="1" />
-          <text x="52" y="88" fill="#a7f3d0" font-size="14" font-family="sans-serif" font-weight="bold" text-anchor="middle">On-Device</text>
-          <text x="52" y="106" fill="#6ee7b7" font-size="9" font-family="sans-serif" text-anchor="middle">Private Execution</text>
-        </g>
-      </g>
-    </svg>`
+    heroIllustrationSvg: '',
   },
   {
     id: 'dev',
-    label: 'Developer Tools',
+    label: 'Developer & Power Tools',
     count: 0,
-    description: 'Inspect DOM trees, format JSON APIs, debug CSS layouts, and explore GitHub repositories with IDE-grade tools.',
-    subtitle: 'High-performance engineering utilities built for frontend, backend, and full-stack developers.',
-    tags: ['DOM Inspector', 'JSON Formatter', 'Git & GitHub', 'REST API Client', 'Color Picker'],
+    description: 'Inspect network traffic, modify HTTP headers, debug APIs, manage cookies, and analyze page DOM.',
+    subtitle: 'Professional diagnostic and power-user utilities for web engineers, reverse engineers, and testers.',
+    tags: ['Header Modifier', 'Request Inspector', 'API Tester', 'Cookie Manager', 'DOM Inspector'],
     colorAccent: 'text-blue-600 bg-blue-50 border-blue-200',
-    heroIllustrationSvg: `<svg viewBox="0 0 460 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
-      <defs>
-        <linearGradient id="cat-dev-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0f172a" />
-          <stop offset="50%" stop-color="#1e1b4b" />
-          <stop offset="100%" stop-color="#1e293b" />
-        </linearGradient>
-      </defs>
-      <rect width="460" height="260" fill="url(#cat-dev-bg)" rx="16" />
-      
-      <!-- DevTools Main View -->
-      <g transform="translate(45, 30)">
-        <rect width="370" height="200" rx="12" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" />
-        
-        <!-- Tab Bar -->
-        <rect width="370" height="30" rx="12" fill="#1e293b" />
-        <text x="20" y="19" fill="#60a5fa" font-size="10" font-family="monospace" font-weight="bold">Elements</text>
-        <text x="80" y="19" fill="#94a3b8" font-size="10" font-family="monospace">Console</text>
-        <text x="140" y="19" fill="#94a3b8" font-size="10" font-family="monospace">Network (42ms)</text>
-        <text x="240" y="19" fill="#94a3b8" font-size="10" font-family="monospace">ExtLabs Debugger</text>
-
-        <!-- DOM Tree Left -->
-        <g transform="translate(15, 42)">
-          <rect width="180" height="145" rx="6" fill="#1e293b" />
-          <text x="10" y="18" fill="#93c5fd" font-size="10" font-family="monospace">&lt;main id="app"&gt;</text>
-          <text x="20" y="36" fill="#60a5fa" font-size="10" font-family="monospace">&lt;section.grid&gt;</text>
-          
-          <!-- Selected node highlight -->
-          <rect x="25" y="44" width="145" height="22" rx="4" fill="#1d4ed8" />
-          <text x="32" y="58" fill="#ffffff" font-size="10" font-family="monospace" font-weight="bold">&lt;div.card-preview&gt;</text>
-          
-          <text x="20" y="82" fill="#60a5fa" font-size="10" font-family="monospace">&lt;/section&gt;</text>
-          <text x="10" y="100" fill="#93c5fd" font-size="10" font-family="monospace">&lt;/main&gt;</text>
-          
-          <g transform="translate(10, 116)">
-            <rect width="160" height="18" rx="3" fill="#042f2e" />
-            <text x="80" y="13" fill="#34d399" font-size="9" font-family="monospace" text-anchor="middle">✓ WCAG AAA Contrast (14:1)</text>
-          </g>
-        </g>
-
-        <!-- CSS Box Model Right -->
-        <g transform="translate(205, 42)">
-          <rect width="150" height="145" rx="6" fill="#1e293b" />
-          <!-- Margin -->
-          <rect x="10" y="10" width="130" height="125" rx="4" fill="#c2410c" fill-opacity="0.2" stroke="#ea580c" stroke-width="1" />
-          <text x="75" y="24" fill="#fdba74" font-size="8" font-family="monospace" text-anchor="middle">margin: 16px</text>
-          
-          <!-- Padding -->
-          <rect x="25" y="32" width="100" height="80" rx="3" fill="#a16207" fill-opacity="0.2" stroke="#eab308" stroke-width="1" />
-          <text x="75" y="46" fill="#fef08a" font-size="8" font-family="monospace" text-anchor="middle">padding: 24px</text>
-          
-          <!-- Content Box -->
-          <rect x="40" y="54" width="70" height="42" rx="2" fill="#1d4ed8" fill-opacity="0.4" stroke="#3b82f6" stroke-width="1" />
-          <text x="75" y="74" fill="#ffffff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">480 × 260</text>
-          <text x="75" y="88" fill="#93c5fd" font-size="8" font-family="monospace" text-anchor="middle">Flexbox Active</text>
-        </g>
-      </g>
-    </svg>`
+    heroIllustrationSvg: '',
   },
   {
     id: 'productivity',
-    label: 'Productivity',
+    label: 'Productivity & Workflow',
     count: 0,
-    description: 'Stay in the zone, manage complex research tabs, clip web articles to Markdown, and eliminate distractions.',
-    subtitle: 'Supercharge your daily browsing velocity and organize your workflows with zero friction.',
-    tags: ['Workspace Manager', 'Markdown Clipper', 'Pomodoro Timer', 'Task Focus'],
+    description: 'Organize tab groups, suspend memory-hogging pages, clip web research, and optimize daily workflows.',
+    subtitle: 'Reduce system memory consumption, manage infinite tabs, and boost daily browsing speed.',
+    tags: ['Tab Suspender', 'Tab Manager', 'RAM Optimizer', 'Markdown Clipper', 'Focus Timer'],
     colorAccent: 'text-amber-600 bg-amber-50 border-amber-200',
-    heroIllustrationSvg: `<svg viewBox="0 0 460 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
-      <defs>
-        <linearGradient id="cat-prod-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#451a03" />
-          <stop offset="50%" stop-color="#78350f" />
-          <stop offset="100%" stop-color="#1c1917" />
-        </linearGradient>
-      </defs>
-      <rect width="460" height="260" fill="url(#cat-prod-bg)" rx="16" />
-      
-      <!-- Productivity Workspace Overview -->
-      <g transform="translate(45, 30)">
-        <rect width="370" height="200" rx="12" fill="#1c1917" stroke="#f59e0b" stroke-width="1.5" />
-        
-        <!-- Left Tab Groups Stack -->
-        <g transform="translate(15, 20)">
-          <rect width="190" height="34" rx="8" fill="#292524" stroke="#f59e0b" stroke-width="1" />
-          <circle cx="16" cy="17" r="5" fill="#f59e0b" />
-          <text x="30" y="21" fill="#fef3c7" font-size="11" font-family="sans-serif" font-weight="600">Research Workspace</text>
-          <text x="175" y="21" fill="#d97706" font-size="9" text-anchor="end">8 tabs</text>
-
-          <rect y="44" width="190" height="34" rx="8" fill="#292524" stroke="#3b82f6" stroke-width="1" />
-          <circle cx="16" cy="17" r="5" fill="#3b82f6" />
-          <text x="30" y="21" fill="#dbeafe" font-size="11" font-family="sans-serif" font-weight="600">Engineering Sprint</text>
-          <text x="175" y="21" fill="#60a5fa" font-size="9" text-anchor="end">14 tabs</text>
-
-          <rect y="88" width="190" height="34" rx="8" fill="#292524" stroke="#8b5cf6" stroke-width="1" />
-          <circle cx="16" cy="17" r="5" fill="#8b5cf6" />
-          <text x="30" y="21" fill="#f3e8ff" font-size="11" font-family="sans-serif" font-weight="600">Notion & Docs</text>
-          <text x="175" y="21" fill="#c084fc" font-size="9" text-anchor="end">6 tabs</text>
-
-          <rect y="132" width="190" height="24" rx="6" fill="#064e3b" />
-          <text x="95" y="16" fill="#6ee7b7" font-size="9" font-family="sans-serif" font-weight="600" text-anchor="middle">⚡ 82% RAM Usage Reduced</text>
-        </g>
-
-        <!-- Right Focus Clock & Markdown -->
-        <g transform="translate(225, 20)">
-          <!-- Focus Timer Ring -->
-          <rect width="130" height="74" rx="8" fill="#292524" stroke="#44403c" stroke-width="1" />
-          <circle cx="40" cy="37" r="24" fill="none" stroke="#7f1d1d" stroke-width="5" />
-          <circle cx="40" cy="37" r="24" fill="none" stroke="#f43f5e" stroke-width="5" stroke-dasharray="110, 150" stroke-linecap="round" />
-          <text x="40" y="41" fill="#fff1f2" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">25:00</text>
-          <text x="75" y="32" fill="#fda4af" font-size="10" font-family="sans-serif" font-weight="bold">Focus</text>
-          <text x="75" y="48" fill="#94a3b8" font-size="8" font-family="sans-serif">Session #4</text>
-
-          <!-- Markdown Clipper -->
-          <rect y="82" width="130" height="74" rx="8" fill="#292524" stroke="#44403c" stroke-width="1" />
-          <text x="12" y="20" fill="#38bdf8" font-size="9" font-family="monospace"># Clipped Page</text>
-          <text x="12" y="36" fill="#cbd5e1" font-size="8" font-family="monospace">- Extracted table</text>
-          <text x="12" y="50" fill="#cbd5e1" font-size="8" font-family="monospace">- Saved to Obsidian</text>
-          <text x="12" y="64" fill="#34d399" font-size="8" font-family="monospace">✓ Clean format</text>
-        </g>
-      </g>
-    </svg>`
+    heroIllustrationSvg: '',
   },
   {
-    id: 'privacy',
-    label: 'Privacy & Security',
+    id: 'networking',
+    label: 'Proxies & Network Unblockers',
     count: 0,
-    description: 'Block invasive trackers, secure passwords with biometric passkeys, and auto-clean cross-site tracking cookies.',
-    subtitle: 'Manifest V3 compliant security suites with zero telemetry tracking and client-side encryption.',
-    tags: ['Ad Blocker', 'Passkey Vault', 'Cookie Cleaner', 'Tracker Shield'],
-    colorAccent: 'text-emerald-600 bg-emerald-50 border-emerald-200',
-    heroIllustrationSvg: `<svg viewBox="0 0 460 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
-      <defs>
-        <linearGradient id="cat-priv-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#022c22" />
-          <stop offset="50%" stop-color="#064e3b" />
-          <stop offset="100%" stop-color="#0f172a" />
-        </linearGradient>
-      </defs>
-      <rect width="460" height="260" fill="url(#cat-priv-bg)" rx="16" />
-      
-      <!-- Privacy Security Center -->
-      <g transform="translate(45, 30)">
-        <rect width="370" height="200" rx="12" fill="#042f2e" stroke="#10b981" stroke-width="1.5" />
-        
-        <!-- Large Shield -->
-        <g transform="translate(25, 35)">
-          <circle cx="50" cy="55" r="45" fill="#064e3b" stroke="#34d399" stroke-width="2" />
-          <path d="M50 25 L80 38 C80 72 50 90 50 90 C50 90 20 72 20 38 Z" fill="#059669" />
-          <path d="M42 56 L48 62 L60 50" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-          <text x="50" y="118" fill="#a7f3d0" font-size="11" font-family="sans-serif" font-weight="bold" text-anchor="middle">Shield Active</text>
-        </g>
-
-        <!-- Metric Bars Right -->
-        <g transform="translate(145, 25)">
-          <rect width="200" height="42" rx="8" fill="#064e3b" stroke="#047857" stroke-width="1" />
-          <text x="15" y="22" fill="#a7f3d0" font-size="14" font-family="monospace" font-weight="bold">0 Trackers Leaked</text>
-          <text x="15" y="34" fill="#6ee7b7" font-size="9" font-family="sans-serif">All 3rd-party beacons blocked</text>
-
-          <rect y="50" width="200" height="42" rx="8" fill="#064e3b" stroke="#047857" stroke-width="1" />
-          <text x="15" y="72" fill="#a7f3d0" font-size="14" font-family="monospace" font-weight="bold">256-bit AES Vault</text>
-          <text x="15" y="84" fill="#6ee7b7" font-size="9" font-family="sans-serif">Biometric Passkey Authenticated</text>
-
-          <rect y="100" width="200" height="42" rx="8" fill="#064e3b" stroke="#047857" stroke-width="1" />
-          <text x="15" y="122" fill="#a7f3d0" font-size="14" font-family="monospace" font-weight="bold">Auto-Purge Cookies</text>
-          <text x="15" y="134" fill="#6ee7b7" font-size="9" font-family="sans-serif">Containers wiped on tab close</text>
-        </g>
-      </g>
-    </svg>`
+    description: 'Bypass geo-restrictions, switch proxies on the fly, spoof user agents, and unblock restricted domains.',
+    subtitle: 'Fast proxy switchers, VPN clients, DNS resolvers, and geo-block unblockers for free internet.',
+    tags: ['Proxy Switcher', 'Geo Bypass', 'VPN Client', 'User-Agent Spoof', 'DNS Unblocker'],
+    colorAccent: 'text-teal-600 bg-teal-50 border-teal-200',
+    heroIllustrationSvg: '',
   },
   {
-    id: 'utilities',
-    label: 'Workflow & Tabs',
+    id: 'social',
+    label: 'Social Media & Community',
     count: 0,
-    description: 'Speed up reading comprehension and free browser memory by sleeping inactive background tabs.',
-    subtitle: 'Lightweight system enhancements to make your browser faster and easier on battery life.',
-    tags: ['Bionic Reading', 'Tab Suspender', 'RAM Saver', 'Accessibility'],
-    colorAccent: 'text-sky-600 bg-sky-50 border-sky-200',
-    heroIllustrationSvg: `<svg viewBox="0 0 460 260" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
-      <defs>
-        <linearGradient id="cat-util-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0c4a6e" />
-          <stop offset="50%" stop-color="#1e293b" />
-          <stop offset="100%" stop-color="#064e3b" />
-        </linearGradient>
-      </defs>
-      <rect width="460" height="260" fill="url(#cat-util-bg)" rx="16" />
-      
-      <!-- Utility Preview Hub -->
-      <g transform="translate(45, 30)">
-        <rect width="370" height="200" rx="12" fill="#0f172a" stroke="#0284c7" stroke-width="1.5" />
-        
-        <!-- Left: RAM Saver -->
-        <g transform="translate(20, 25)">
-          <rect width="155" height="150" rx="8" fill="#1e293b" />
-          <text x="15" y="28" fill="#38bdf8" font-size="12" font-family="sans-serif" font-weight="bold">💤 Tab Suspender</text>
-          <text x="15" y="55" fill="#4ade80" font-size="22" font-family="monospace" font-weight="bold">1.8 GB</text>
-          <text x="15" y="72" fill="#94a3b8" font-size="9" font-family="sans-serif">Memory Saved</text>
-          
-          <rect x="15" y="88" width="125" height="26" rx="4" fill="#052e16" />
-          <text x="77" y="105" fill="#86efac" font-size="9" font-family="sans-serif" text-anchor="middle">🔋 +1.5h Battery Boost</text>
-          
-          <text x="15" y="132" fill="#cbd5e1" font-size="8" font-family="sans-serif">Instant wake on hover</text>
-        </g>
-
-        <!-- Right: Bionic Reading Excerpt -->
-        <g transform="translate(195, 25)">
-          <rect width="155" height="150" rx="8" fill="#1e293b" />
-          <text x="15" y="28" fill="#38bdf8" font-size="12" font-family="sans-serif" font-weight="bold">📖 Bionic Fast Read</text>
-          
-          <g transform="translate(15, 48)">
-            <text x="0" y="14" fill="#ffffff" font-size="10" font-family="sans-serif" font-weight="bold">Gui<tspan fill="#94a3b8" font-weight="normal">ded</tspan> fix<tspan fill="#94a3b8" font-weight="normal">ation</tspan></text>
-            <text x="0" y="32" fill="#ffffff" font-size="10" font-family="sans-serif" font-weight="bold">poi<tspan fill="#94a3b8" font-weight="normal">nts</tspan> inc<tspan fill="#94a3b8" font-weight="normal">rease</tspan></text>
-            <text x="0" y="50" fill="#ffffff" font-size="10" font-family="sans-serif" font-weight="bold">rea<tspan fill="#94a3b8" font-weight="normal">ding</tspan> spe<tspan fill="#94a3b8" font-weight="normal">ed</tspan></text>
-          </g>
-
-          <rect x="15" y="112" width="125" height="24" rx="4" fill="#0369a1" />
-          <text x="77" y="128" fill="#e0f2fe" font-size="9" font-family="sans-serif" font-weight="bold" text-anchor="middle">⚡ 2.4× Speed Multiplier</text>
-        </g>
-      </g>
-    </svg>`
+    description: 'Enhance social networks with ghost modes, feed cleaners, bulk actions, and direct story downloaders.',
+    subtitle: 'Take full control of social feeds, clean sponsored posts, and unlock private viewing features.',
+    tags: ['Ghost Mode', 'Feed Cleaner', 'Story Downloader', 'Bulk Action', 'Social Suite'],
+    colorAccent: 'text-indigo-600 bg-indigo-50 border-indigo-200',
+    heroIllustrationSvg: '',
+  },
+  {
+    id: 'shopping',
+    label: 'Shopping & Rewards',
+    count: 0,
+    description: 'Automatically apply discount coupon codes, track price fluctuations over time, and harvest online rewards.',
+    subtitle: 'Never overpay online with automatic coupon finders, price drop alerts, and reward auto-claimers.',
+    tags: ['Auto Coupon', 'Price Tracker', 'Reward Bot', 'Cashback', 'Deal Finder'],
+    colorAccent: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+    heroIllustrationSvg: '',
   },
 ];
 

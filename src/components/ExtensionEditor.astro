@@ -461,11 +461,16 @@ const data = {
               id="ext-category-input"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
             >
-              <option value="ai" selected={data.category === "ai" || data.category.toLowerCase().includes("ai")}>AI & Machine Learning</option>
-              <option value="dev" selected={data.category === "dev" || data.category.toLowerCase().includes("dev")}>Developer Tools</option>
-              <option value="productivity" selected={data.category === "productivity" || data.category.toLowerCase().includes("prod")}>Productivity</option>
-              <option value="privacy" selected={data.category === "privacy" || data.category.toLowerCase().includes("priv")}>Privacy & Security</option>
-              <option value="utilities" selected={data.category === "utilities" || data.category.toLowerCase().includes("util")}>Workflow & Utilities</option>
+              <option value="privacy" selected={data.category === "privacy"}>Adblock & Content Filters</option>
+              <option value="media" selected={data.category === "media"}>Media & Downloaders</option>
+              <option value="automation" selected={data.category === "automation"}>Automation & Scripts</option>
+              <option value="customization" selected={data.category === "customization"}>Web Modifiers & Themes</option>
+              <option value="ai" selected={data.category === "ai"}>AI & Smart Tools</option>
+              <option value="dev" selected={data.category === "dev"}>Developer & Power Tools</option>
+              <option value="productivity" selected={data.category === "productivity"}>Productivity & Workflow</option>
+              <option value="networking" selected={data.category === "networking"}>Proxies & Network Unblockers</option>
+              <option value="social" selected={data.category === "social"}>Social Media & Community</option>
+              <option value="shopping" selected={data.category === "shopping"}>Shopping & Rewards</option>
             </select>
             <p id="err-ext-category" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>

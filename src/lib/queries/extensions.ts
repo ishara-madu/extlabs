@@ -91,12 +91,16 @@ export async function getExtensionsByCategory(
  */
 export function generateExtensionBannerSvg(name: string, category: string): string {
   const gradients: Record<string, [string, string]> = {
+    privacy: ['#064e3b', '#047857'],
+    media: ['#881337', '#be123c'],
+    automation: ['#581c87', '#7e22ce'],
+    customization: ['#831843', '#be185d'],
     ai: ['#0c4a6e', '#0369a1'],
     dev: ['#0f172a', '#1e293b'],
-    productivity: ['#14532d', '#059669'],
-    privacy: ['#4c1d95', '#6d28d9'],
-    utilities: ['#1f2937', '#374151'],
-    social: ['#831843', '#be185d'],
+    productivity: ['#451a03', '#b45309'],
+    networking: ['#134e4a', '#0f766e'],
+    social: ['#312e81', '#4338ca'],
+    shopping: ['#064e3b', '#059669'],
   };
   const [c1, c2] = gradients[category] || ['#0f172a', '#1e293b'];
   const safeName = (name || 'Browser Extension').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -152,12 +156,16 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
   } catch {}
 
   const categoryLabels: Record<string, string> = {
-    ai: 'AI & Machine Learning',
-    dev: 'Developer Tools',
-    productivity: 'Productivity',
-    privacy: 'Privacy & Security',
-    utilities: 'Utilities & System',
-    social: 'Social & Communication',
+    privacy: 'Adblock & Content Filters',
+    media: 'Media & Downloaders',
+    automation: 'Automation & Scripts',
+    customization: 'Web Modifiers & Themes',
+    ai: 'AI & Smart Tools',
+    dev: 'Developer & Power Tools',
+    productivity: 'Productivity & Workflow',
+    networking: 'Proxies & Network Unblockers',
+    social: 'Social Media & Community',
+    shopping: 'Shopping & Rewards',
   };
 
   const usersCountFormatted = (dbExt.weekly_active_users || 0) >= 1000
@@ -378,12 +386,17 @@ export interface SaveExtensionBasicInput {
 }
 
 function normalizeStoreCategory(cat: string): string {
-  const lower = (cat || '').toLowerCase();
-  if (lower.includes('ai')) return 'ai';
-  if (lower.includes('dev')) return 'dev';
-  if (lower.includes('productivity')) return 'productivity';
-  if (lower.includes('privacy') || lower.includes('security')) return 'privacy';
-  if (lower.includes('util') || lower.includes('workflow')) return 'utilities';
+  const lower = (cat || '').toLowerCase().trim();
+  if (lower.includes('priv') || lower.includes('adblock') || lower.includes('filter')) return 'privacy';
+  if (lower.includes('media') || lower.includes('download') || lower.includes('stream') || lower.includes('video')) return 'media';
+  if (lower.includes('auto') || lower.includes('script') || lower.includes('bot')) return 'automation';
+  if (lower.includes('custom') || lower.includes('theme') || lower.includes('mod')) return 'customization';
+  if (lower.includes('ai') || lower.includes('llm') || lower.includes('gpt')) return 'ai';
+  if (lower.includes('dev') || lower.includes('tool')) return 'dev';
+  if (lower.includes('prod') || lower.includes('work') || lower.includes('tab')) return 'productivity';
+  if (lower.includes('proxy') || lower.includes('network') || lower.includes('vpn')) return 'networking';
+  if (lower.includes('social') || lower.includes('feed')) return 'social';
+  if (lower.includes('shop') || lower.includes('reward') || lower.includes('coupon') || lower.includes('price')) return 'shopping';
   return lower || 'productivity';
 }
 
