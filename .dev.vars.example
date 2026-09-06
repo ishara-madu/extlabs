@@ -4,3 +4,14 @@
 GITHUB_CLIENT_ID=your_github_client_id_here
 GITHUB_CLIENT_SECRET=your_github_client_secret_here
 SUPER_ADMIN_GITHUB_USERNAME=ishara-madu
+GEMINI_API_KEYS=key1,key2,key3
+
+# Cloudinary Image CDN Configuration (Signed Uploads)
+# Get these from your Cloudinary Dashboard: https://console.cloudinary.com/
+CLOUDINARY_CLOUD_NAME=your_cloud_name_here
+CLOUDINARY_API_KEY=your_api_key_here
+CLOUDINARY_API_SECRET=your_api_secret_here
+# Custom upload folder in Cloudinary (e.g. extlabs or your own folder name):
+CLOUDINARY_UPLOAD_FOLDER=your_custom_folder_name
+# Alternatively, you can use the full URL:
+# CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME

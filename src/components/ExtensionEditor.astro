@@ -2590,14 +2590,14 @@ const data = {
         topSaveBtn.setAttribute('disabled', 'true');
         topSaveBtn.innerHTML = `
           <svg class="animate-spin w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span>Saving...</span>
+          <span>Uploading & Saving...</span>
         `;
       }
       if (tab2SaveBtn && !silent) {
         tab2SaveBtn.setAttribute('disabled', 'true');
         tab2SaveBtn.innerHTML = `
           <svg class="animate-spin w-3.5 h-3.5 text-slate-700 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span>Saving...</span>
+          <span>Uploading & Saving...</span>
         `;
       }
 
@@ -2616,26 +2616,41 @@ const data = {
             tab2Status.className = 'text-xs text-red-600 font-medium';
           }
           if (!silent) {
-            alert(data.error || 'Failed to save visual media to database.');
+            alert(data.error || 'Failed to save visual media.');
           }
           return false;
         }
 
+        // Update with permanent Cloudinary CDN URLs if returned
+        if (data.iconUrl && iconUrlVal) iconUrlVal.value = data.iconUrl;
+        if (data.headerImageUrl && promoUrlVal) promoUrlVal.value = data.headerImageUrl;
+        if (Array.isArray(data.screenshots) && screenshotsContainer) {
+          const previewImgs = screenshotsContainer.querySelectorAll<HTMLImageElement>('.screenshot-preview-img');
+          data.screenshots.forEach((url: string, index: number) => {
+            if (previewImgs[index] && url) {
+              previewImgs[index].src = url;
+            }
+          });
+        }
+
         if (tab2Status) {
-          tab2Status.textContent = '✓ Saved to ExtLabs database';
+          tab2Status.textContent = data.cloudinary
+            ? '✓ Uploaded to Cloudinary & Saved'
+            : '✓ Saved to ExtLabs database';
           tab2Status.className = 'text-xs text-emerald-600 font-mono';
         }
 
         if (!silent) {
+          const successMsg = data.cloudinary ? '✓ Uploaded to Cloudinary!' : '✓ Saved to Database!';
           if (topSaveBtn) {
-            topSaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            topSaveBtn.innerHTML = `<span>${successMsg}</span>`;
             setTimeout(() => {
               topSaveBtn.innerHTML = originalSaveHtml;
               topSaveBtn.removeAttribute('disabled');
             }, 2000);
           }
           if (tab2SaveBtn) {
-            tab2SaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            tab2SaveBtn.innerHTML = `<span>${successMsg}</span>`;
             setTimeout(() => {
               tab2SaveBtn.innerHTML = originalTab2SaveHtml;
               tab2SaveBtn.removeAttribute('disabled');
