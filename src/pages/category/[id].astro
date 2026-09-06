@@ -234,14 +234,14 @@ const topFeatured = categoryExtensions.find(ext => ext.featured) || categoryExte
         </div>
 
         <!-- Extension Grid -->
-        <div id="category-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="category-grid" class={`${categoryExtensions.length === 0 ? 'hidden' : 'grid'} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6`}>
           {categoryExtensions.map((ext) => (
             <ExtensionCard extension={ext} />
           ))}
         </div>
 
         <!-- Empty State within Category -->
-        <div id="category-empty-state" class="hidden py-16 text-center border border-dashed border-slate-200 rounded-2xl p-8 bg-white">
+        <div id="category-empty-state" class={`${categoryExtensions.length === 0 ? '' : 'hidden'} py-16 text-center border border-dashed border-slate-200 rounded-2xl p-8 bg-white`}>
           <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 mx-auto flex items-center justify-center mb-3">
             <Search class="w-5 h-5" />
           </div>

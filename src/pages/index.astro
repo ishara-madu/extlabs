@@ -18,6 +18,11 @@ const featuredExtensions = allStoreExtensions.filter(ext => ext.featured);
 const devExtensions = allStoreExtensions.filter(ext => ext.category === 'dev');
 const aiAndProdExtensions = allStoreExtensions.filter(ext => ext.category === 'ai' || ext.category === 'productivity');
 const privacyAndUtilExtensions = allStoreExtensions.filter(ext => ext.category === 'privacy' || ext.category === 'utilities');
+
+const categoryCounts: Record<string, number> = {};
+for (const ext of allStoreExtensions) {
+  categoryCounts[ext.category] = (categoryCounts[ext.category] || 0) + 1;
+}
 ---
 
 <html lang="en" data-theme="light">
@@ -37,7 +42,7 @@ const privacyAndUtilExtensions = allStoreExtensions.filter(ext => ext.category =
     <Navbar />
 
     <!-- Category Pill Strip -->
-    <CategoryBar />
+    <CategoryBar categoryCounts={categoryCounts} />
 
     <!-- Main Content Area with generous breathing room -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-16">
@@ -77,95 +82,103 @@ const privacyAndUtilExtensions = allStoreExtensions.filter(ext => ext.category =
       </div>
 
       <!-- Section 1: Featured Spotlight -->
-      <section id="featured" class="shelf-section space-y-6">
-        <div>
-          <h2 class="text-base font-semibold text-slate-800 tracking-tight">
-            Featured & Editors' Picks
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Top-rated extensions verified for performance and privacy.</p>
-        </div>
+      {featuredExtensions.length > 0 && (
+        <section id="featured" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60 first-of-type:border-t-0 first-of-type:pt-0">
+          <div>
+            <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+              Featured & Editors' Picks
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Top-rated extensions verified for performance and privacy.</p>
+          </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredExtensions.map((ext) => (
-            <FeaturedCard extension={ext} />
-          ))}
-        </div>
-      </section>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {featuredExtensions.map((ext) => (
+              <FeaturedCard extension={ext} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <!-- Section 2: Developer Tools -->
-      <section id="dev-tools" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-base font-semibold text-slate-800 tracking-tight">
-              Developer Tools
-            </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Inspectors, API testers, and code utilities.</p>
+      {devExtensions.length > 0 && (
+        <section id="dev-tools" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60 first-of-type:border-t-0 first-of-type:pt-0">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+                Developer Tools
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Inspectors, API testers, and code utilities.</p>
+            </div>
+            <a
+              href="/category/dev"
+              class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <span>See all ({devExtensions.length})</span>
+              <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
+            </a>
           </div>
-          <a
-            href="/category/dev"
-            class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <span>See all ({devExtensions.length})</span>
-            <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
-          </a>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {devExtensions.map((ext) => (
-            <ExtensionCard extension={ext} />
-          ))}
-        </div>
-      </section>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {devExtensions.map((ext) => (
+              <ExtensionCard extension={ext} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <!-- Section 3: AI & Productivity -->
-      <section id="ai-productivity" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-base font-semibold text-slate-800 tracking-tight">
-              AI & Productivity
-            </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Smart page summaries, notes, and task management.</p>
+      {aiAndProdExtensions.length > 0 && (
+        <section id="ai-productivity" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60 first-of-type:border-t-0 first-of-type:pt-0">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+                AI & Productivity
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Smart page summaries, notes, and task management.</p>
+            </div>
+            <a
+              href="/category/ai"
+              class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <span>See all ({aiAndProdExtensions.length})</span>
+              <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
+            </a>
           </div>
-          <a
-            href="/category/ai"
-            class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <span>See all ({aiAndProdExtensions.length})</span>
-            <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
-          </a>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {aiAndProdExtensions.map((ext) => (
-            <ExtensionCard extension={ext} />
-          ))}
-        </div>
-      </section>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {aiAndProdExtensions.map((ext) => (
+              <ExtensionCard extension={ext} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <!-- Section 4: Privacy & Security -->
-      <section id="privacy-utilities" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-base font-semibold text-slate-800 tracking-tight">
-              Privacy & Security
-            </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Ad blockers, passkeys, and memory savers.</p>
+      {privacyAndUtilExtensions.length > 0 && (
+        <section id="privacy-utilities" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60 first-of-type:border-t-0 first-of-type:pt-0">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+                Privacy & Security
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Ad blockers, passkeys, and memory savers.</p>
+            </div>
+            <a
+              href="/category/privacy"
+              class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <span>See all ({privacyAndUtilExtensions.length})</span>
+              <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
+            </a>
           </div>
-          <a
-            href="/category/privacy"
-            class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <span>See all ({privacyAndUtilExtensions.length})</span>
-            <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
-          </a>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {privacyAndUtilExtensions.map((ext) => (
-            <ExtensionCard extension={ext} />
-          ))}
-        </div>
-      </section>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {privacyAndUtilExtensions.map((ext) => (
+              <ExtensionCard extension={ext} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <!-- Section 5: Clean Developer Callout with Monetag Highlight -->
       <section id="developers" class="rounded-xl border border-slate-200 bg-white p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xs">
@@ -262,7 +275,7 @@ const privacyAndUtilExtensions = allStoreExtensions.filter(ext => ext.category =
           // Check visibility of shelf sections
           shelfSections.forEach(section => {
             const sectionCards = section.querySelectorAll('.extension-item:not(.hidden)');
-            if (sectionCards.length === 0 && (query || activeCategory)) {
+            if (sectionCards.length === 0) {
               section.classList.add('hidden');
             } else {
               section.classList.remove('hidden');
