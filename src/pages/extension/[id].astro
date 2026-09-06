@@ -5,8 +5,8 @@ import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
-import { EXTENSIONS, getExtensionWithDefaults, getRelatedExtensions } from "../../data/extensions";
-import { getDb, getStoreExtensionByIdOrSlug } from "../../lib/db";
+import { getExtensionWithDefaults } from "../../data/extensions";
+import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory } from "../../lib/db";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ArrowRight, HelpCircle, CheckCircle2 } from '@lucide/astro';
 
 const requestedId = Astro.params.id || '';
@@ -18,7 +18,8 @@ if (!rawExtension) {
 }
 
 const ext = getExtensionWithDefaults(rawExtension);
-const relatedExtensions = getRelatedExtensions(ext.id, ext.category, 3);
+const categoryExtensions = await getStoreExtensionsByCategory(db, ext.category);
+const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id !== rawExtension.id).slice(0, 3);
 
 // JSON-LD Schema.org Structured Data for SEO
 const jsonLdSchema = {

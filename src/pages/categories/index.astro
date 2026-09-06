@@ -1,10 +1,17 @@
 ---
 // src/pages/categories/index.astro
+export const prerender = false;
+
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
-import { EXTENSIONS, CATEGORIES } from "../../data/extensions";
+import { CATEGORIES } from "../../data/extensions";
+import { getDb, getStoreExtensions } from "../../lib/db";
 import { ArrowRight } from '@lucide/astro';
+
+const db = getDb();
+const allStoreExtensions = await getStoreExtensions(db);
+const activeDomainsCount = CATEGORIES.filter(cat => allStoreExtensions.some(e => e.category === cat.id)).length;
 ---
 
 <html lang="en" data-theme="light">
@@ -40,7 +47,7 @@ import { ArrowRight } from '@lucide/astro';
             Extension Categories
           </span>
           <span class="text-xs text-slate-500 font-medium">
-            5 Curated Domains
+            {activeDomainsCount} Active Category Domain{activeDomainsCount === 1 ? '' : 's'}
           </span>
         </div>
         
@@ -55,8 +62,9 @@ import { ArrowRight } from '@lucide/astro';
       <!-- Visual Categories Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {CATEGORIES.map((cat) => {
-          const catExtensions = EXTENSIONS.filter(e => e.category === cat.id);
-          const topExt = catExtensions[0];
+          const catExtensions = allStoreExtensions.filter(e => e.category === cat.id);
+          const topExt = catExtensions.find(e => e.featured) || catExtensions[0];
+          const count = catExtensions.length;
 
           return (
             <a
@@ -68,7 +76,7 @@ import { ArrowRight } from '@lucide/astro';
                 <Fragment set:html={cat.heroIllustrationSvg} />
                 <div class="absolute top-3 right-3">
                   <span class="text-[10px] font-semibold text-white bg-slate-900/80 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20">
-                    {cat.count} Extensions
+                    {count} Extension{count === 1 ? '' : 's'}
                   </span>
                 </div>
               </div>

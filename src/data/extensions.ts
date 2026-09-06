@@ -91,7 +91,7 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     id: 'ai',
     label: 'AI & Machine Learning',
-    count: 3,
+    count: 0,
     description: 'Explore state-of-the-art AI assistants, LLM page summarizers, voice transcribers, and prompt engineering utilities.',
     subtitle: 'Automate content research, summarize video transcripts, and write faster with browser-native AI.',
     tags: ['Summarizer', 'Prompt Assistant', 'Transcription', 'Voice Notes', 'LLM'],
@@ -157,7 +157,7 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     id: 'dev',
     label: 'Developer Tools',
-    count: 5,
+    count: 0,
     description: 'Inspect DOM trees, format JSON APIs, debug CSS layouts, and explore GitHub repositories with IDE-grade tools.',
     subtitle: 'High-performance engineering utilities built for frontend, backend, and full-stack developers.',
     tags: ['DOM Inspector', 'JSON Formatter', 'Git & GitHub', 'REST API Client', 'Color Picker'],
@@ -224,7 +224,7 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     id: 'productivity',
     label: 'Productivity',
-    count: 3,
+    count: 0,
     description: 'Stay in the zone, manage complex research tabs, clip web articles to Markdown, and eliminate distractions.',
     subtitle: 'Supercharge your daily browsing velocity and organize your workflows with zero friction.',
     tags: ['Workspace Manager', 'Markdown Clipper', 'Pomodoro Timer', 'Task Focus'],
@@ -287,7 +287,7 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     id: 'privacy',
     label: 'Privacy & Security',
-    count: 3,
+    count: 0,
     description: 'Block invasive trackers, secure passwords with biometric passkeys, and auto-clean cross-site tracking cookies.',
     subtitle: 'Manifest V3 compliant security suites with zero telemetry tracking and client-side encryption.',
     tags: ['Ad Blocker', 'Passkey Vault', 'Cookie Cleaner', 'Tracker Shield'],
@@ -334,7 +334,7 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     id: 'utilities',
     label: 'Workflow & Tabs',
-    count: 2,
+    count: 0,
     description: 'Speed up reading comprehension and free browser memory by sleeping inactive background tabs.',
     subtitle: 'Lightweight system enhancements to make your browser faster and easier on battery life.',
     tags: ['Bionic Reading', 'Tab Suspender', 'RAM Saver', 'Accessibility'],
@@ -1211,60 +1211,6 @@ export const EXTENSIONS: Extension[] = [
       'Adjustable fixation strength and font sizing controls.',
       'Clean Reader Mode removing ads and cluttered navigation.',
       'Shortcut toggle (`Alt+B`) on any article.'
-    ]
-  },
-  {
-    id: 'tab-suspender-eco',
-    name: 'EcoTab Idle Suspender',
-    tagline: 'Automatic RAM & battery saver that puts idle browser tabs to sleep',
-    description: 'Automatically sleep inactive tabs after a chosen timeout period to reduce RAM consumption, save laptop battery, and keep your browser fast.',
-    category: 'utilities',
-    categoryLabel: 'Workflow & Tabs',
-    developer: 'GreenByte Tools',
-    isVerified: true,
-    rating: 4.8,
-    reviewCount: 3100,
-    userCount: '340,000+',
-    version: '3.0.1',
-    updatedDate: 'Aug 25, 2026',
-    size: '980 KB',
-    bannerSvg: `<svg viewBox="0 0 400 220" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" class="w-full h-full object-cover">
-      <defs>
-        <linearGradient id="g-eco" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#14532d" />
-          <stop offset="100%" stop-color="#0f172a" />
-        </linearGradient>
-      </defs>
-      <rect width="400" height="220" fill="url(#g-eco)" />
-      
-      <!-- Tab Memory Gauge Preview -->
-      <g transform="translate(45, 25)">
-        <rect width="310" height="170" rx="10" fill="#052e16" stroke="#22c55e" stroke-width="1.5" />
-        
-        <g transform="translate(30, 25)">
-          <text x="0" y="16" fill="#86efac" font-size="14" font-family="sans-serif" font-weight="bold">💤 18 Tabs Sleeping</text>
-          <text x="0" y="36" fill="#4ade80" font-size="24" font-family="monospace" font-weight="bold">1.82 GB RAM</text>
-          <text x="0" y="54" fill="#bbf7d0" font-size="10" font-family="sans-serif">Freed up from active memory</text>
-        </g>
-
-        <!-- Battery + Performance Status -->
-        <g transform="translate(30, 95)">
-          <rect width="250" height="32" rx="6" fill="#14532d" />
-          <text x="15" y="20" fill="#dcfce7" font-size="10" font-family="sans-serif">🔋 Battery Life Extended by ~1.4 hrs</text>
-        </g>
-
-        <g transform="translate(30, 138)">
-          <text x="0" y="14" fill="#4ade80" font-size="9" font-family="sans-serif">Instant wake on tab click • Zero lost work</text>
-        </g>
-      </g>
-    </svg>`,
-    tags: ['Tabs', 'Battery', 'RAM', 'Performance'],
-    permissions: ['Tabs', 'Storage', 'Alarms'],
-    overview: [
-      'Saves up to 90% memory by freeing tab memory without losing scroll position.',
-      'Whitelist audio-playing tabs, pinned tabs, and custom domains.',
-      'Instant tab wakeup on click or hover.',
-      'Shows live RAM saved in the popup dashboard.'
     ]
   }
 ];

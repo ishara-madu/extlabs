@@ -212,39 +212,39 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
  * Fetch all live extensions for the store, mapping real D1 database rows
  */
 export async function getStoreExtensions(db: D1Database | null): Promise<Extension[]> {
-  if (!db) return EXTENSIONS;
+  if (!db) return [];
   try {
     const liveExtensions = await getLiveExtensions(db);
-    if (liveExtensions && liveExtensions.length > 0) {
+    if (liveExtensions) {
       return liveExtensions.map(mapDbExtensionToStoreItem);
     }
   } catch (err) {
-    console.warn('Failed to fetch extensions from D1, using fallback:', err);
+    console.warn('Failed to fetch extensions from D1:', err);
   }
-  return EXTENSIONS;
+  return [];
 }
 
 /**
  * Fetch live store extensions for a specific category
  */
 export async function getStoreExtensionsByCategory(db: D1Database | null, category: string): Promise<Extension[]> {
-  if (!db) return EXTENSIONS.filter((e) => e.category === category);
+  if (!db) return [];
   try {
     const liveCatExtensions = await getExtensionsByCategory(db, category);
-    if (liveCatExtensions && liveCatExtensions.length > 0) {
+    if (liveCatExtensions) {
       return liveCatExtensions.map(mapDbExtensionToStoreItem);
     }
   } catch (err) {
     console.warn('Failed to fetch category extensions from D1:', err);
   }
-  return EXTENSIONS.filter((e) => e.category === category);
+  return [];
 }
 
 /**
  * Fetch a single store extension by slug or ID from D1
  */
 export async function getStoreExtensionByIdOrSlug(db: D1Database | null, idOrSlug: string): Promise<Extension | null> {
-  if (!db) return EXTENSIONS.find((e) => e.id === idOrSlug) || null;
+  if (!db) return null;
   try {
     const ext = await getExtensionBySlug(db, idOrSlug);
     if (ext) {
@@ -262,7 +262,7 @@ export async function getStoreExtensionByIdOrSlug(db: D1Database | null, idOrSlu
   } catch (err) {
     console.warn('Failed to fetch extension by slug from D1:', err);
   }
-  return EXTENSIONS.find((e) => e.id === idOrSlug) || null;
+  return null;
 }
 
 export interface ManageExtensionDetail extends DbExtension {

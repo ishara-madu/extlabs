@@ -6,7 +6,7 @@ import Navbar from "../../components/Navbar.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import Footer from "../../components/Footer.astro";
 import { CATEGORIES, type CategoryInfo } from "../../data/extensions";
-import { getDb, getStoreExtensionsByCategory } from "../../lib/db";
+import { getDb, getStoreExtensions } from "../../lib/db";
 import { Home, BadgeCheck, Star, Search, ArrowRight } from '@lucide/astro';
 
 const categoryId = Astro.params.id || 'productivity';
@@ -22,9 +22,14 @@ const category = CATEGORIES.find(c => c.id === categoryId) || {
 };
 
 const db = getDb();
-// Filter real extensions belonging to this category from D1
-const categoryExtensions = await getStoreExtensionsByCategory(db, category.id);
+const allStoreExtensions = await getStoreExtensions(db);
+const categoryExtensions = allStoreExtensions.filter(e => e.category === category.id);
 const topFeatured = categoryExtensions.find(ext => ext.featured) || categoryExtensions[0];
+
+const categoryCounts: Record<string, number> = {};
+for (const ext of allStoreExtensions) {
+  categoryCounts[ext.category] = (categoryCounts[ext.category] || 0) + 1;
+}
 ---
 
 <html lang="en" data-theme="light">
@@ -56,23 +61,26 @@ const topFeatured = categoryExtensions.find(ext => ext.featured) || categoryExte
               <span>Home</span>
             </a>
 
-            {CATEGORIES.map((cat) => (
-              <a
-                href={`/category/${cat.id}`}
-                class={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap border transition-colors ${
-                  cat.id === category.id
-                    ? 'bg-slate-800 text-white border-slate-800 shadow-2xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                <span>{cat.label}</span>
-                <span class={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                  cat.id === category.id ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600'
-                }`}>
-                  {cat.count}
-                </span>
-              </a>
-            ))}
+            {CATEGORIES.map((cat) => {
+              const count = categoryCounts[cat.id] ?? 0;
+              return (
+                <a
+                  href={`/category/${cat.id}`}
+                  class={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap border transition-colors ${
+                    cat.id === category.id
+                      ? 'bg-slate-800 text-white border-slate-800 shadow-2xs'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{cat.label}</span>
+                  <span class={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                    cat.id === category.id ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {count}
+                  </span>
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>
