@@ -104,6 +104,13 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    if (!downloadUrl || typeof downloadUrl !== 'string' || !downloadUrl.trim().startsWith('http')) {
+      return new Response(JSON.stringify({ success: false, error: 'Valid Direct Package (.zip / .crx) release asset download URL is required.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!supportEmail || typeof supportEmail !== 'string' || !emailRegex.test(supportEmail.trim())) {
       return new Response(JSON.stringify({ success: false, error: 'Valid support center email address is required.' }), {

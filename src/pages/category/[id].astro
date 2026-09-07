@@ -195,7 +195,7 @@ const visibleCategories = CATEGORIES.filter(cat => (categoryCounts[cat.id] ?? 0)
                 </div>
 
                 <p class="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                  {topFeatured.description}
+                  {topFeatured.tagline || topFeatured.description}
                 </p>
 
                 <div class="flex items-center justify-between pt-2">

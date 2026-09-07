@@ -16,7 +16,8 @@ import {
   Copy,
   ArrowRight,
   FolderGit2,
-  BarChart3
+  BarChart3,
+  Mail
 } from '@lucide/astro';
 import { 
   getDb, 
@@ -87,7 +88,9 @@ const ext = {
   reviewStatus: dbExtension.review_status || 'approved',
   monetagUrl: dbExtension.monetag_direct_link || `https://monetag.com/direct/${id.replace(/-/g, '_')}_live_8912`,
   githubRepo: dbExtension.source_repo_url || `https://github.com/extlabs/${id}`,
-  iconUrl: dbExtension.icon_url || '/icons/extension-placeholder.avif'
+  iconUrl: dbExtension.icon_url || '/icons/extension-placeholder.avif',
+  developerWebsite: dbExtension.developer_website || developer?.website || '',
+  supportEmail: dbExtension.support_email || ''
 };
 
 const hasTelemetry = ext.downloadCount > 0;
@@ -747,6 +750,34 @@ const browserClients = [
                   <ExternalLink class="w-3 h-3 shrink-0" />
                 </a>
               </div>
+
+              {ext.developerWebsite && (
+                <div class="flex items-center justify-between py-1 border-b border-slate-100">
+                  <span class="text-slate-500">Developer Website:</span>
+                  <a
+                    href={ext.developerWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-mono text-blue-600 hover:underline inline-flex items-center gap-1 font-medium truncate max-w-xs"
+                  >
+                    <span class="truncate">{ext.developerWebsite.replace(/^https?:\/\//, '')}</span>
+                    <ExternalLink class="w-3 h-3 shrink-0" />
+                  </a>
+                </div>
+              )}
+
+              {ext.supportEmail && (
+                <div class="flex items-center justify-between py-1 border-b border-slate-100">
+                  <span class="text-slate-500">Support Center Email:</span>
+                  <a
+                    href={`mailto:${ext.supportEmail}`}
+                    class="font-mono text-blue-600 hover:underline inline-flex items-center gap-1 font-medium truncate max-w-xs"
+                  >
+                    <span class="truncate">{ext.supportEmail}</span>
+                    <Mail class="w-3 h-3 shrink-0" />
+                  </a>
+                </div>
+              )}
 
               <div class="flex items-center justify-between py-1 border-b border-slate-100">
                 <span class="text-slate-500">Primary Category:</span>

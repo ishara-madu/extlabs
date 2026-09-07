@@ -6,6 +6,7 @@ export interface ExtensionWithDeveloper extends DbExtension {
   developer_name: string;
   developer_slug: string;
   developer_verified: number;
+  developer_website?: string | null;
 }
 
 /**
@@ -17,7 +18,8 @@ export async function getLiveExtensions(db: D1Database): Promise<ExtensionWithDe
       e.*, 
       COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
       COALESCE(d.slug, 'developer') AS developer_slug, 
-      COALESCE(d.is_verified, 1) AS developer_verified
+      COALESCE(d.is_verified, 1) AS developer_verified,
+      d.website AS developer_website
     FROM extensions e
     LEFT JOIN developers d ON e.developer_id = d.id
     WHERE e.is_active = 1 AND e.is_suspended = 0
@@ -40,7 +42,8 @@ export async function getExtensionBySlug(
         e.*, 
         COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
         COALESCE(d.slug, 'developer') AS developer_slug, 
-        COALESCE(d.is_verified, 1) AS developer_verified
+        COALESCE(d.is_verified, 1) AS developer_verified,
+        d.website AS developer_website
       FROM extensions e
       LEFT JOIN developers d ON e.developer_id = d.id
       WHERE e.slug = ?
@@ -56,11 +59,21 @@ export async function getExtensionBySlug(
 export async function getExtensionById(
   db: D1Database,
   id: string
-): Promise<DbExtension | null> {
+): Promise<ExtensionWithDeveloper | null> {
   const result = await db
-    .prepare('SELECT * FROM extensions WHERE id = ?')
+    .prepare(`
+      SELECT 
+        e.*, 
+        COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
+        COALESCE(d.slug, 'developer') AS developer_slug, 
+        COALESCE(d.is_verified, 1) AS developer_verified,
+        d.website AS developer_website
+      FROM extensions e
+      LEFT JOIN developers d ON e.developer_id = d.id
+      WHERE e.id = ?
+    `)
     .bind(id)
-    .first<DbExtension>();
+    .first<ExtensionWithDeveloper>();
   return result || null;
 }
 
@@ -76,7 +89,8 @@ export async function getExtensionsByCategory(
       e.*, 
       COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
       COALESCE(d.slug, 'developer') AS developer_slug, 
-      COALESCE(d.is_verified, 1) AS developer_verified
+      COALESCE(d.is_verified, 1) AS developer_verified,
+      d.website AS developer_website
     FROM extensions e
     LEFT JOIN developers d ON e.developer_id = d.id
     WHERE e.category = ? AND e.is_active = 1 AND e.is_suspended = 0
@@ -288,12 +302,7 @@ export async function getStoreExtensionByIdOrSlug(db: D1Database | null, idOrSlu
     }
     const extById = await getExtensionById(db, idOrSlug);
     if (extById) {
-      return mapDbExtensionToStoreItem({
-        ...extById,
-        developer_name: 'ExtLabs Developer',
-        developer_slug: 'developer',
-        developer_verified: 1,
-      });
+      return mapDbExtensionToStoreItem(extById);
     }
   } catch (err) {
     console.warn('Failed to fetch extension by slug from D1:', err);
@@ -305,6 +314,7 @@ export interface ManageExtensionDetail extends DbExtension {
   developer_name: string;
   developer_slug: string;
   developer_verified: number;
+  developer_website?: string | null;
   version_name?: string;
   review_status?: string;
   package_size_bytes?: number;
@@ -325,6 +335,7 @@ export async function getDeveloperExtensionDetail(
       d.display_name AS developer_name, 
       d.slug AS developer_slug, 
       d.is_verified AS developer_verified,
+      d.website AS developer_website,
       ev.version AS version_name,
       ev.review_status,
       ev.package_size_bytes,
@@ -451,11 +462,14 @@ export async function saveExtensionBasic(
   // If editing an existing extension
   if (data.isEdit && data.id) {
     const existing = await db
-      .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+      .prepare('SELECT id, slug FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
       .bind(data.id, cleanSlug)
-      .first<{ id: string }>();
+      .first<{ id: string; slug: string }>();
 
     if (existing) {
+      // Preserve permanent slug if already created
+      const permanentSlug = existing.slug || cleanSlug;
+
       // Update record
       await db
         .prepare(`
@@ -475,7 +489,7 @@ export async function saveExtensionBasic(
         `)
         .bind(
           data.name.trim(),
-          cleanSlug,
+          permanentSlug,
           normalizedCategory,
           data.version.trim(),
           data.tagline.trim(),
@@ -496,7 +510,7 @@ export async function saveExtensionBasic(
           .run();
       }
 
-      return { id: existing.id, slug: cleanSlug };
+      return { id: existing.id, slug: permanentSlug };
     }
   }
 

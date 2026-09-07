@@ -454,7 +454,46 @@ export const POST: APIRoute = async ({ request }) => {
       console.warn('Gemini SEO generation error (falling back to deterministic metadata):', aiErr);
     }
 
-    const downloadUrl = `https://github.com/${owner}/${repo}/releases/latest/download/${repo}.zip`;
+    // 5. Fetch GitHub Releases to detect Direct Package Assets (.zip / .crx)
+    let downloadUrl = '';
+    try {
+      let releaseData: any = null;
+      // Try /releases/latest first
+      const latestReleaseRes = await fetch(
+        `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/latest`,
+        { headers }
+      );
+      if (latestReleaseRes.ok) {
+        releaseData = await latestReleaseRes.json();
+      } else {
+        // Fallback to /releases?per_page=5 (in case releases are pre-releases or untagged latest)
+        const releasesListRes = await fetch(
+          `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases?per_page=5`,
+          { headers }
+        );
+        if (releasesListRes.ok) {
+          const releasesList = await releasesListRes.json();
+          if (Array.isArray(releasesList) && releasesList.length > 0) {
+            releaseData = releasesList[0];
+          }
+        }
+      }
+
+      if (releaseData && Array.isArray(releaseData.assets) && releaseData.assets.length > 0) {
+        // Find asset ending with .zip or .crx
+        const packageAsset = releaseData.assets.find((asset: any) => {
+          const assetName = (asset.name || '').toLowerCase();
+          return assetName.endsWith('.zip') || assetName.endsWith('.crx');
+        });
+
+        if (packageAsset && packageAsset.browser_download_url) {
+          downloadUrl = packageAsset.browser_download_url;
+        }
+      }
+    } catch (relErr) {
+      console.warn('Failed to fetch GitHub releases for direct package asset:', relErr);
+    }
+
     const developerWebsite = repoInfo.homepage?.trim() || `https://github.com/${owner}`;
     const supportEmail = user?.email || `support@${owner}.dev`;
     const docsUrl = `https://github.com/${owner}/${repo}#readme`;

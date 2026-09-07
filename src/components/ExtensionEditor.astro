@@ -38,8 +38,10 @@ import {
   X,
   ArrowRight,
   Search,
-  ChevronDown
+  ChevronDown,
+  Info
 } from '@lucide/astro';
+import { CATEGORIES } from '../data/extensions';
 
 export interface FeatureData {
   title: string;
@@ -231,6 +233,8 @@ const data = {
   permissions: initialData.permissions || "activeTab, storage",
   status: initialData.status || "Production"
 };
+
+const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORIES.find(c => c.id === 'ai') || CATEGORIES[0];
 ---
 
 <!-- Extension Editor Workspace -->
@@ -408,7 +412,7 @@ const data = {
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
           <!-- Name -->
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
@@ -433,9 +437,17 @@ const data = {
 
           <!-- Directory Slug -->
           <div class="space-y-1.5">
-            <label for="ext-slug-input" class="block text-xs font-semibold text-slate-700">
-              Directory URL Slug <span class="text-red-500">*</span>
-            </label>
+            <div class="flex items-center justify-between">
+              <label for="ext-slug-input" class="block text-xs font-semibold text-slate-700">
+                Directory URL Slug <span class="text-red-500">*</span>
+              </label>
+              {isEdit && (
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                  <Lock class="w-3 h-3 text-slate-400" />
+                  <span>Locked</span>
+                </span>
+              )}
+            </div>
             <div class="flex items-center">
               <span class="px-3 py-2 text-xs bg-slate-50 border border-r-0 border-slate-200 rounded-l-lg text-slate-400 font-mono select-none">
                 extlabs.io/extension/
@@ -444,35 +456,153 @@ const data = {
                 id="ext-slug-input"
                 type="text"
                 required
+                readonly={isEdit}
                 value={data.slug || data.id}
                 placeholder="deep-summarize-ai"
-                class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-r-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
+                class={`flex-1 px-3.5 py-2 text-xs border border-slate-200 rounded-r-lg font-mono ${
+                  isEdit
+                    ? 'bg-slate-100/70 text-slate-500 cursor-not-allowed select-all focus:outline-none'
+                    : 'bg-white text-slate-900 focus:border-blue-400 focus:outline-none'
+                }`}
               />
             </div>
+            {isEdit ? (
+              <p class="text-[11px] text-slate-400">
+                The URL slug is permanently locked after creation to preserve stable links and downloads.
+              </p>
+            ) : (
+              <p class="text-[11px] text-slate-400">
+                This forms your public store URL. It can only be set once during creation and cannot be changed later.
+              </p>
+            )}
             <p id="err-ext-slug" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Category -->
-          <div class="space-y-1.5">
-            <label for="ext-category-input" class="block text-xs font-semibold text-slate-700">
-              Primary Store Category <span class="text-red-500">*</span>
-            </label>
-            <select
+          <div class="space-y-1.5 relative" id="cat-dropdown-container">
+            <div class="flex items-center justify-between">
+              <label for="cat-dropdown-btn" class="block text-xs font-semibold text-slate-700">
+                Primary Store Category <span class="text-red-500">*</span>
+              </label>
+              <button
+                type="button"
+                id="open-cat-guide-btn"
+                class="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-700 hover:underline font-medium cursor-pointer transition-colors"
+                title="View detailed category guidelines"
+              >
+                <HelpCircle class="w-3.5 h-3.5 text-blue-500" />
+                <span>Category Guide</span>
+              </button>
+            </div>
+
+            <!-- Hidden input to store selected category ID for validation & form serialization -->
+            <input
+              type="hidden"
               id="ext-category-input"
-              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+              name="category"
+              value={data.category || 'ai'}
+            />
+
+            <!-- Custom Trigger Button -->
+            <button
+              type="button"
+              id="cat-dropdown-btn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              class="w-full px-3.5 py-2 text-xs bg-white hover:bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none rounded-lg text-slate-800 flex items-center justify-between transition-colors cursor-pointer text-left"
             >
-              <option value="privacy" selected={data.category === "privacy"}>Adblock & Content Filters</option>
-              <option value="media" selected={data.category === "media"}>Media & Downloaders</option>
-              <option value="automation" selected={data.category === "automation"}>Automation & Scripts</option>
-              <option value="customization" selected={data.category === "customization"}>Web Modifiers & Themes</option>
-              <option value="ai" selected={data.category === "ai"}>AI & Smart Tools</option>
-              <option value="dev" selected={data.category === "dev"}>Developer & Power Tools</option>
-              <option value="productivity" selected={data.category === "productivity"}>Productivity & Workflow</option>
-              <option value="networking" selected={data.category === "networking"}>Proxies & Network Unblockers</option>
-              <option value="social" selected={data.category === "social"}>Social Media & Community</option>
-              <option value="shopping" selected={data.category === "shopping"}>Shopping & Rewards</option>
-            </select>
+              <div class="flex items-center gap-2 overflow-hidden">
+                <span id="cat-selected-label" class="font-medium text-slate-900 truncate">
+                  {initialCategory.label}
+                </span>
+                <span id="cat-selected-id" class="text-[10px] text-slate-400 font-mono shrink-0">
+                  ({initialCategory.id})
+                </span>
+              </div>
+              <ChevronDown class="w-3.5 h-3.5 text-slate-400 cat-chevron transition-transform duration-150 shrink-0 ml-2" />
+            </button>
+
             <p id="err-ext-category" class="hidden text-[11px] font-medium text-red-600"></p>
+
+            <!-- Custom Dropdown Menu -->
+            <div
+              id="cat-dropdown-menu"
+              class="hidden absolute left-0 top-full mt-1.5 w-full bg-white rounded-xl border border-slate-200 shadow-xl z-30 overflow-hidden divide-y divide-slate-100 max-h-80 overflow-y-auto"
+              role="listbox"
+            >
+              <!-- Search Input within Dropdown -->
+              <div class="p-2 border-b border-slate-100 bg-slate-50/70 sticky top-0 z-10">
+                <div class="relative flex items-center">
+                  <Search class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+                  <input
+                    type="text"
+                    id="cat-search-input"
+                    placeholder="Search categories (e.g. adblock, ai, dev)..."
+                    class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-md focus:outline-none focus:border-blue-400 text-slate-800 placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+
+              <!-- Category Items List -->
+              <div id="cat-options-list" class="divide-y divide-slate-100">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = (data.category || 'ai') === cat.id;
+                  return (
+                    <div
+                      class={`cat-option p-3 hover:bg-slate-50 cursor-pointer transition-colors flex items-start justify-between gap-3 text-left ${isSelected ? 'bg-slate-50/80' : ''}`}
+                      data-value={cat.id}
+                      data-label={cat.label}
+                      data-desc={cat.description}
+                      data-tags={cat.tags.join(', ')}
+                      role="option"
+                      aria-selected={isSelected ? 'true' : 'false'}
+                    >
+                      <div class="space-y-1 min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-semibold text-slate-900">{cat.label}</span>
+                          <span class="text-[10px] text-slate-400 font-mono">({cat.id})</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 leading-snug">
+                          {cat.description}
+                        </p>
+                        <div class="text-[10px] text-slate-400 truncate">
+                          <span class="text-slate-500 font-medium">Examples:</span> {cat.tags.join(' · ')}
+                        </div>
+                      </div>
+                      <Check class={`w-4 h-4 text-blue-600 cat-check shrink-0 mt-0.5 ${isSelected ? '' : 'hidden'}`} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              <!-- Empty Search Results State -->
+              <div id="cat-search-empty" class="hidden p-4 text-center text-xs text-slate-400">
+                No matching categories found
+              </div>
+            </div>
+
+            <!-- Contextual Description Card of Currently Selected Category -->
+            <div id="cat-preview-box" class="p-2.5 bg-slate-50/80 border border-slate-200/80 rounded-lg">
+              <div class="flex items-start gap-2">
+                <Info class="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                <div class="min-w-0 space-y-0.5">
+                  <div class="flex items-center gap-2">
+                    <span id="cat-preview-title" class="text-xs font-semibold text-slate-800">
+                      {initialCategory.label}
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-mono" id="cat-preview-id">
+                      category: {initialCategory.id}
+                    </span>
+                  </div>
+                  <p id="cat-preview-desc" class="text-[11px] text-slate-600 leading-relaxed">
+                    {initialCategory.description}
+                  </p>
+                  <p id="cat-preview-tags" class="text-[10px] text-slate-400">
+                    Best for: {initialCategory.tags.join(', ')}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Version -->
@@ -547,16 +677,23 @@ const data = {
 
           <!-- Direct ZIP Asset -->
           <div class="space-y-1.5">
-            <label for="ext-download-input" class="block text-xs font-semibold text-slate-700">
-              Direct Package (.zip / .crx) Release Asset (Optional)
-            </label>
+            <div class="flex items-center justify-between">
+              <label for="ext-download-input" class="block text-xs font-semibold text-slate-700">
+                Direct Package (.zip / .crx) Release Asset <span class="text-red-500">*</span>
+              </label>
+              <span id="download-asset-source-badge" class="text-[10px] font-mono text-blue-600 font-medium">
+                {data.downloadUrl ? 'Release Asset Detected' : 'Auto-fetched or Manual Entry'}
+              </span>
+            </div>
             <input
               id="ext-download-input"
               type="url"
+              required
               value={data.downloadUrl}
-              placeholder="https://github.com/your-username/repo/releases/latest/download/extension.zip"
+              placeholder="https://github.com/your-username/repo/releases/download/v1.0.0/extension.zip"
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono"
             />
+            <p id="err-ext-download" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
           <!-- Support Email -->
@@ -1712,6 +1849,70 @@ const data = {
 
   </form>
 
+  <!-- Store Category Guidelines Modal -->
+  <dialog id="category-guide-modal" class="modal">
+    <div class="modal-box max-w-3xl p-6 bg-white border border-slate-200 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-start justify-between pb-4 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-base font-bold text-slate-900">
+              Store Category Guidelines
+            </h3>
+            <span class="text-xs text-blue-600 font-mono font-medium">10 Categories</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">
+            Browse definitions, scope, and examples to select the most accurate home for your extension.
+          </p>
+        </div>
+        <form method="dialog">
+          <button class="btn btn-sm btn-ghost btn-circle text-slate-400 hover:text-slate-700">
+            <X class="w-4 h-4" />
+          </button>
+        </form>
+      </div>
+
+      <div class="mt-4 divide-y divide-slate-100">
+        {CATEGORIES.map((cat) => (
+          <div class="py-3.5 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div class="space-y-1 sm:max-w-lg">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-900">{cat.label}</span>
+                <span class="text-[10px] text-slate-400 font-mono">({cat.id})</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                {cat.description}
+              </p>
+              <p class="text-[11px] text-slate-500 italic">
+                {cat.subtitle}
+              </p>
+              <div class="text-[11px] text-slate-400">
+                <span class="text-slate-500 font-medium">Examples:</span> {cat.tags.join(' · ')}
+              </div>
+            </div>
+            <button
+              type="button"
+              class="select-cat-modal-btn px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200 rounded-lg shrink-0 self-start cursor-pointer transition-colors"
+              data-cat-id={cat.id}
+            >
+              Select this category
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div class="modal-action border-t border-slate-100 pt-4 mt-4">
+        <form method="dialog">
+          <button class="px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+            Close Guide
+          </button>
+        </form>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop bg-slate-900/30 backdrop-blur-xs">
+      <button>close</button>
+    </form>
+  </dialog>
+
 </div>
 
 <script>
@@ -1726,7 +1927,7 @@ const data = {
     // Tab 1 input elements
     const nameInput = document.getElementById('ext-name-input') as HTMLInputElement | null;
     const slugInput = document.getElementById('ext-slug-input') as HTMLInputElement | null;
-    const categoryInput = document.getElementById('ext-category-input') as HTMLSelectElement | null;
+    const categoryInput = document.getElementById('ext-category-input') as HTMLInputElement | null;
     const versionInput = document.getElementById('ext-version-input') as HTMLInputElement | null;
     const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
     const githubInput = document.getElementById('ext-github-input') as HTMLInputElement | null;
@@ -1742,6 +1943,8 @@ const data = {
     const errVersion = document.getElementById('err-ext-version');
     const errTagline = document.getElementById('err-ext-tagline');
     const errGithub = document.getElementById('err-ext-github');
+    const errDownload = document.getElementById('err-ext-download');
+    const downloadBadge = document.getElementById('download-asset-source-badge');
     const errEmail = document.getElementById('err-ext-support-email');
     const errWebsite = document.getElementById('err-ext-dev-website');
 
@@ -1843,6 +2046,18 @@ const data = {
       errMsg: string
     ): boolean {
       if (!input) return true;
+      if (input.id === 'ext-category-input') {
+        const catBtn = document.getElementById('cat-dropdown-btn');
+        if (catBtn) {
+          if (!isValid) {
+            catBtn.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+            catBtn.classList.remove('border-slate-200');
+          } else {
+            catBtn.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
+            catBtn.classList.add('border-slate-200');
+          }
+        }
+      }
       if (!isValid) {
         input.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
         input.classList.remove('border-slate-200', 'focus:border-blue-400');
@@ -1880,6 +2095,10 @@ const data = {
       const isGhUrl = ghVal.length >= 10 && ghVal.startsWith('http');
       const vGh = validateInput(githubInput, errGithub, isGhUrl, 'Valid GitHub repository URL is required (e.g. https://github.com/user/repo).');
       
+      const dlVal = (downloadInput?.value || '').trim();
+      const isDlUrl = dlVal.length >= 10 && (dlVal.startsWith('http://') || dlVal.startsWith('https://'));
+      const vDl = validateInput(downloadInput, errDownload, isDlUrl, 'Valid Direct Package (.zip / .crx) release asset download URL is required.');
+
       const emailVal = (emailInput?.value || '').trim();
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
       const vEmail = validateInput(emailInput, errEmail, isEmail, 'Valid support center email address is required.');
@@ -1888,7 +2107,7 @@ const data = {
       const isWeb = webVal.length >= 4 && (webVal.startsWith('http') || webVal.includes('.'));
       const vWeb = validateInput(websiteInput, errWebsite, isWeb, 'Valid developer website or GitHub profile URL is required.');
 
-      const allValid = vName && vSlug && vCat && vVer && vTagline && vGh && vEmail && vWeb;
+      const allValid = vName && vSlug && vCat && vVer && vTagline && vGh && vDl && vEmail && vWeb;
 
       if (!allValid) {
         if (tab1Status) {
@@ -1896,13 +2115,15 @@ const data = {
           tab1Status.className = 'text-xs text-amber-600 font-medium';
         }
         if (focusFirst) {
+          const catDropdownBtn = document.getElementById('cat-dropdown-btn') as HTMLElement | null;
           const fieldList = [
             { ok: vName, el: nameInput },
             { ok: vSlug, el: slugInput },
-            { ok: vCat, el: categoryInput },
+            { ok: vCat, el: catDropdownBtn || categoryInput },
             { ok: vVer, el: versionInput },
             { ok: vTagline, el: taglineInput },
             { ok: vGh, el: githubInput },
+            { ok: vDl, el: downloadInput },
             { ok: vEmail, el: emailInput },
             { ok: vWeb, el: websiteInput },
           ];
@@ -2398,9 +2619,23 @@ const data = {
     }
 
     // Live real-time re-validation on input & change
-    [nameInput, slugInput, categoryInput, versionInput, taglineInput, githubInput, emailInput, websiteInput].forEach(inp => {
+    [nameInput, slugInput, categoryInput, versionInput, taglineInput, githubInput, downloadInput, emailInput, websiteInput].forEach(inp => {
       inp?.addEventListener('input', () => validateTab1(false));
       inp?.addEventListener('change', () => validateTab1(false));
+    });
+
+    downloadInput?.addEventListener('input', () => {
+      if (downloadBadge) {
+        if (downloadInput.value.trim().length > 0) {
+          if (!downloadBadge.textContent?.includes('GitHub Release')) {
+            downloadBadge.textContent = 'Package Asset Specified';
+            downloadBadge.className = 'text-[10px] font-mono text-blue-600 font-medium';
+          }
+        } else {
+          downloadBadge.textContent = 'Manual entry required';
+          downloadBadge.className = 'text-[10px] font-mono text-amber-600 font-medium';
+        }
+      }
     });
 
     // Tab 4 Live real-time re-validation
@@ -2435,6 +2670,196 @@ const data = {
         }
       });
     }
+
+    // =========================================================================
+    // Primary Store Category Custom Dropdown Controller
+    // =========================================================================
+    const catContainer = document.getElementById('cat-dropdown-container');
+    const catBtn = document.getElementById('cat-dropdown-btn') as HTMLButtonElement | null;
+    const catMenu = document.getElementById('cat-dropdown-menu');
+    const catChevron = document.querySelector('.cat-chevron');
+    const catSelectedLabel = document.getElementById('cat-selected-label');
+    const catSelectedId = document.getElementById('cat-selected-id');
+    const catPreviewTitle = document.getElementById('cat-preview-title');
+    const catPreviewId = document.getElementById('cat-preview-id');
+    const catPreviewDesc = document.getElementById('cat-preview-desc');
+    const catPreviewTags = document.getElementById('cat-preview-tags');
+    const catOptions = document.querySelectorAll<HTMLElement>('.cat-option');
+    const catSearchInput = document.getElementById('cat-search-input') as HTMLInputElement | null;
+    const catSearchEmpty = document.getElementById('cat-search-empty');
+    const catGuideModal = document.getElementById('category-guide-modal') as HTMLDialogElement | null;
+    const openCatGuideBtn = document.getElementById('open-cat-guide-btn');
+    const selectCatModalBtns = document.querySelectorAll<HTMLButtonElement>('.select-cat-modal-btn');
+
+    function updateCategoryUI(catId: string, dispatchEvent = true) {
+      const targetOption = Array.from(catOptions).find(opt => opt.getAttribute('data-value') === catId);
+      if (!targetOption) return;
+      const label = targetOption.getAttribute('data-label') || '';
+      const desc = targetOption.getAttribute('data-desc') || '';
+      const tags = targetOption.getAttribute('data-tags') || '';
+
+      if (categoryInput && categoryInput.value !== catId) {
+        categoryInput.value = catId;
+        if (dispatchEvent) {
+          categoryInput.dispatchEvent(new Event('input', { bubbles: true }));
+          categoryInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+
+      if (catSelectedLabel) catSelectedLabel.textContent = label;
+      if (catSelectedId) catSelectedId.textContent = `(${catId})`;
+      if (catPreviewTitle) catPreviewTitle.textContent = label;
+      if (catPreviewId) catPreviewId.textContent = `category: ${catId}`;
+      if (catPreviewDesc) catPreviewDesc.textContent = desc;
+      if (catPreviewTags) catPreviewTags.textContent = `Best for: ${tags}`;
+
+      catOptions.forEach(opt => {
+        const isMatch = opt.getAttribute('data-value') === catId;
+        opt.classList.toggle('bg-slate-50/80', isMatch);
+        opt.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+        opt.querySelector('.cat-check')?.classList.toggle('hidden', !isMatch);
+      });
+    }
+
+    function closeCategoryMenu() {
+      if (!catMenu) return;
+      catMenu.classList.add('hidden');
+      if (catChevron) catChevron.classList.remove('rotate-180');
+      if (catBtn) catBtn.setAttribute('aria-expanded', 'false');
+      // Restore currently selected description on close
+      if (categoryInput && categoryInput.value) {
+        const curOpt = Array.from(catOptions).find(opt => opt.getAttribute('data-value') === categoryInput.value);
+        if (curOpt) {
+          if (catPreviewTitle) catPreviewTitle.textContent = curOpt.getAttribute('data-label') || '';
+          if (catPreviewId) catPreviewId.textContent = `category: ${categoryInput.value}`;
+          if (catPreviewDesc) catPreviewDesc.textContent = curOpt.getAttribute('data-desc') || '';
+          if (catPreviewTags) catPreviewTags.textContent = `Best for: ${curOpt.getAttribute('data-tags') || ''}`;
+        }
+      }
+    }
+
+    function filterCategoryOptions(query: string) {
+      const q = query.trim().toLowerCase();
+      let visibleCount = 0;
+      catOptions.forEach(opt => {
+        const val = (opt.getAttribute('data-value') || '').toLowerCase();
+        const label = (opt.getAttribute('data-label') || '').toLowerCase();
+        const desc = (opt.getAttribute('data-desc') || '').toLowerCase();
+        const tags = (opt.getAttribute('data-tags') || '').toLowerCase();
+
+        const matches = !q || val.includes(q) || label.includes(q) || desc.includes(q) || tags.includes(q);
+        opt.classList.toggle('hidden', !matches);
+        if (matches) visibleCount++;
+      });
+      if (catSearchEmpty) {
+        catSearchEmpty.classList.toggle('hidden', visibleCount > 0);
+      }
+    }
+
+    if (catBtn && catMenu) {
+      catBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = catMenu.classList.contains('hidden');
+        catMenu.classList.toggle('hidden');
+        const isOpen = !isHidden;
+        catBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (catChevron) catChevron.classList.toggle('rotate-180', isOpen);
+
+        if (isOpen && catSearchInput) {
+          catSearchInput.value = '';
+          filterCategoryOptions('');
+          setTimeout(() => catSearchInput.focus(), 50);
+        }
+      });
+
+      if (catSearchInput) {
+        catSearchInput.addEventListener('input', (e) => {
+          e.stopPropagation();
+          filterCategoryOptions(catSearchInput.value);
+        });
+        catSearchInput.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+        catSearchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeCategoryMenu();
+            catBtn.focus();
+          }
+        });
+      }
+
+      catOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const val = option.getAttribute('data-value') || '';
+          updateCategoryUI(val, true);
+          closeCategoryMenu();
+          catBtn.focus();
+        });
+
+        // Hover preview: preview description in the info card while exploring options
+        option.addEventListener('mouseenter', () => {
+          const catId = option.getAttribute('data-value') || '';
+          const label = option.getAttribute('data-label') || '';
+          const desc = option.getAttribute('data-desc') || '';
+          const tags = option.getAttribute('data-tags') || '';
+          if (catPreviewTitle) catPreviewTitle.textContent = label;
+          if (catPreviewId) catPreviewId.textContent = `category: ${catId}`;
+          if (catPreviewDesc) catPreviewDesc.textContent = desc;
+          if (catPreviewTags) catPreviewTags.textContent = `Best for: ${tags}`;
+        });
+      });
+
+      catMenu.addEventListener('mouseleave', () => {
+        // Restore currently selected category
+        if (categoryInput && categoryInput.value) {
+          const curOpt = Array.from(catOptions).find(opt => opt.getAttribute('data-value') === categoryInput.value);
+          if (curOpt) {
+            if (catPreviewTitle) catPreviewTitle.textContent = curOpt.getAttribute('data-label') || '';
+            if (catPreviewId) catPreviewId.textContent = `category: ${categoryInput.value}`;
+            if (catPreviewDesc) catPreviewDesc.textContent = curOpt.getAttribute('data-desc') || '';
+            if (catPreviewTags) catPreviewTags.textContent = `Best for: ${curOpt.getAttribute('data-tags') || ''}`;
+          }
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (catContainer && !catContainer.contains(e.target as Node)) {
+          closeCategoryMenu();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !catMenu.classList.contains('hidden')) {
+          closeCategoryMenu();
+          catBtn.focus();
+        }
+      });
+    }
+
+    // Category Guidelines Modal trigger
+    if (openCatGuideBtn && catGuideModal) {
+      openCatGuideBtn.addEventListener('click', () => {
+        catGuideModal.showModal();
+      });
+    }
+
+    selectCatModalBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const catId = btn.getAttribute('data-cat-id') || '';
+        if (catId) {
+          updateCategoryUI(catId, true);
+          catGuideModal?.close();
+        }
+      });
+    });
+
+    // Sync UI when categoryInput changes programmatically
+    categoryInput?.addEventListener('change', () => {
+      if (categoryInput.value) {
+        updateCategoryUI(categoryInput.value, false);
+      }
+    });
 
     // Save Basic & Source to Cloudflare D1
     async function saveBasicToDb(silent = false): Promise<boolean> {
@@ -3397,7 +3822,7 @@ const data = {
         // 1. Basic & Source (Tab 1)
         const nameInput = document.getElementById('ext-name-input') as HTMLInputElement | null;
         const slugInput = document.getElementById('ext-slug-input') as HTMLInputElement | null;
-        const categoryInput = document.getElementById('ext-category-input') as HTMLSelectElement | null;
+        const categoryInput = document.getElementById('ext-category-input') as HTMLInputElement | null;
         const versionInput = document.getElementById('ext-version-input') as HTMLInputElement | null;
         const taglineInput = document.getElementById('ext-tagline-input') as HTMLInputElement | null;
         const githubInput = document.getElementById('ext-github-input') as HTMLInputElement | null;
@@ -3410,7 +3835,7 @@ const data = {
           nameInput.value = d.name;
           nameInput.dispatchEvent(new Event('input'));
         }
-        if (slugInput && d.slug) {
+        if (!isEditMode && slugInput && d.slug) {
           slugInput.value = d.slug;
           slugInput.dispatchEvent(new Event('input'));
         }
@@ -3430,9 +3855,23 @@ const data = {
           githubInput.value = d.githubUrl;
           githubInput.dispatchEvent(new Event('input'));
         }
-        if (downloadInput && d.downloadUrl) {
-          downloadInput.value = d.downloadUrl;
-          downloadInput.dispatchEvent(new Event('input'));
+        if (downloadInput) {
+          if (d.downloadUrl) {
+            downloadInput.value = d.downloadUrl;
+            downloadInput.dispatchEvent(new Event('input'));
+            const dlBadge = document.getElementById('download-asset-source-badge');
+            if (dlBadge) {
+              dlBadge.textContent = 'Auto-detected from GitHub Release';
+              dlBadge.className = 'text-[10px] font-mono text-emerald-600 font-medium';
+            }
+          } else {
+            downloadInput.dispatchEvent(new Event('input'));
+            const dlBadge = document.getElementById('download-asset-source-badge');
+            if (dlBadge) {
+              dlBadge.textContent = 'No release asset found — Enter manually';
+              dlBadge.className = 'text-[10px] font-mono text-amber-600 font-medium';
+            }
+          }
         }
         if (emailInput && d.supportEmail && (!emailInput.value || emailInput.value.includes('@user.'))) {
           emailInput.value = d.supportEmail;

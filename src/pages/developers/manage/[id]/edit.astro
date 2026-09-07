@@ -112,7 +112,7 @@ const ext = {
   githubUrl: dbExtension.source_repo_url || (user?.username ? `https://github.com/${user.username}/${id}` : ''),
   downloadUrl: dbExtension.zip_download_url || dbExtension.crx_download_url || '',
   supportEmail: dbExtension.support_email || user?.email || '',
-  developerWebsite: developer?.website || (user?.username ? `https://github.com/${user.username}` : ''),
+  developerWebsite: dbExtension.developer_website || developer?.website || (user?.username ? `https://github.com/${user.username}` : ''),
   docsUrl: dbExtension.docs_url || '',
   monetagUrl: dbExtension.monetag_direct_link || developer?.default_monetag_url || "https://monetag.com/direct/54829103",
   frequency: dbExtension.ad_frequency || developer?.default_frequency || "24h",
