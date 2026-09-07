@@ -28,7 +28,8 @@ export interface DeveloperSupportInfo {
   email: string;
   website: string;
   github?: string;
-  supportUrl: string;
+  supportUrl?: string;
+  docsUrl?: string;
   privacyPolicy: string;
 }
 

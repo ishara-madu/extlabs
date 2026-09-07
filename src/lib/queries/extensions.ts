@@ -188,7 +188,10 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
 
   let screenshots: string[] = [];
   try {
-    screenshots = JSON.parse(dbExt.screenshots || '[]');
+    const rawScreenshots = typeof dbExt.screenshots === 'string' ? JSON.parse(dbExt.screenshots || '[]') : dbExt.screenshots;
+    if (Array.isArray(rawScreenshots)) {
+      screenshots = rawScreenshots.filter((s: any) => typeof s === 'string' && s.trim().length > 0);
+    }
   } catch {}
 
   let youtubeVideoId: string | undefined = undefined;
@@ -235,6 +238,7 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper): Extens
       website: dbExt.developer_website || '',
       github: dbExt.github_url || undefined,
       supportUrl: dbExt.docs_url || undefined,
+      docsUrl: dbExt.docs_url || undefined,
       privacyPolicy: dbExt.privacy_policy_url || undefined,
     } : undefined,
     downloadUrl: dbExt.crx_download_url || dbExt.zip_download_url || dbExt.download_url || '#',

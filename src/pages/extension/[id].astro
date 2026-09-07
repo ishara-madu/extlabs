@@ -6,7 +6,7 @@ import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory } from "../../lib/db";
-import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ArrowRight, HelpCircle, CheckCircle2, Mail } from '@lucide/astro';
+import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon } from '@lucide/astro';
 
 const requestedId = Astro.params.id || '';
 const db = getDb();
@@ -20,6 +20,7 @@ const ext = rawExtension;
 const categoryExtensions = await getStoreExtensionsByCategory(db, ext.category);
 const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id !== rawExtension.id).slice(0, 3);
 
+const screenshotsList: string[] = Array.isArray(ext.screenshots) && ext.screenshots.length > 0 ? ext.screenshots : [];
 const hasReviews = Boolean(ext.reviews && ext.reviews.length > 0);
 const hasFaqs = Boolean(ext.faqs && ext.faqs.length > 0);
 
@@ -243,39 +244,119 @@ const jsonLdSchema = {
         </div>
       </section>
 
-      <!-- 2. Media Showcase: Direct Screenshot & Video Player -->
+      <!-- 2. Media Showcase: Direct Store Showcase Screenshots & Video Player -->
       <section class="space-y-3">
-        {ext.youtubeVideoId && (
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <button
-                type="button"
-                id="tab-screenshot-btn"
-                class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-slate-900 text-white cursor-pointer transition-colors"
-              >
-                Screenshot
-              </button>
-              <button
-                type="button"
-                id="tab-video-btn"
-                class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
-              >
-                Video Demo
-              </button>
-            </div>
-
-            <span class="hidden sm:inline-block text-[11px] text-slate-400 font-mono">16:9 Preview</span>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            {ext.youtubeVideoId ? (
+              <>
+                <button
+                  type="button"
+                  id="tab-screenshot-btn"
+                  class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-slate-900 text-white cursor-pointer transition-colors"
+                >
+                  Screenshots {screenshotsList.length > 0 ? `(${screenshotsList.length})` : ''}
+                </button>
+                <button
+                  type="button"
+                  id="tab-video-btn"
+                  class="media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  Video Demo
+                </button>
+              </>
+            ) : (
+              <span class="text-xs font-semibold text-slate-900">
+                Store Showcase Screenshots
+              </span>
+            )}
           </div>
-        )}
 
-        <!-- Media View 1: Screenshot Graphic Banner -->
-        <div id="media-screenshot-view" class="w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
-          <Fragment set:html={ext.bannerSvg} />
+          <div class="flex items-center gap-2">
+            {screenshotsList.length > 1 && (
+              <span id="screenshot-counter" class="text-xs text-slate-500 font-mono">
+                1 / {screenshotsList.length}
+              </span>
+            )}
+            <span id="media-preview-badge" class="hidden sm:inline-block text-[11px] text-slate-400 font-mono">
+              Showcase Preview
+            </span>
+          </div>
+        </div>
+
+        <!-- Media View 1: Store Showcase Screenshots Gallery (Never Promotional Shelf Banner) -->
+        <div id="media-screenshot-view" class="space-y-3">
+          {screenshotsList.length > 0 ? (
+            <>
+              <!-- Main Screenshot Frame -->
+              <div class="w-full aspect-[16/10] sm:aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative group flex items-center justify-center">
+                <img
+                  id="main-screenshot-img"
+                  src={screenshotsList[0]}
+                  alt={`${ext.name} Store Screenshot 1`}
+                  class="w-full h-full object-contain select-none"
+                  loading="eager"
+                />
+
+                {screenshotsList.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      id="prev-screenshot-btn"
+                      class="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-slate-900/75 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-sm focus:outline-none"
+                      aria-label="Previous screenshot"
+                    >
+                      <ChevronLeft class="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      id="next-screenshot-btn"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-slate-900/75 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-sm focus:outline-none"
+                      aria-label="Next screenshot"
+                    >
+                      <ChevronRight class="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <!-- Thumbnails Selector Row -->
+              {screenshotsList.length > 1 && (
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5">
+                  {screenshotsList.map((shot, idx) => (
+                    <button
+                      type="button"
+                      class={`screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-[16/10] rounded-lg overflow-hidden border cursor-pointer transition-all ${
+                        idx === 0
+                          ? 'border-slate-900 ring-1 ring-slate-900 opacity-100'
+                          : 'border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-400'
+                      }`}
+                      data-index={idx}
+                      data-src={shot}
+                      aria-label={`View screenshot ${idx + 1}`}
+                    >
+                      <img
+                        src={shot}
+                        alt={`Thumbnail ${idx + 1}`}
+                        class="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div class="w-full aspect-[16/10] sm:aspect-[16/9] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex flex-col items-center justify-center text-slate-400 p-6 text-center space-y-2">
+              <ImageIcon class="w-8 h-8 text-slate-300" />
+              <span class="text-xs font-medium text-slate-500">No store showcase screenshots available</span>
+            </div>
+          )}
         </div>
 
         <!-- Media View 2: YouTube Video Player Embed -->
         {ext.youtubeVideoId && (
-          <div id="media-video-view" class="hidden w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative">
+          <div id="media-video-view" class="hidden w-full aspect-[16/10] sm:aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative">
             <iframe
               id="youtube-iframe"
               class="w-full h-full"
@@ -456,7 +537,7 @@ const jsonLdSchema = {
             )}
 
             <!-- Developer Links -->
-            {ext.developerSupport && (ext.developerSupport.website || ext.developerSupport.email || ext.developerSupport.supportUrl || ext.developerSupport.privacyPolicy) && (
+            {ext.developerSupport && (ext.developerSupport.website || ext.developerSupport.email || ext.developerSupport.docsUrl || ext.developerSupport.supportUrl || ext.developerSupport.privacyPolicy) && (
               <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
                 <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Developer Links</span>
                 
@@ -483,15 +564,15 @@ const jsonLdSchema = {
                     </a>
                   )}
 
-                  {ext.developerSupport.supportUrl && (
+                  {(ext.developerSupport.docsUrl || ext.developerSupport.supportUrl) && (
                     <a
-                      href={ext.developerSupport.supportUrl}
+                      href={ext.developerSupport.docsUrl || ext.developerSupport.supportUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
                     >
-                      <span>Support Center</span>
-                      <ArrowRight class="w-3.5 h-3.5 text-slate-400" />
+                      <span>Documentation</span>
+                      <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
                     </a>
                   )}
 
@@ -931,6 +1012,8 @@ const jsonLdSchema = {
         const tabVideo = document.getElementById('tab-video-btn');
         const viewScreenshot = document.getElementById('media-screenshot-view');
         const viewVideo = document.getElementById('media-video-view');
+        const counter = document.getElementById('screenshot-counter');
+        const previewBadge = document.getElementById('media-preview-badge');
 
         if (tabScreenshot && tabVideo && viewScreenshot && viewVideo) {
           tabScreenshot.addEventListener('click', () => {
@@ -938,6 +1021,8 @@ const jsonLdSchema = {
             tabVideo.className = 'media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors';
             viewScreenshot.classList.remove('hidden');
             viewVideo.classList.add('hidden');
+            if (counter) counter.classList.remove('hidden');
+            if (previewBadge) previewBadge.textContent = 'Showcase Preview';
           });
 
           tabVideo.addEventListener('click', () => {
@@ -945,7 +1030,56 @@ const jsonLdSchema = {
             tabScreenshot.className = 'media-tab-btn px-3 py-1 rounded text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors';
             viewVideo.classList.remove('hidden');
             viewScreenshot.classList.add('hidden');
+            if (counter) counter.classList.add('hidden');
+            if (previewBadge) previewBadge.textContent = 'YouTube Video';
           });
+        }
+
+        // Store Showcase Screenshots Gallery Switcher
+        const mainImg = document.getElementById('main-screenshot-img') as HTMLImageElement | null;
+        const prevBtn = document.getElementById('prev-screenshot-btn');
+        const nextBtn = document.getElementById('next-screenshot-btn');
+        const thumbBtns = document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb-btn');
+
+        if (mainImg && thumbBtns.length > 1) {
+          let currentIndex = 0;
+          const total = thumbBtns.length;
+
+          function setScreenshot(index: number) {
+            currentIndex = (index + total) % total;
+            const targetBtn = thumbBtns[currentIndex];
+            if (!targetBtn) return;
+            const newSrc = targetBtn.getAttribute('data-src');
+            if (newSrc && mainImg) {
+              mainImg.src = newSrc;
+            }
+
+            // Update active styles on thumbnails
+            thumbBtns.forEach((btn, i) => {
+              if (i === currentIndex) {
+                btn.className = 'screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-[16/10] rounded-lg overflow-hidden border cursor-pointer transition-all border-slate-900 ring-1 ring-slate-900 opacity-100';
+              } else {
+                btn.className = 'screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-[16/10] rounded-lg overflow-hidden border cursor-pointer transition-all border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-400';
+              }
+            });
+
+            // Update counter
+            if (counter) {
+              counter.textContent = `${currentIndex + 1} / ${total}`;
+            }
+          }
+
+          thumbBtns.forEach((btn, idx) => {
+            btn.addEventListener('click', () => setScreenshot(idx));
+          });
+
+          if (prevBtn) {
+            prevBtn.addEventListener('click', () => setScreenshot(currentIndex - 1));
+          }
+
+          if (nextBtn) {
+            nextBtn.addEventListener('click', () => setScreenshot(currentIndex + 1));
+          }
         }
 
         // Toast Helper

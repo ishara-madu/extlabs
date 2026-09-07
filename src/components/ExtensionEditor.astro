@@ -3327,6 +3327,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         slug: currentSlug,
         monetagUrl: (monetagInput?.value || '').trim(),
         frequency: freqInput?.value || '24h',
+        faqs: faqsList,
         manifestVersion: manifestInput?.value || 'v3',
         license: licenseInput?.value || 'MIT',
         supportedBrowsers,
