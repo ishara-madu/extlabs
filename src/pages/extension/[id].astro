@@ -6,8 +6,9 @@ import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import BrowserIcon from "../../components/BrowserIcon.astro";
-import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory } from "../../lib/db";
-import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon } from '@lucide/astro';
+import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension } from "../../lib/db";
+import { getReviewerUser } from "../../lib/auth";
+import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2 } from '@lucide/astro';
 
 const requestedId = Astro.params.id || '';
 const db = getDb();
@@ -18,14 +19,20 @@ if (!rawExtension) {
 }
 
 const ext = rawExtension;
+const currentUser = db ? await getReviewerUser(db, Astro.request) : null;
+const userReview = currentUser && db ? await getUserReviewForExtension(db, ext.id, currentUser.id) : null;
+
 const categoryExtensions = await getStoreExtensionsByCategory(db, ext.category);
 const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id !== rawExtension.id).slice(0, 3);
 
 const screenshotsList: string[] = Array.isArray(ext.screenshots) && ext.screenshots.length > 0 ? ext.screenshots : [];
 const hasRating = (typeof ext.rating === 'number' && ext.rating > 0) || ext.reviewCount > 0;
-const hasReviews = Boolean(ext.reviews && ext.reviews.length > 0);
+const otherReviews = ext.reviews
+  ? ext.reviews.filter(r => !currentUser || (r.userId !== currentUser.id && r.id !== userReview?.id))
+  : [];
+const hasReviews = Boolean((ext.reviews && ext.reviews.length > 0) || userReview);
 const hasFaqs = Boolean(ext.faqs && ext.faqs.length > 0);
-const showRatingsAndReviews = hasRating || hasReviews;
+const showRatingsAndReviews = true;
 
 const browserNameMap: Record<string, { id: string; name: string }> = {
   chrome: { id: 'chrome', name: 'Google Chrome' },
@@ -697,7 +704,7 @@ const jsonLdSchema = {
               </div>
 
               <!-- Score & Distribution -->
-              {ext.reviewCount > 0 && (
+              {ext.reviewCount > 0 ? (
                 <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                   <div class="sm:col-span-4 text-center sm:text-left space-y-0.5">
                     <span class="text-3xl font-bold text-slate-900 font-mono">
@@ -735,10 +742,76 @@ const jsonLdSchema = {
                     </div>
                   )}
                 </div>
+              ) : (
+                <div class="py-2 text-xs text-slate-500">
+                  <p>No ratings yet. Be the first to share your experience with this extension.</p>
+                </div>
+              )}
+
+              <!-- Rate & Review Action Row -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-800 block">
+                    {userReview ? 'You rated this extension' : 'Have you used this extension?'}
+                  </span>
+                  <p class="text-[11px] text-slate-500">
+                    {userReview 
+                      ? `You gave it ${userReview.rating} star${userReview.rating > 1 ? 's' : ''}. You can update or delete your review anytime.`
+                      : 'Share your genuine experience to help developers improve and users decide.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  id="open-review-action-btn"
+                  data-logged-in={currentUser ? 'true' : 'false'}
+                  class="shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors cursor-pointer"
+                >
+                  <PenLine class="w-3.5 h-3.5" />
+                  <span>{userReview ? 'Edit Your Review' : 'Write a Review'}</span>
+                </button>
+              </div>
+
+              <!-- User's Own Existing Review (if submitted) -->
+              {userReview && (
+                <div class="p-3.5 bg-slate-50/80 border border-slate-200 rounded-lg space-y-1.5">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      {userReview.avatarUrl ? (
+                        <img src={userReview.avatarUrl} alt="" class="w-4 h-4 rounded-full object-cover" />
+                      ) : null}
+                      <span class="font-semibold text-slate-900">{userReview.author}</span>
+                      <span class="text-[10px] text-emerald-600 font-medium inline-flex items-center gap-0.5">
+                        <BadgeCheck class="w-3 h-3 text-emerald-500" />
+                        <span>Your Verified Review</span>
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] text-slate-400">{userReview.date}</span>
+                      <button
+                        type="button"
+                        id="edit-own-review-link"
+                        class="text-[11px] text-slate-600 hover:text-slate-900 font-medium cursor-pointer underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-0.5 text-amber-500">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star class={`w-3 h-3 ${s <= userReview.rating ? 'text-amber-500 fill-amber-500' : 'text-slate-200 fill-slate-200'}`} />
+                    ))}
+                  </div>
+                  {userReview.title && (
+                    <h4 class="text-xs font-semibold text-slate-800">{userReview.title}</h4>
+                  )}
+                  <p class="text-xs text-slate-600 leading-relaxed">
+                    "{userReview.comment}"
+                  </p>
+                </div>
               )}
 
               <!-- Ratings Filter Buttons (if multiple reviews) -->
-              {hasReviews && ext.reviews && ext.reviews.length > 2 && (
+              {otherReviews.length > 2 && (
                 <div class="flex items-center gap-1.5 flex-wrap pt-1">
                   <button
                     type="button"
@@ -775,15 +848,18 @@ const jsonLdSchema = {
               )}
 
               <!-- Reviews List -->
-              {hasReviews && ext.reviews && ext.reviews.length > 0 ? (
+              {otherReviews.length > 0 ? (
                 <div id="reviews-list-container" class="divide-y divide-slate-100">
-                  {ext.reviews.map((rev, index) => (
+                  {otherReviews.map((rev, index) => (
                     <div
                       class={`review-entry py-3 space-y-1 ${index >= 3 ? 'hidden extra-review' : ''}`}
                       data-rating={rev.rating}
                     >
                       <div class="flex items-center justify-between text-xs">
                         <div class="flex items-center gap-1.5">
+                          {rev.avatarUrl ? (
+                            <img src={rev.avatarUrl} alt="" class="w-4 h-4 rounded-full object-cover" />
+                          ) : null}
                           <span class="font-medium text-slate-900">{rev.author}</span>
                           {rev.verified && (
                             <span class="text-[10px] text-emerald-600 font-medium inline-flex items-center gap-0.5">
@@ -801,29 +877,33 @@ const jsonLdSchema = {
                         ))}
                       </div>
 
+                      {rev.title && (
+                        <h4 class="text-xs font-semibold text-slate-800">{rev.title}</h4>
+                      )}
+
                       <p class="text-xs text-slate-600 leading-relaxed">
                         "{rev.comment}"
                       </p>
                     </div>
                   ))}
                 </div>
-              ) : (
+              ) : !userReview ? (
                 <div class="py-4 text-center text-xs text-slate-400">
                   <p>No written user reviews yet for this extension.</p>
                 </div>
-              )}
+              ) : null}
 
               <!-- Show More / Show Fewer Reviews Toggle -->
-              {hasReviews && ext.reviews && ext.reviews.length > 3 && (
+              {otherReviews.length > 3 && (
                 <div class="pt-1">
                   <button
                     type="button"
                     id="toggle-more-reviews-btn"
                     data-expanded="false"
-                    data-extra-count={ext.reviews.length - 3}
+                    data-extra-count={otherReviews.length - 3}
                     class="w-full py-2 text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer transition-colors"
                   >
-                    Show more reviews ({ext.reviews.length - 3})
+                    Show more reviews ({otherReviews.length - 3})
                   </button>
                 </div>
               )}
@@ -888,6 +968,183 @@ const jsonLdSchema = {
       )}
 
     </main>
+
+    <!-- Review Submission / Edit Modal -->
+    <dialog id="review-modal" class="modal">
+      <div class="modal-box max-w-lg p-5 bg-white rounded-xl border border-slate-200 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">{userReview ? 'Edit Your Review' : 'Rate & Review'}</h3>
+            <p class="text-xs text-slate-500">{ext.name}</p>
+          </div>
+          <button
+            type="button"
+            id="close-review-modal-btn"
+            class="p-1 text-slate-400 hover:text-slate-700 rounded cursor-pointer"
+            aria-label="Close dialog"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <form id="extension-review-form" class="space-y-4">
+          <input type="hidden" name="extensionId" value={ext.dbId || ext.id} />
+          
+          <!-- User Profile Info -->
+          {currentUser && (
+            <div class="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+              <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-medium text-slate-600 text-[10px] shrink-0">
+                {currentUser.avatar_url ? (
+                  <img src={currentUser.avatar_url} alt="" class="w-full h-full object-cover" />
+                ) : (
+                  <span>{currentUser.name?.[0]?.toUpperCase() || currentUser.username?.[0]?.toUpperCase() || 'U'}</span>
+                )}
+              </div>
+              <span class="truncate">Reviewing as <strong class="text-slate-800">{currentUser.name || currentUser.username}</strong></span>
+            </div>
+          )}
+
+          <!-- Interactive Star Rating Selector -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-slate-800">Your Rating <span class="text-rose-500">*</span></label>
+            <div class="flex items-center gap-3">
+              <div id="star-rating-selector" class="flex items-center gap-1" data-rating={userReview?.rating || 5}>
+                {[1, 2, 3, 4, 5].map((starVal) => (
+                  <button
+                    type="button"
+                    data-val={starVal}
+                    class="star-choice-btn p-1 text-amber-500 hover:scale-110 transition-transform cursor-pointer"
+                    aria-label={`${starVal} star`}
+                  >
+                    <Star class="w-6 h-6 fill-current pointer-events-none" />
+                  </button>
+                ))}
+              </div>
+              <span id="star-rating-label" class="text-xs font-semibold text-slate-700">
+                {userReview ? `${userReview.rating} - ${['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][userReview.rating - 1]}` : '5 - Excellent'}
+              </span>
+            </div>
+          </div>
+
+          <!-- Review Title (Optional) -->
+          <div class="space-y-1">
+            <label for="review-title-input" class="block text-xs font-medium text-slate-700">
+              Review Title <span class="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              id="review-title-input"
+              name="title"
+              maxlength="120"
+              value={userReview?.title || ''}
+              placeholder="e.g., Clean, fast, and indispensable for my workflow"
+              class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <!-- Review Comment (Required) -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label for="review-comment-input" class="block text-xs font-medium text-slate-700">
+                Your Feedback <span class="text-rose-500">*</span>
+              </label>
+              <span id="review-char-counter" class="text-[10px] text-slate-400 font-mono">0 / 2000</span>
+            </div>
+            <textarea
+              id="review-comment-input"
+              name="comment"
+              rows="4"
+              required
+              maxlength="2000"
+              placeholder="What worked well? What could be improved? Helpful feedback benefits both developers and users."
+              class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 leading-relaxed"
+            >{userReview?.comment || ''}</textarea>
+          </div>
+
+          <!-- Error Alert Banner (Hidden by default) -->
+          <div id="review-error-banner" class="hidden text-xs text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-lg"></div>
+
+          <!-- Footer Buttons -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div>
+              {userReview && (
+                <button
+                  type="button"
+                  id="delete-review-btn"
+                  class="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
+              )}
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                id="cancel-review-modal-btn"
+                class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800 cursor-pointer font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                id="submit-review-form-btn"
+                class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg cursor-pointer transition-colors"
+              >
+                {userReview ? 'Update Review' : 'Submit Review'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Sign In to Review Modal (Strictly Google Only) -->
+    <dialog id="review-auth-modal" class="modal">
+      <div class="modal-box max-w-sm p-6 bg-white rounded-xl border border-slate-200 space-y-4 text-center">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h3 class="text-sm font-bold text-slate-900 text-left">Sign In with Google</h3>
+          <button
+            type="button"
+            id="close-auth-modal-btn"
+            class="p-1 text-slate-400 hover:text-slate-700 rounded cursor-pointer"
+            aria-label="Close dialog"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-600 text-left leading-relaxed">
+          Sign in with your Google account to submit a verified rating for <strong>{ext.name}</strong>. Fast 1-click verification, no passwords required.
+        </p>
+
+        <div class="pt-1">
+          <!-- Google Sign In Button -->
+          <a
+            href={`/api/auth/google?redirect=${encodeURIComponent(Astro.url.pathname + '#reviews-section')}`}
+            class="flex items-center justify-center gap-3 w-full py-2.5 px-4 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-800 text-xs font-medium transition-colors shadow-2xs"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </a>
+        </div>
+
+        <p class="text-[11px] text-slate-400 text-center pt-1">
+          Google authentication verifies your review and prevents bot spam.
+        </p>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
 
     <!-- Report Modal Dialog -->
     <dialog id="report-modal" class="modal">
@@ -1271,19 +1528,215 @@ const jsonLdSchema = {
           });
         }
 
-        // Write Review Toggle & Submission
-        const openReviewBtn = document.getElementById('open-review-form-btn');
-        const reviewForm = document.getElementById('write-review-form');
+        // Ratings & Reviews Interactive Submission & Modal Handlers
+        const openReviewActionBtn = document.getElementById('open-review-action-btn');
+        const editOwnReviewLink = document.getElementById('edit-own-review-link');
+        const reviewModal = document.getElementById('review-modal') as HTMLDialogElement | null;
+        const reviewAuthModal = document.getElementById('review-auth-modal') as HTMLDialogElement | null;
+        const closeReviewModalBtn = document.getElementById('close-review-modal-btn');
+        const cancelReviewModalBtn = document.getElementById('cancel-review-modal-btn');
+        const closeAuthModalBtn = document.getElementById('close-auth-modal-btn');
 
-        if (openReviewBtn && reviewForm) {
-          openReviewBtn.addEventListener('click', () => {
-            reviewForm.classList.toggle('hidden');
+        function handleOpenReview() {
+          const isLoggedIn = openReviewActionBtn?.getAttribute('data-logged-in') === 'true';
+          if (!isLoggedIn) {
+            if (reviewAuthModal && typeof reviewAuthModal.showModal === 'function') {
+              reviewAuthModal.showModal();
+            }
+          } else {
+            if (reviewModal && typeof reviewModal.showModal === 'function') {
+              reviewModal.showModal();
+            }
+          }
+        }
+
+        if (openReviewActionBtn) {
+          openReviewActionBtn.addEventListener('click', handleOpenReview);
+        }
+        if (editOwnReviewLink) {
+          editOwnReviewLink.addEventListener('click', () => {
+            if (reviewModal && typeof reviewModal.showModal === 'function') {
+              reviewModal.showModal();
+            }
+          });
+        }
+
+        if (closeReviewModalBtn && reviewModal) {
+          closeReviewModalBtn.addEventListener('click', () => reviewModal.close());
+        }
+        if (cancelReviewModalBtn && reviewModal) {
+          cancelReviewModalBtn.addEventListener('click', () => reviewModal.close());
+        }
+        if (closeAuthModalBtn && reviewAuthModal) {
+          closeAuthModalBtn.addEventListener('click', () => reviewAuthModal.close());
+        }
+
+        // Interactive Star Rating Selector Logic
+        const starChoiceBtns = document.querySelectorAll<HTMLButtonElement>('.star-choice-btn');
+        const starRatingSelector = document.getElementById('star-rating-selector');
+        const starRatingLabel = document.getElementById('star-rating-label');
+        const ratingLabels: Record<number, string> = {
+          1: '1 - Poor',
+          2: '2 - Fair',
+          3: '3 - Good',
+          4: '4 - Very Good',
+          5: '5 - Excellent',
+        };
+
+        let selectedRating = Number(starRatingSelector?.getAttribute('data-rating') || 5);
+
+        function updateStarVisuals(ratingValue: number) {
+          starChoiceBtns.forEach((btn) => {
+            const val = Number(btn.getAttribute('data-val') || 0);
+            if (val <= ratingValue) {
+              btn.className = 'star-choice-btn p-1 text-amber-500 hover:scale-110 transition-transform cursor-pointer';
+            } else {
+              btn.className = 'star-choice-btn p-1 text-slate-200 hover:scale-110 transition-transform cursor-pointer';
+            }
+          });
+          if (starRatingLabel) {
+            starRatingLabel.textContent = ratingLabels[ratingValue] || `${ratingValue} Stars`;
+          }
+        }
+
+        // Initialize star visuals
+        updateStarVisuals(selectedRating);
+
+        starChoiceBtns.forEach((btn) => {
+          btn.addEventListener('mouseenter', () => {
+            const val = Number(btn.getAttribute('data-val') || 5);
+            updateStarVisuals(val);
           });
 
-          reviewForm.addEventListener('submit', (e) => {
+          btn.addEventListener('mouseleave', () => {
+            updateStarVisuals(selectedRating);
+          });
+
+          btn.addEventListener('click', (e) => {
             e.preventDefault();
-            reviewForm.classList.add('hidden');
-            showToast('Review submitted.');
+            const val = Number(btn.getAttribute('data-val') || 5);
+            selectedRating = val;
+            if (starRatingSelector) {
+              starRatingSelector.setAttribute('data-rating', String(selectedRating));
+            }
+            updateStarVisuals(selectedRating);
+          });
+        });
+
+        // Character counter for comment input
+        const commentInput = document.getElementById('review-comment-input') as HTMLTextAreaElement | null;
+        const charCounter = document.getElementById('review-char-counter');
+        if (commentInput && charCounter) {
+          charCounter.textContent = `${commentInput.value.length} / 2000`;
+          commentInput.addEventListener('input', () => {
+            charCounter.textContent = `${commentInput.value.length} / 2000`;
+          });
+        }
+
+        // Review Form Submit Handler
+        const extensionReviewForm = document.getElementById('extension-review-form') as HTMLFormElement | null;
+        const submitReviewFormBtn = document.getElementById('submit-review-form-btn') as HTMLButtonElement | null;
+        const reviewErrorBanner = document.getElementById('review-error-banner');
+
+        if (extensionReviewForm && submitReviewFormBtn) {
+          extensionReviewForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (reviewErrorBanner) {
+              reviewErrorBanner.classList.add('hidden');
+              reviewErrorBanner.textContent = '';
+            }
+
+            const formData = new FormData(extensionReviewForm);
+            const extensionId = formData.get('extensionId') as string;
+            const title = (formData.get('title') as string) || '';
+            const comment = (formData.get('comment') as string) || '';
+
+            if (!comment.trim() || comment.trim().length < 3) {
+              if (reviewErrorBanner) {
+                reviewErrorBanner.textContent = 'Please write at least 3 characters in your feedback.';
+                reviewErrorBanner.classList.remove('hidden');
+              }
+              return;
+            }
+
+            submitReviewFormBtn.disabled = true;
+            const originalBtnText = submitReviewFormBtn.textContent;
+            submitReviewFormBtn.textContent = 'Submitting...';
+
+            try {
+              const res = await fetch('/api/extensions/review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  extensionId,
+                  rating: selectedRating,
+                  title: title.trim(),
+                  comment: comment.trim(),
+                }),
+              });
+
+              const data = await res.json();
+              if (!res.ok || !data.success) {
+                throw new Error(data.error || 'Failed to submit review.');
+              }
+
+              if (reviewModal) {
+                reviewModal.close();
+              }
+              showToast('Review submitted successfully!');
+              setTimeout(() => {
+                window.location.reload();
+              }, 600);
+            } catch (err: any) {
+              if (reviewErrorBanner) {
+                reviewErrorBanner.textContent = err.message || 'An error occurred while saving your review.';
+                reviewErrorBanner.classList.remove('hidden');
+              }
+            } finally {
+              submitReviewFormBtn.disabled = false;
+              submitReviewFormBtn.textContent = originalBtnText;
+            }
+          });
+        }
+
+        // Delete Review Handler
+        const deleteReviewBtn = document.getElementById('delete-review-btn') as HTMLButtonElement | null;
+        if (deleteReviewBtn && extensionReviewForm) {
+          deleteReviewBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete your review?')) {
+              return;
+            }
+
+            const formData = new FormData(extensionReviewForm);
+            const extensionId = formData.get('extensionId') as string;
+
+            deleteReviewBtn.disabled = true;
+            deleteReviewBtn.textContent = 'Deleting...';
+
+            try {
+              const res = await fetch('/api/extensions/review', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ extensionId }),
+              });
+
+              const data = await res.json();
+              if (!res.ok || !data.success) {
+                throw new Error(data.error || 'Failed to delete review.');
+              }
+
+              if (reviewModal) {
+                reviewModal.close();
+              }
+              showToast('Review removed.');
+              setTimeout(() => {
+                window.location.reload();
+              }, 600);
+            } catch (err: any) {
+              alert(err.message || 'Failed to delete review.');
+              deleteReviewBtn.disabled = false;
+              deleteReviewBtn.textContent = 'Delete';
+            }
           });
         }
 

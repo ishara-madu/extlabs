@@ -4,6 +4,8 @@ import { env } from 'cloudflare:workers';
 export interface DbUser {
   id: string;
   github_id: string | null;
+  google_id?: string | null;
+  auth_provider?: string | null;
   username: string;
   email: string | null;
   name: string | null;

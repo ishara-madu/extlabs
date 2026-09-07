@@ -16,6 +16,9 @@ export interface FAQItem {
 }
 
 export interface ReviewItem {
+  id?: string;
+  userId?: string;
+  avatarUrl?: string;
   author: string;
   date: string;
   rating: number;
@@ -41,6 +44,8 @@ export interface ComparisonItem {
 
 export interface Extension {
   id: string;
+  dbId?: string;
+  slug?: string;
   name: string;
   tagline: string;
   description: string;

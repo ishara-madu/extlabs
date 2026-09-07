@@ -15,6 +15,16 @@ export interface GitHubUserProfile {
   blog: string | null;
 }
 
+export interface GoogleUserProfile {
+  id: string;
+  email: string;
+  verified_email?: boolean;
+  name: string;
+  given_name?: string;
+  family_name?: string;
+  picture?: string;
+}
+
 /**
  * Generate GitHub OAuth authorization URL
  */
@@ -167,7 +177,7 @@ export async function createOrUpdateUserSession(
         await db
           .prepare(`
             UPDATE users 
-            SET github_id = ?, username = ?, email = COALESCE(?, email), name = ?, avatar_url = ?, role = ?, github_access_token = ?, updated_at = DATETIME('now')
+            SET github_id = ?, username = ?, email = COALESCE(?, email), name = ?, avatar_url = ?, role = ?, github_access_token = ?, auth_provider = 'github', updated_at = DATETIME('now')
             WHERE id = ?
           `)
           .bind(
@@ -191,7 +201,7 @@ export async function createOrUpdateUserSession(
       await db
         .prepare(`
           UPDATE users 
-          SET github_id = ?, username = ?, email = COALESCE(?, email), name = ?, avatar_url = ?, role = ?, updated_at = DATETIME('now')
+          SET github_id = ?, username = ?, email = COALESCE(?, email), name = ?, avatar_url = ?, role = ?, auth_provider = 'github', updated_at = DATETIME('now')
           WHERE id = ?
         `)
         .bind(
@@ -212,8 +222,8 @@ export async function createOrUpdateUserSession(
       try {
         await db
           .prepare(`
-            INSERT INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled, github_access_token)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0, ?)
+            INSERT INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled, github_access_token, auth_provider)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0, ?, 'github')
           `)
           .bind(
             userId,
@@ -235,8 +245,8 @@ export async function createOrUpdateUserSession(
     if (!inserted) {
       await db
         .prepare(`
-          INSERT INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0)
+          INSERT INTO users (id, github_id, username, email, name, avatar_url, role, status, two_factor_enabled, auth_provider)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0, 'github')
         `)
         .bind(
           userId,
@@ -356,3 +366,191 @@ export function createSessionCookie(sessionId: string): string {
 export function clearSessionCookie(): string {
   return `${SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure`;
 }
+
+/**
+ * Generate Google OAuth authorization URL
+ */
+export function getGoogleAuthUrl(clientId: string, state: string, redirectUri: string): string {
+  const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  url.searchParams.set('client_id', clientId);
+  url.searchParams.set('redirect_uri', redirectUri);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('scope', 'openid email profile');
+  url.searchParams.set('access_type', 'online');
+  url.searchParams.set('prompt', 'select_account');
+  url.searchParams.set('state', state);
+  return url.toString();
+}
+
+/**
+ * Exchange OAuth code for Google Access Token
+ */
+export async function exchangeGoogleCodeForToken(
+  code: string,
+  clientId: string,
+  clientSecret: string,
+  redirectUri: string
+): Promise<string | null> {
+  const params = new URLSearchParams({
+    code,
+    client_id: clientId,
+    client_secret: clientSecret,
+    redirect_uri: redirectUri,
+    grant_type: 'authorization_code',
+  });
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    console.error('Failed to exchange Google code for token:', await response.text());
+    return null;
+  }
+
+  const data = (await response.json()) as { access_token?: string };
+  return data.access_token || null;
+}
+
+/**
+ * Fetch authenticated Google user profile
+ */
+export async function getGoogleUserProfile(accessToken: string): Promise<GoogleUserProfile | null> {
+  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    console.error('Failed to fetch Google user profile:', await response.text());
+    return null;
+  }
+
+  return (await response.json()) as GoogleUserProfile;
+}
+
+/**
+ * Upsert Google user in Cloudflare D1 and create a new session
+ */
+export async function createOrUpdateGoogleUserSession(
+  db: D1Database,
+  profile: GoogleUserProfile
+): Promise<{ user: DbUser; sessionId: string }> {
+  const googleIdStr = profile.id;
+  const email = profile.email?.toLowerCase().trim() || null;
+
+  // Strictly check if reviewer user already exists by google_id (NEVER match on email with GitHub developer accounts)
+  const existingUser = await db
+    .prepare('SELECT * FROM users WHERE google_id = ?')
+    .bind(googleIdStr)
+    .first<DbUser>();
+
+  let userId: string;
+
+  if (existingUser) {
+    userId = existingUser.id;
+    await db
+      .prepare(`
+        UPDATE users 
+        SET name = COALESCE(?, name), avatar_url = COALESCE(?, avatar_url), auth_provider = 'google', updated_at = DATETIME('now')
+        WHERE id = ?
+      `)
+      .bind(
+        profile.name || null,
+        profile.picture || null,
+        userId
+      )
+      .run();
+  } else {
+    userId = `usr_g_${crypto.randomUUID().replace(/-/g, '').slice(0, 14)}`;
+    // Derive a unique username for reviewer
+    let baseUsername = email ? email.split('@')[0].replace(/[^a-z0-9_-]/gi, '').toLowerCase() : 'user';
+    if (!baseUsername) baseUsername = 'reviewer';
+    const suffix = crypto.randomUUID().slice(0, 4);
+    const username = `rev_${baseUsername}_${suffix}`;
+
+    await db
+      .prepare(`
+        INSERT INTO users (id, google_id, username, email, name, avatar_url, role, status, two_factor_enabled, auth_provider)
+        VALUES (?, ?, ?, ?, ?, ?, 'developer', 'active', 0, 'google')
+      `)
+      .bind(
+        userId,
+        googleIdStr,
+        username,
+        email,
+        profile.name || username,
+        profile.picture || null
+      )
+      .run();
+  }
+
+  // Create active session in D1
+  const sessionId = `ses_g_${crypto.randomUUID()}`;
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + SESSION_EXPIRY_DAYS);
+
+  await db
+    .prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)')
+    .bind(sessionId, userId, expiresAt.toISOString())
+    .run();
+
+  const user = (await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first<DbUser>())!;
+  return { user, sessionId };
+}
+
+export const USER_SESSION_COOKIE_NAME = 'extlabs_user_session';
+
+/**
+ * Generate Set-Cookie header for public user review session
+ */
+export function createUserSessionCookie(sessionId: string): string {
+  const maxAge = SESSION_EXPIRY_DAYS * 24 * 60 * 60;
+  return `${USER_SESSION_COOKIE_NAME}=${encodeURIComponent(sessionId)}; Path=/; Max-Age=${maxAge}; HttpOnly; SameSite=Lax; Secure`;
+}
+
+/**
+ * Generate Set-Cookie header to clear user review session
+ */
+export function clearUserSessionCookie(): string {
+  return `${USER_SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure`;
+}
+
+/**
+ * Get current verified Google Reviewer user from request Cookie.
+ * Strictly returns ONLY users authenticated via Google OAuth (extlabs_user_session).
+ * GitHub developer sessions (extlabs_session) are strictly excluded and ignored.
+ */
+export async function getReviewerUser(db: D1Database, request: Request): Promise<DbUser | null> {
+  const cookieHeader = request.headers.get('Cookie') || '';
+  
+  // Strictly check extlabs_user_session cookie ONLY
+  const match = cookieHeader.match(new RegExp(`(?:^|; )${USER_SESSION_COOKIE_NAME}=([^;]*)`));
+  if (!match) return null;
+
+  const sessionId = decodeURIComponent(match[1]);
+  if (!sessionId) return null;
+
+  const user = await db
+    .prepare(`
+      SELECT u.* 
+      FROM sessions s
+      JOIN users u ON s.user_id = u.id
+      WHERE s.id = ? AND s.expires_at > DATETIME('now') AND u.status = 'active'
+    `)
+    .bind(sessionId)
+    .first<DbUser>();
+
+  // Strictly enforce that reviewer must be a Google authenticated user!
+  if (user && user.google_id && user.auth_provider === 'google') {
+    return user;
+  }
+
+  return null;
+}
+

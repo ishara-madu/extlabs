@@ -221,20 +221,29 @@ export function getDefaultReviewsForExtension(name: string, rating: number = 5):
  * Fetch reviews for an extension from D1 database
  */
 export async function getExtensionReviews(db: D1Database | null, extensionId: string): Promise<ReviewItem[]> {
-  if (!db) return [];
+  if (!db || !extensionId) return [];
   try {
+    const ext = await db
+      .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+      .bind(extensionId, extensionId)
+      .first<{ id: string }>();
+    if (!ext) return [];
+
     const query = `
-      SELECT r.id, r.rating, r.title, r.comment, r.created_at, u.name, u.username
+      SELECT r.id, r.user_id, r.rating, r.title, r.comment, r.created_at, u.name, u.username, u.avatar_url
       FROM reviews r
       LEFT JOIN users u ON r.user_id = u.id
       WHERE r.extension_id = ?
       ORDER BY r.created_at DESC
-      LIMIT 20
+      LIMIT 50
     `;
-    const rows = await db.prepare(query).bind(extensionId).all();
+    const rows = await db.prepare(query).bind(ext.id).all();
     if (rows && rows.results && rows.results.length > 0) {
       return rows.results.map((r: any) => ({
+        id: r.id,
+        userId: r.user_id,
         author: r.name || r.username || 'Verified User',
+        avatarUrl: r.avatar_url || '',
         date: r.created_at ? r.created_at.split(' ')[0] : 'Recently',
         rating: Number(r.rating) || 5,
         title: r.title || '',
@@ -246,6 +255,194 @@ export async function getExtensionReviews(db: D1Database | null, extensionId: st
     console.warn('Failed to fetch extension reviews from D1:', err);
   }
   return [];
+}
+
+/**
+ * Fetch existing review submitted by a specific user for an extension
+ */
+export async function getUserReviewForExtension(
+  db: D1Database | null,
+  extensionId: string,
+  userId: string
+): Promise<ReviewItem | null> {
+  if (!db || !extensionId || !userId) return null;
+  try {
+    const ext = await db
+      .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+      .bind(extensionId, extensionId)
+      .first<{ id: string }>();
+    if (!ext) return null;
+
+    const row = await db
+      .prepare(`
+        SELECT r.id, r.user_id, r.rating, r.title, r.comment, r.created_at, u.name, u.username, u.avatar_url
+        FROM reviews r
+        LEFT JOIN users u ON r.user_id = u.id
+        WHERE r.extension_id = ? AND r.user_id = ?
+        LIMIT 1
+      `)
+      .bind(ext.id, userId)
+      .first<any>();
+
+    if (row) {
+      return {
+        id: row.id,
+        userId: row.user_id,
+        author: row.name || row.username || 'You',
+        avatarUrl: row.avatar_url || '',
+        date: row.created_at ? row.created_at.split(' ')[0] : 'Recently',
+        rating: Number(row.rating) || 5,
+        title: row.title || '',
+        comment: row.comment || '',
+        verified: true,
+      };
+    }
+  } catch (err) {
+    console.warn('Failed to fetch user review from D1:', err);
+  }
+  return null;
+}
+
+/**
+ * Submit or update a user review for an extension and recalculate rating stats
+ */
+export async function submitExtensionReview(
+  db: D1Database,
+  input: {
+    extensionId: string;
+    userId: string;
+    rating: number;
+    title?: string;
+    comment: string;
+  }
+): Promise<{ success: boolean; reviewId: string; newRating: number; newReviewCount: number }> {
+  const { extensionId, userId, rating, title, comment } = input;
+
+  // Resolve target extension primary key (extensionId could be PK id or slug)
+  const ext = await db
+    .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+    .bind(extensionId, extensionId)
+    .first<{ id: string }>();
+
+  if (!ext) {
+    throw new Error(`Extension "${extensionId}" not found.`);
+  }
+
+  const realExtensionId = ext.id;
+
+  // 1. Check if user already reviewed this extension
+  const existing = await db
+    .prepare('SELECT id FROM reviews WHERE extension_id = ? AND user_id = ?')
+    .bind(realExtensionId, userId)
+    .first<{ id: string }>();
+
+  let reviewId: string;
+  if (existing) {
+    reviewId = existing.id;
+    await db
+      .prepare(`
+        UPDATE reviews 
+        SET rating = ?, title = ?, comment = ?, created_at = DATETIME('now')
+        WHERE id = ?
+      `)
+      .bind(rating, title?.trim() || null, comment.trim(), reviewId)
+      .run();
+  } else {
+    reviewId = `rev_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+    await db
+      .prepare(`
+        INSERT INTO reviews (id, extension_id, user_id, rating, title, comment, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, DATETIME('now'))
+      `)
+      .bind(reviewId, realExtensionId, userId, rating, title?.trim() || null, comment.trim())
+      .run();
+  }
+
+  // 2. Recalculate average rating & review count for extension
+  const stats = await db
+    .prepare(`
+      SELECT COUNT(*) as total_count, AVG(rating) as avg_rating
+      FROM reviews
+      WHERE extension_id = ?
+    `)
+    .bind(realExtensionId)
+    .first<{ total_count: number; avg_rating: number }>();
+
+  const newReviewCount = stats?.total_count ?? 1;
+  const rawAvg = stats?.avg_rating ?? rating;
+  const newRating = Math.round(rawAvg * 10) / 10;
+
+  // 3. Update extensions table
+  await db
+    .prepare(`
+      UPDATE extensions
+      SET rating = ?, review_count = ?, updated_at = DATETIME('now')
+      WHERE id = ?
+    `)
+    .bind(newRating, newReviewCount, realExtensionId)
+    .run();
+
+  return {
+    success: true,
+    reviewId,
+    newRating,
+    newReviewCount,
+  };
+}
+
+/**
+ * Delete a user review for an extension and recalculate rating stats
+ */
+export async function deleteExtensionReview(
+  db: D1Database,
+  extensionId: string,
+  userId: string
+): Promise<{ success: boolean; newRating: number; newReviewCount: number }> {
+  // Resolve target extension primary key (extensionId could be PK id or slug)
+  const ext = await db
+    .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+    .bind(extensionId, extensionId)
+    .first<{ id: string }>();
+
+  if (!ext) {
+    throw new Error(`Extension "${extensionId}" not found.`);
+  }
+
+  const realExtensionId = ext.id;
+
+  // Delete review
+  await db
+    .prepare('DELETE FROM reviews WHERE extension_id = ? AND user_id = ?')
+    .bind(realExtensionId, userId)
+    .run();
+
+  // Recalculate stats
+  const stats = await db
+    .prepare(`
+      SELECT COUNT(*) as total_count, AVG(rating) as avg_rating
+      FROM reviews
+      WHERE extension_id = ?
+    `)
+    .bind(realExtensionId)
+    .first<{ total_count: number; avg_rating: number }>();
+
+  const newReviewCount = stats?.total_count ?? 0;
+  const newRating = newReviewCount > 0 && stats?.avg_rating ? Math.round(stats.avg_rating * 10) / 10 : 5.0;
+
+  await db
+    .prepare(`
+      UPDATE extensions
+      SET rating = ?, review_count = ?, updated_at = DATETIME('now')
+      WHERE id = ?
+    `)
+    .bind(newRating, newReviewCount, realExtensionId)
+    .run();
+
+  return {
+    success: true,
+    newRating,
+    newReviewCount,
+  };
 }
 
 /**
@@ -336,6 +533,8 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper, customR
 
   return {
     id: dbExt.slug || dbExt.id,
+    dbId: dbExt.id,
+    slug: dbExt.slug,
     name: dbExt.name,
     tagline: dbExt.short_description || '',
     description: dbExt.full_description || dbExt.short_description || '',
