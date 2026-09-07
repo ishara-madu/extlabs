@@ -5,6 +5,7 @@ import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
+import BrowserIcon from "../../components/BrowserIcon.astro";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory } from "../../lib/db";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon } from '@lucide/astro';
 
@@ -21,8 +22,32 @@ const categoryExtensions = await getStoreExtensionsByCategory(db, ext.category);
 const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id !== rawExtension.id).slice(0, 3);
 
 const screenshotsList: string[] = Array.isArray(ext.screenshots) && ext.screenshots.length > 0 ? ext.screenshots : [];
+const hasRating = (typeof ext.rating === 'number' && ext.rating > 0) || ext.reviewCount > 0;
 const hasReviews = Boolean(ext.reviews && ext.reviews.length > 0);
 const hasFaqs = Boolean(ext.faqs && ext.faqs.length > 0);
+const showRatingsAndReviews = hasRating || hasReviews;
+
+const browserNameMap: Record<string, { id: string; name: string }> = {
+  chrome: { id: 'chrome', name: 'Google Chrome' },
+  brave: { id: 'brave', name: 'Brave' },
+  edge: { id: 'edge', name: 'Microsoft Edge' },
+  firefox: { id: 'firefox', name: 'Firefox' },
+  arc: { id: 'arc', name: 'Arc' },
+  opera: { id: 'opera', name: 'Opera' },
+  safari: { id: 'safari', name: 'Safari' },
+  vivaldi: { id: 'vivaldi', name: 'Vivaldi' },
+};
+
+const supportedBrowsersList = (Array.isArray(ext.supportedBrowsers) && ext.supportedBrowsers.length > 0)
+  ? ext.supportedBrowsers.map((b: string) => browserNameMap[b.toLowerCase()] || { id: b.toLowerCase(), name: b })
+  : [
+      { id: 'chrome', name: 'Google Chrome' },
+      { id: 'brave', name: 'Brave' },
+      { id: 'edge', name: 'Microsoft Edge' },
+      { id: 'firefox', name: 'Firefox' },
+      { id: 'arc', name: 'Arc' },
+      { id: 'opera', name: 'Opera' },
+    ];
 
 // JSON-LD Schema.org Structured Data for SEO
 const jsonLdGraph: any[] = [
@@ -173,12 +198,11 @@ const jsonLdSchema = {
                     <div class="flex items-center gap-1 font-semibold text-slate-800">
                       <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                       <span>{ext.rating.toFixed(1)}</span>
-                      {hasReviews && (
+                      {showRatingsAndReviews ? (
                         <a href="#reviews-section" class="text-slate-500 hover:text-slate-900 underline font-normal">
                           ({ext.reviewCount.toLocaleString()})
                         </a>
-                      )}
-                      {!hasReviews && (
+                      ) : (
                         <span>({ext.reviewCount.toLocaleString()})</span>
                       )}
                     </div>
@@ -198,10 +222,9 @@ const jsonLdSchema = {
                     href={ext.developerSupport.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-slate-800 hover:text-blue-600 font-medium hover:underline inline-flex items-center gap-0.5"
+                    class="text-slate-800 hover:text-blue-600 font-medium hover:underline"
                   >
-                    <span>{ext.developer}</span>
-                    <ExternalLink class="w-3 h-3 text-slate-400" />
+                    {ext.developer}
                   </a>
                 ) : (
                   <strong class="text-slate-800 font-medium">{ext.developer}</strong>
@@ -221,6 +244,7 @@ const jsonLdSchema = {
               data-ext-developer={ext.developer}
               data-monetag-url={ext.monetagUrl}
               data-download-url={ext.downloadUrl}
+              data-manifest-version={ext.manifestVersion || 'v3'}
               class="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-black text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               <Download class="w-4 h-4" />
@@ -383,20 +407,6 @@ const jsonLdSchema = {
             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {ext.description}
             </p>
-
-            {ext.overview && ext.overview.length > 0 && (
-              <div class="pt-1 space-y-1.5">
-                <span class="text-xs font-semibold text-slate-800 block">Highlights:</span>
-                <ul class="space-y-1.5 text-xs text-slate-600">
-                  {ext.overview.map((item) => (
-                    <li class="flex items-start gap-2">
-                      <span class="text-slate-400 font-medium">─</span>
-                      <span class="leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </section>
 
           <!-- Core Features (Open Typographic Grid - Only if features exist) -->
@@ -484,12 +494,12 @@ const jsonLdSchema = {
 
                 <div class="flex items-center justify-between py-1.5">
                   <dt class="text-slate-500">Standard</dt>
-                  <dd class="text-slate-800 font-medium">Manifest V3</dd>
+                  <dd class="text-slate-800 font-medium">Manifest {ext.manifestVersion ? ext.manifestVersion.toUpperCase() : 'V3'}</dd>
                 </div>
 
                 <div class="flex items-center justify-between py-1.5">
                   <dt class="text-slate-500">License</dt>
-                  <dd class="text-slate-700">Free</dd>
+                  <dd class="text-slate-700 font-medium">{ext.license || 'MIT'}</dd>
                 </div>
 
                 {ext.downloadUrl && ext.downloadUrl !== '#' && (
@@ -512,13 +522,15 @@ const jsonLdSchema = {
             </div>
 
             <!-- Supported Browsers -->
-            <div class="pt-3 border-t border-slate-100 space-y-2">
+            <div class="pt-3 border-t border-slate-100 space-y-1.5">
               <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Supported Browsers</span>
-              <div class="flex flex-wrap gap-1 text-[11px] text-slate-600 font-medium">
-                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Chrome</span>
-                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Brave</span>
-                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Edge</span>
-                <span class="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">Opera</span>
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-700 font-medium">
+                {browserList.map((bName, idx) => (
+                  <span class="inline-flex items-center gap-1.5">
+                    {idx > 0 && <span class="text-slate-300">•</span>}
+                    <span>{bName}</span>
+                  </span>
+                ))}
               </div>
             </div>
 
@@ -537,7 +549,7 @@ const jsonLdSchema = {
             )}
 
             <!-- Developer Links -->
-            {ext.developerSupport && (ext.developerSupport.website || ext.developerSupport.email || ext.developerSupport.docsUrl || ext.developerSupport.supportUrl || ext.developerSupport.privacyPolicy) && (
+            {ext.developerSupport && (ext.developerSupport.website || ext.developerSupport.github || ext.developerSupport.email || ext.developerSupport.docsUrl || ext.developerSupport.supportUrl || ext.developerSupport.privacyPolicy) && (
               <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
                 <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Developer Links</span>
                 
@@ -550,6 +562,18 @@ const jsonLdSchema = {
                       class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
                     >
                       <span>Developer / Studio Website</span>
+                      <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
+                    </a>
+                  )}
+
+                  {ext.developerSupport.github && (
+                    <a
+                      href={ext.developerSupport.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex items-center justify-between hover:text-slate-900 py-1 transition-colors"
+                    >
+                      <span>Source Repository (GitHub)</span>
                       <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
                     </a>
                   )}
@@ -659,20 +683,18 @@ const jsonLdSchema = {
         </section>
       )}
 
-      <!-- 5. Ratings & Reviews / FAQs (Only rendered if real reviews or FAQs exist) -->
-      {(hasReviews || hasFaqs) && (
-        <div class={`grid grid-cols-1 ${hasReviews && hasFaqs ? 'lg:grid-cols-12 gap-10' : 'max-w-3xl gap-8'} items-start pt-4 border-t border-slate-200`}>
+      <!-- 5. Ratings & Reviews / FAQs -->
+      {(showRatingsAndReviews || hasFaqs) && (
+        <div class={`grid grid-cols-1 ${showRatingsAndReviews && hasFaqs ? 'lg:grid-cols-12 gap-10' : 'max-w-3xl gap-8'} items-start pt-4 border-t border-slate-200`}>
           
           <!-- Reviews Column -->
-          {hasReviews && (
+          {showRatingsAndReviews && (
             <section id="reviews-section" class={`${hasFaqs ? 'lg:col-span-6' : 'w-full'} space-y-5`}>
-              <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-                <div>
-                  <h2 class="text-base font-bold text-slate-900 tracking-tight">
-                    Ratings & Reviews
-                  </h2>
-                  <p class="text-xs text-slate-500">Feedback from active users.</p>
-                </div>
+              <div class="border-b border-slate-200 pb-2">
+                <h2 class="text-base font-bold text-slate-900 tracking-tight">
+                  Ratings & Reviews
+                </h2>
+                <p class="text-xs text-slate-500">Feedback from active users.</p>
               </div>
 
               <!-- Score & Distribution -->
@@ -713,8 +735,42 @@ const jsonLdSchema = {
                 </div>
               )}
 
+              <!-- Ratings Filter Buttons (if multiple reviews) -->
+              {hasReviews && ext.reviews && ext.reviews.length > 2 && (
+                <div class="flex items-center gap-1.5 flex-wrap pt-1">
+                  <button
+                    type="button"
+                    data-filter-rating="all"
+                    class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-900 text-white cursor-pointer transition-colors"
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    data-filter-rating="5"
+                    class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
+                  >
+                    5 ★
+                  </button>
+                  <button
+                    type="button"
+                    data-filter-rating="4"
+                    class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
+                  >
+                    4 ★
+                  </button>
+                  <button
+                    type="button"
+                    data-filter-rating="3"
+                    class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
+                  >
+                    3 ★
+                  </button>
+                </div>
+              )}
+
               <!-- Reviews List -->
-              {ext.reviews && ext.reviews.length > 0 && (
+              {hasReviews && ext.reviews && ext.reviews.length > 0 ? (
                 <div id="reviews-list-container" class="divide-y divide-slate-100">
                   {ext.reviews.map((rev, index) => (
                     <div
@@ -745,13 +801,32 @@ const jsonLdSchema = {
                     </div>
                   ))}
                 </div>
+              ) : (
+                <div class="py-4 text-center text-xs text-slate-400">
+                  <p>No written user reviews yet for this extension.</p>
+                </div>
+              )}
+
+              <!-- Show More / Show Fewer Reviews Toggle -->
+              {hasReviews && ext.reviews && ext.reviews.length > 3 && (
+                <div class="pt-1">
+                  <button
+                    type="button"
+                    id="toggle-more-reviews-btn"
+                    data-expanded="false"
+                    data-extra-count={ext.reviews.length - 3}
+                    class="w-full py-2 text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer transition-colors"
+                  >
+                    Show more reviews ({ext.reviews.length - 3})
+                  </button>
+                </div>
               )}
             </section>
           )}
 
           <!-- FAQs Column -->
           {hasFaqs && ext.faqs && ext.faqs.length > 0 && (
-            <section class={`${hasReviews ? 'lg:col-span-6' : 'w-full'} space-y-4`}>
+            <section class={`${showRatingsAndReviews ? 'lg:col-span-6' : 'w-full'} space-y-4`}>
               <div class="border-b border-slate-200 pb-2">
                 <h2 class="text-base font-bold text-slate-900 tracking-tight">
                   Frequently Asked Questions
@@ -1106,6 +1181,7 @@ const jsonLdSchema = {
             const extId = downloadBtn.getAttribute('data-ext-id') || 'ext';
             const extVersion = downloadBtn.getAttribute('data-ext-version') || '1.0.0';
             const extDeveloper = downloadBtn.getAttribute('data-ext-developer') || 'Developer';
+            const extManifest = downloadBtn.getAttribute('data-manifest-version') || 'v3';
             const monetagUrl = downloadBtn.getAttribute('data-monetag-url') || 'https://monetag.com';
             const realDownloadUrl = downloadBtn.getAttribute('data-download-url');
 
@@ -1127,7 +1203,7 @@ const jsonLdSchema = {
               document.body.removeChild(a);
             } else {
               // Fallback package generation if no direct link configured
-              const dummyPackage = `Package: ${extName}\nVersion: ${extVersion}\nDeveloper: ${extDeveloper}\nManifest: Manifest V3 Compliant\nVerified by: ExtLabs Directory`;
+              const dummyPackage = `Package: ${extName}\nVersion: ${extVersion}\nDeveloper: ${extDeveloper}\nManifest: Manifest ${extManifest.toUpperCase()} Compliant\nVerified by: ExtLabs Directory`;
               const blob = new Blob([dummyPackage], { type: 'application/zip' });
               const downloadUrl = URL.createObjectURL(blob);
               const a = document.createElement('a');

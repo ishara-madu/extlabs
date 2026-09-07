@@ -75,6 +75,9 @@ export interface Extension {
   reviews?: ReviewItem[];
   downloadUrl?: string;
   monetagUrl?: string;
+  license?: string;
+  manifestVersion?: string;
+  supportedBrowsers?: string[];
 }
 
 export interface CategoryInfo {

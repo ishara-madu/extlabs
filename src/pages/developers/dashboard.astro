@@ -89,7 +89,7 @@ if (db && user) {
             topGeography: idx % 2 === 0 ? 'US (44%)' : 'US (38%)',
             secondaryGeography: idx % 2 === 0 ? 'DE 18% • UK 14%' : 'CA 16% • UK 15%',
             version: `v${row.version_name || row.current_version || '1.0.0'}`,
-            targetEngine: 'Manifest V3 • Chromium',
+            targetEngine: 'Chromium Extension',
             iconUrl: row.icon_url || '/icons/extension-placeholder.avif',
             isBookmarked: row.is_featured === 1 || idx < 2
           };
@@ -173,7 +173,7 @@ if (db && user) {
                 No extensions found
               </h2>
               <p class="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
-                No extensions found in the database. Upload your Manifest V3 package (.zip) to get started and publish your first extension.
+                No extensions found in the database. Upload your package (.zip) to get started and publish your first extension.
               </p>
             </div>
 

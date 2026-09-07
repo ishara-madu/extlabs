@@ -37,6 +37,7 @@ export const POST: APIRoute = async ({ request }) => {
       slug?: string;
       category?: string;
       version?: string;
+      manifestVersion?: string;
       tagline?: string;
       githubUrl?: string;
       downloadUrl?: string;
@@ -51,6 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
       slug,
       category,
       version,
+      manifestVersion,
       tagline,
       githubUrl,
       downloadUrl,
@@ -134,6 +136,7 @@ export const POST: APIRoute = async ({ request }) => {
       name: name.trim(),
       category: category.trim(),
       version: version.trim(),
+      manifestVersion: manifestVersion?.trim() || 'v3',
       tagline: tagline.trim(),
       githubUrl: githubUrl.trim(),
       downloadUrl: downloadUrl?.trim() || null,
