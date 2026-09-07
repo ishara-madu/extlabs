@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import BrowserIcon from "../../components/BrowserIcon.astro";
+import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension } from "../../lib/db";
 import { getReviewerUser } from "../../lib/auth";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2 } from '@lucide/astro';
@@ -190,7 +191,7 @@ const jsonLdSchema = {
               <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight flex items-center gap-2">
                 <span>{ext.name}</span>
                 {ext.isVerified && (
-                  <BadgeCheck class="w-5 h-5 text-blue-600 shrink-0 inline" />
+                  <VerifiedBadge class="w-5 h-5 shrink-0 inline" />
                 )}
               </h1>
 
@@ -200,7 +201,7 @@ const jsonLdSchema = {
 
               <!-- Metrics -->
               <div class="flex items-center gap-3 text-xs text-slate-500 flex-wrap pt-0.5">
-                {ext.reviewCount > 0 && ext.rating > 0 ? (
+                {ext.reviewCount > 0 && ext.rating > 0 && (
                   <>
                     <div class="flex items-center gap-1 font-semibold text-slate-800">
                       <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
@@ -213,11 +214,6 @@ const jsonLdSchema = {
                         <span>({ext.reviewCount.toLocaleString()})</span>
                       )}
                     </div>
-                    <span class="text-slate-300">•</span>
-                  </>
-                ) : (
-                  <>
-                    <span class="text-slate-400 font-medium">Unrated</span>
                     <span class="text-slate-300">•</span>
                   </>
                 )}

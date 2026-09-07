@@ -1,7 +1,8 @@
 ---
 // ExtensionCard.astro
 import type { Extension } from '../data/extensions';
-import { Star, BadgeCheck } from '@lucide/astro';
+import { Star } from '@lucide/astro';
+import VerifiedBadge from './VerifiedBadge.astro';
 
 interface Props {
   extension: Extension;
@@ -37,7 +38,7 @@ const { extension } = Astro.props;
           {extension.name}
         </h3>
         {extension.isVerified && (
-          <BadgeCheck class="w-3.5 h-3.5 text-blue-600 shrink-0 inline" />
+          <VerifiedBadge class="w-3.5 h-3.5 shrink-0 inline" />
         )}
       </div>
 
@@ -49,19 +50,15 @@ const { extension } = Astro.props;
     <!-- Bottom Details -->
     <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
       <div class="flex items-center gap-1">
-        {extension.reviewCount > 0 && extension.rating > 0 ? (
+        {extension.reviewCount > 0 && extension.rating > 0 && (
           <>
             <Star class="w-3 h-3 text-amber-500 fill-amber-500" />
             <span class="font-medium text-slate-700">{extension.rating.toFixed(1)}</span>
+            {extension.userCount ? <span class="text-slate-300">•</span> : null}
           </>
-        ) : (
-          <span class="text-slate-400">Unrated</span>
         )}
         {extension.userCount ? (
-          <>
-            <span class="text-slate-300">•</span>
-            <span>{extension.userCount}</span>
-          </>
+          <span>{extension.userCount}</span>
         ) : null}
       </div>
 

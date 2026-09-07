@@ -5,9 +5,10 @@ import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import Footer from "../../components/Footer.astro";
+import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { CATEGORIES, type CategoryInfo } from "../../data/extensions";
 import { getDb, getStoreExtensions } from "../../lib/db";
-import { Home, BadgeCheck, Star, Search, ArrowRight } from '@lucide/astro';
+import { Home, Star, Search, ArrowRight } from '@lucide/astro';
 
 const categoryId = Astro.params.id || 'productivity';
 const category = CATEGORIES.find(c => c.id === categoryId) || {
@@ -188,7 +189,7 @@ const visibleCategories = CATEGORIES.filter(cat => (categoryCounts[cat.id] ?? 0)
                   <h3 class="text-base font-bold text-slate-800 group-hover:text-slate-900 flex items-center gap-1.5">
                     <span>{topFeatured.name}</span>
                     {topFeatured.isVerified && (
-                      <BadgeCheck class="w-4 h-4 text-blue-600 shrink-0 inline" />
+                      <VerifiedBadge class="w-4 h-4 shrink-0 inline" />
                     )}
                   </h3>
                   <span class="text-[11px] text-slate-400">by {topFeatured.developer}</span>
@@ -207,7 +208,7 @@ const visibleCategories = CATEGORIES.filter(cat => (categoryCounts[cat.id] ?? 0)
                           <span>{topFeatured.rating.toFixed(1)}</span>
                           <span class="text-slate-400 font-normal">({topFeatured.reviewCount.toLocaleString()})</span>
                         </div>
-                        <span class="text-slate-300">•</span>
+                        {topFeatured.userCount ? <span class="text-slate-300">•</span> : null}
                       </>
                     )}
                     {topFeatured.userCount && (

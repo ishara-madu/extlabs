@@ -10,38 +10,194 @@ const key = browser.toLowerCase().trim();
 ---
 
 {key === 'chrome' || key === 'google chrome' ? (
-  <svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">
-    <path fill="#EA4335" d="M12 2C7.3 2 3.3 5.2 2.3 9.5l4.3 7.5a5 5 0 0 1 5.4-8h9.5C20.6 5.3 16.7 2 12 2z"/>
-    <path fill="#FBBC05" d="M21.5 12c0 4.7-3.2 8.7-7.6 9.7l4.3-7.5a5 5 0 0 0-2.2-7.2h5.2c.2 1.6.3 3.3.3 5z"/>
-    <path fill="#34A853" d="M12 22a10 10 0 0 1-8.7-5l4.3-7.5a5 5 0 0 0 6.4 7.5L9.7 21.7c.7.2 1.5.3 2.3.3z"/>
-    <circle cx="12" cy="12" r="4.5" fill="#FFFFFF"/>
-    <circle cx="12" cy="12" r="3.5" fill="#1A73E8"/>
+  <svg viewBox="-10 -10 276 276" class={className} fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="chrome-grad-a" x1="145" x2="34" y1="253" y2="61" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#1e8e3e"/>
+        <stop offset="1" stop-color="#34a853"/>
+      </linearGradient>
+      <linearGradient id="chrome-grad-b" x1="111" x2="222" y1="254" y2="62" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#fcc934"/>
+        <stop offset="1" stop-color="#fbbc04"/>
+      </linearGradient>
+      <linearGradient id="chrome-grad-c" x1="17" x2="239" y1="80" y2="80" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#d93025"/>
+        <stop offset="1" stop-color="#ea4335"/>
+      </linearGradient>
+    </defs>
+    <circle cx="128" cy="128" r="64" fill="#fff"/>
+    <path fill="url(#chrome-grad-a)" d="M96 183.4A63.7 63.7 0 0 1 72.6 160L17.2 64A128 128 0 0 0 128 256l55.4-96A64 64 0 0 1 96 183.4Z"/>
+    <path fill="url(#chrome-grad-b)" d="M192 128a63.7 63.7 0 0 1-8.6 32L128 256A128 128 0 0 0 238.9 64h-111a64 64 0 0 1 64 64Z"/>
+    <circle cx="128" cy="128" r="52" fill="#1a73e8"/>
+    <path fill="url(#chrome-grad-c)" d="M96 72.6a63.7 63.7 0 0 1 32-8.6h110.8a128 128 0 0 0-221.7 0l55.5 96A64 64 0 0 1 96 72.6Z"/>
   </svg>
 ) : key === 'brave' || key === 'brave browser' ? (
-  <svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">
-    <path d="M12 2 4 4.5v6.2c0 5.4 3.4 10.4 8 11.3 4.6-.9 8-5.9 8-11.3V4.5L12 2z" fill="#FB542B"/>
-    <path d="M8.5 7.5 12 9l3.5-1.5L14 12l2 2.5-4 1.5-4-1.5 2-2.5-1.5-4.5z" fill="#FFFFFF"/>
+  <svg viewBox="0 0 2770 2770" class={className} fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="brave-grad-a" y1="51%" y2="51%">
+        <stop offset=".4" stop-color="#f50"/>
+        <stop offset=".6" stop-color="#ff2000"/>
+      </linearGradient>
+      <linearGradient id="brave-grad-b" x1="2%" y1="51%" y2="51%">
+        <stop offset="0" stop-color="#ff452a"/>
+        <stop offset="1" stop-color="#ff2000"/>
+      </linearGradient>
+    </defs>
+    <path fill="url(#brave-grad-a)" d="M2395 723l60-147-170-176c-92-92-288-38-288-38l-222-252H992L769 363s-196-53-288 37L311 575l60 147-75 218 250 953c52 204 87 283 234 387l457 310c44 27 98 74 147 74s103-47 147-74l457-310c147-104 182-183 234-387l250-953z"/>
+    <path fill="#fff" d="M1935 524s287 347 287 420c0 75-36 94-72 133l-215 230c-20 20-63 54-38 113 25 60 60 134 20 210-40 77-110 128-155 120a820 820 0 01-190-90c-38-25-160-126-160-165s126-110 150-124c23-16 130-78 132-102s2-30-30-90-88-140-80-192c10-52 100-80 167-105l207-78c16-8 12-15-36-20-48-4-183-22-244-5s-163 43-173 57c-8 14-16 14-7 62l58 315c4 40 12 67-30 77-44 10-117 27-142 27s-99-17-142-27-35-37-30-77c4-40 48-268 57-315 10-48 1-48-7-62-10-14-113-40-174-57-60-17-196 1-244 6-48 4-52 10-36 20l207 77c66 25 158 53 167 105 10 53-47 132-80 192s-32 66-30 90 110 86 132 102c24 15 150 85 150 124s-119 140-159 165a820 820 0 01-190 90c-45 8-115-43-156-120-40-76-4-150 20-210 25-60-17-92-38-113l-215-230c-35-37-71-57-71-131s287-420 287-420l273 44c32 0 103-27 168-50 65-20 110-22 110-22s44 0 110 22 136 50 168 50c33 0 275-47 275-47zm-215 1328c18 10 7 32-10 44l-254 198c-20 20-52 50-73 50s-52-30-73-50a13200 13200 0 00-255-198c-16-12-27-33-10-44l150-80a870 870 0 01188-73c15 0 110 34 187 73l150 80z"/>
+    <path fill="url(#brave-grad-b)" d="M1999 363l-224-253H992L769 363s-196-53-288 37c0 0 260-23 350 123l276 47c32 0 103-27 168-50 65-20 110-22 110-22s44 0 110 22 136 50 168 50c33 0 275-47 275-47 90-146 350-123 350-123-92-92-288-38-288-38"/>
   </svg>
 ) : key === 'edge' || key === 'microsoft edge' ? (
-  <svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">
-    <path d="M21.8 15.8c-.5 3.5-3.6 6.2-7.3 6.2-4.1 0-7.5-3.3-7.5-7.4 0-4.5 3.8-7.6 8.3-7.6 1.8 0 3.3.6 4.5 1.6l-2.2 2.4c-.6-.6-1.4-1-2.3-1-2.4 0-4.3 1.9-4.3 4.3 0 2.5 1.9 4.3 4.3 4.3 2 0 3.5-1.2 4.1-2.9h-4.1v-3.1h7.2v3.2z" fill="#0078D7"/>
-    <circle cx="14" cy="9" r="4" fill="#00C853" opacity="0.8"/>
+  <svg viewBox="0 0 27600 27600" class={className} fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="edge-grad-a" gradientUnits="userSpaceOnUse"/>
+      <linearGradient id="edge-grad-b" x1="6870" x2="24704" y1="18705" y2="18705" href="#edge-grad-a">
+        <stop offset="0" stop-color="#0c59a4"/>
+        <stop offset="1" stop-color="#114a8b"/>
+      </linearGradient>
+      <linearGradient id="edge-grad-c" x1="16272" x2="5133" y1="10968" y2="23102" href="#edge-grad-a">
+        <stop offset="0" stop-color="#1b9de2"/>
+        <stop offset=".16" stop-color="#1595df"/>
+        <stop offset=".67" stop-color="#0680d7"/>
+        <stop offset="1" stop-color="#0078d4"/>
+      </linearGradient>
+      <radialGradient id="edge-grad-d" cx="16720" cy="18747" r="9538" href="#edge-grad-a">
+        <stop offset=".72" stop-opacity="0"/>
+        <stop offset=".95" stop-opacity=".53"/>
+        <stop offset="1"/>
+      </radialGradient>
+      <radialGradient id="edge-grad-e" cx="7130" cy="19866" r="14324" gradientTransform="matrix(.14843 -.98892 .79688 .1196 -8759 25542)" href="#edge-grad-a">
+        <stop offset=".76" stop-opacity="0"/>
+        <stop offset=".95" stop-opacity=".5"/>
+        <stop offset="1"/>
+      </radialGradient>
+      <radialGradient id="edge-grad-f" cx="2523" cy="4680" r="20243" gradientTransform="matrix(-.03715 .99931 -2.12836 -.07913 13579 3530)" href="#edge-grad-a">
+        <stop offset="0" stop-color="#35c1f1"/>
+        <stop offset=".11" stop-color="#34c1ed"/>
+        <stop offset=".23" stop-color="#2fc2df"/>
+        <stop offset=".31" stop-color="#2bc3d2"/>
+        <stop offset=".67" stop-color="#36c752"/>
+      </radialGradient>
+      <radialGradient id="edge-grad-g" cx="24247" cy="7758" r="9734" gradientTransform="matrix(.28109 .95968 -.78353 .22949 24510 -16292)" href="#edge-grad-a">
+        <stop offset="0" stop-color="#66eb6e"/>
+        <stop offset="1" stop-color="#66eb6e" stop-opacity="0"/>
+      </radialGradient>
+      <path id="edge-path-h" d="M24105 20053a9345 9345 0 01-1053 472 10202 10202 0 01-3590 646c-4732 0-8855-3255-8855-7432 0-1175 680-2193 1643-2729-4280 180-5380 4640-5380 7253 0 7387 6810 8137 8276 8137 791 0 1984-230 2704-456l130-44a12834 12834 0 006660-5282c220-350-168-757-535-565z"/>
+      <path id="edge-path-i" d="M11571 25141a7913 7913 0 01-2273-2137 8145 8145 0 01-1514-4740 8093 8093 0 013093-6395 8082 8082 0 011373-859c312-148 846-414 1554-404a3236 3236 0 012569 1297 3184 3184 0 01636 1866c0-21 2446-7960-8005-7960-4390 0-8004 4166-8004 7820 0 2319 538 4170 1212 5604a12833 12833 0 007684 6757 12795 12795 0 003908 610c1414 0 2774-233 4045-656a7575 7575 0 01-6278-803z"/>
+      <path id="edge-path-j" d="M16231 15886c-80 105-330 250-330 566 0 260 170 512 472 723 1438 1003 4149 868 4156 868a5954 5954 0 003027-839 6147 6147 0 001133-850 6180 6180 0 001910-4437c26-2242-796-3732-1133-4392-2120-4141-6694-6525-11668-6525-7011 0-12703 5635-12798 12620 47-3654 3679-6605 7996-6605 350 0 2346 34 4200 1007 1634 858 2490 1894 3086 2921 618 1067 728 2415 728 2952s-271 1333-780 1990z"/>
+    </defs>
+    <use fill="url(#edge-grad-b)" href="#edge-path-h"/>
+    <use fill="url(#edge-grad-d)" opacity=".35" href="#edge-path-h"/>
+    <use fill="url(#edge-grad-c)" href="#edge-path-i"/>
+    <use fill="url(#edge-grad-e)" opacity=".4" href="#edge-path-i"/>
+    <use fill="url(#edge-grad-f)" href="#edge-path-j"/>
+    <use fill="url(#edge-grad-g)" href="#edge-path-j"/>
   </svg>
 ) : key === 'firefox' || key === 'mozilla firefox' ? (
-  <svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">
-    <circle cx="12" cy="12" r="9.5" fill="#2B3A42"/>
-    <circle cx="12" cy="12" r="7.5" fill="#20123A"/>
-    <path d="M12 2.5c4.7 0 8.6 3.4 9.3 7.8-.3-.2-.6-.4-1-.5-1.6-.5-3.2.3-3.8 1.9-.3.8-.3 1.7-.1 2.5.4 1.7 1.8 2.8 3.5 2.8.7 0 1.4-.2 2-.5-.9 3.4-4 5.9-7.7 5.9-4.7 0-8.5-3.8-8.5-8.5 0-1.8.6-3.5 1.6-4.9.4-.5.8-.9 1.3-1.3-.2.4-.3.9-.3 1.4 0 1.7 1.4 3.1 3.1 3.1.8 0 1.6-.3 2.2-.9.6-.6.9-1.4.9-2.2 0-.9-.4-1.8-1-2.4-.6-.6-1.5-1-2.5-1-1.3 0-2.4.6-3.1 1.6.9-2.8 3.5-4.8 6.6-4.8z" fill="#FF7139"/>
+  <svg viewBox="0 0 51500 51500" class={className} fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="ff-grad-a" x1="87.25%" x2="9.4%" y1="15.5%" y2="93.1%">
+        <stop offset=".05" stop-color="#fff44f"/>
+        <stop offset=".37" stop-color="#ff980e"/>
+        <stop offset=".53" stop-color="#ff3647"/>
+        <stop offset=".7" stop-color="#e31587"/>
+      </linearGradient>
+      <radialGradient id="ff-grad-b" cx="87.4%" cy="-12.9%" r="128%" gradientTransform="matrix(.8 0 0 1 .18 .13)">
+        <stop offset=".13" stop-color="#ffbd4f"/>
+        <stop offset=".28" stop-color="#ff980e"/>
+        <stop offset=".47" stop-color="#ff3750"/>
+        <stop offset=".78" stop-color="#eb0878"/>
+        <stop offset=".86" stop-color="#e50080"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-d" cx="49%" cy="40%" r="128%" gradientTransform="matrix(.82 0 0 1 .09 0)">
+        <stop offset=".3" stop-color="#960e18"/>
+        <stop offset=".35" stop-color="#b11927" stop-opacity=".74"/>
+        <stop offset=".43" stop-color="#db293d" stop-opacity=".34"/>
+        <stop offset=".5" stop-color="#f5334b" stop-opacity=".1"/>
+        <stop offset=".53" stop-color="#ff3750" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-e" cx="48%" cy="-12%" r="140%">
+        <stop offset=".13" stop-color="#fff44f"/>
+        <stop offset=".53" stop-color="#ff980e"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-f" cx="22.76%" cy="110.11%" r="100%">
+        <stop offset=".35" stop-color="#3a8ee6"/>
+        <stop offset=".67" stop-color="#9059ff"/>
+        <stop offset="1" stop-color="#c139e6"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-h" cx="52%" cy="33%" r="59%" gradientTransform="scale(.9 1)">
+        <stop offset=".21" stop-color="#9059ff" stop-opacity="0"/>
+        <stop offset=".97" stop-color="#6e008b" stop-opacity=".6"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-i" cx="210%" cy="-100%" r="290%">
+        <stop offset=".1" stop-color="#ffe226"/>
+        <stop offset=".79" stop-color="#ff7139"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-j" cx="84%" cy="-41%" r="180%">
+        <stop offset=".11" stop-color="#fff44f"/>
+        <stop offset=".46" stop-color="#ff980e"/>
+        <stop offset=".72" stop-color="#ff3647"/>
+        <stop offset=".9" stop-color="#e31587"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-k" cx="16.1%" cy="-18.6%" r="348.8%" gradientTransform="matrix(.10453 .46743 -.99452 .04913 -.05 -.26)">
+        <stop offset="0" stop-color="#fff44f"/>
+        <stop offset=".3" stop-color="#ff980e"/>
+        <stop offset=".57" stop-color="#ff3647"/>
+        <stop offset=".74" stop-color="#e31587"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-l" cx="18.9%" cy="-42.5%" r="238.4%">
+        <stop offset=".14" stop-color="#fff44f"/>
+        <stop offset=".48" stop-color="#ff980e"/>
+        <stop offset=".66" stop-color="#ff3647"/>
+        <stop offset=".9" stop-color="#e31587"/>
+      </radialGradient>
+      <radialGradient id="ff-grad-m" cx="159.3%" cy="-44.72%" r="313.1%">
+        <stop offset=".09" stop-color="#fff44f"/>
+        <stop offset=".63" stop-color="#ff980e"/>
+      </radialGradient>
+      <linearGradient id="ff-grad-n" x1="80%" x2="18%" y1="14%" y2="84%">
+        <stop offset=".17" stop-color="#fff44f" stop-opacity=".8"/>
+        <stop offset=".6" stop-color="#fff44f" stop-opacity="0"/>
+      </linearGradient>
+      <path id="ff-path-c" d="M47870 16735c-1044-2512-3160-5224-4820-6082 1352 2650 2134 5310 2433 7294 0-6 2 5 4 22l4 26c2268 6147 1032 12398-748 16218-2754 5910-9420 11967-19857 11670-11276-318-21210-8683-23064-19643-338-1728 0-2605 170-4008-207 1080-286 1394-390 3315l-2 123c0 13270 10760 24030 24032 24030 11887 0 21756-8630 23690-19963l110-927c477-4120-53-8453-1560-12075z"/>
+      <path id="ff-path-g" d="M25677 21050c-40 598-2150 2660-2890 2660-6834 0-7943 4133-7943 4133 303 3480 2726 6348 5660 7865 134 70 270 130 405 193a13277 13277 0 00706 289 10674 10674 0 003127 603c11978 562 14300-14320 5655-18640 2213-385 4510 505 5794 1407-2100-3672-6025-6150-10530-6150-285 0-564 24-844 43a12025 12025 0 00-6614 2549c366 310 780 724 1650 1583 1630 1606 5813 3270 5822 3465z"/>
+    </defs>
+    <path fill="url(#ff-grad-a)" d="M47870 16735c-1044-2512-3160-5224-4820-6082 1352 2650 2134 5310 2433 7294l5 40c-2718-6773-7325-9505-11088-15452l-566-920a7372 7372 0 01-265-497 4370 4370 0 01-359-950 63 63 0 00-55-65 82 82 0 00-45 0l-12 7-17 10 10-14c-6037 3536-8085 10076-8274 13350a12025 12025 0 00-6614 2548 7136 7136 0 00-622-470 11134 11134 0 01-68-5873c-2468 1124-4390 2900-5785 4470h-10c-953-1206-886-5187-832-6018-10-52-710 363-802 425a17507 17507 0 00-2349 2012 21048 21048 0 00-2244 2692l-1 3v-3a20284 20284 0 00-3225 7280l-32 160a39700 39700 0 00-237 1500l-5 52a22907 22907 0 00-390 3316l-1 120c0 13270 10760 24030 24032 24030 11887 0 21756-8630 23690-19963l110-927c477-4120-53-8453-1560-12075zM20170 35545c113 53 220 112 334 164l16 10a12620 12620 0 01-350-174zm5506-14493zm19813-3060l-3-23 4 26z"/>
+    <use fill="url(#ff-grad-b)" href="#ff-path-c"/>
+    <use fill="url(#ff-grad-d)" href="#ff-path-c"/>
+    <path fill="url(#ff-grad-e)" d="M36192 19560l150 110a13070 13070 0 00-2231-2911C26640 9290 32150 563 33080 120l10-13c-6037 3535-8085 10076-8273 13348 280-20 560-43 844-43 4505 0 8430 2477 10530 6150z"/>
+    <use fill="url(#ff-grad-f)" href="#ff-path-g"/>
+    <use fill="url(#ff-grad-h)" href="#ff-path-g"/>
+    <path fill="url(#ff-grad-i)" d="M17083 15204a24404 24404 0 01498 330 11134 11134 0 01-67-5874c-2470 1125-4390 2900-5785 4470 115-3 3600-66 5354 1074z"/>
+    <path fill="url(#ff-grad-j)" d="M1822 26240c1855 10960 11788 19325 23063 19644 10437 296 17104-5762 19858-11670 1780-3820 3016-10070 748-16218v-2l-4-24c-2-17-4-28-4-22l5 40c853 5566-1980 10958-6405 14604l-13 30c-8625 7023-16878 4237-18550 3097a14410 14410 0 01-350-174c-5028-2403-7105-6984-6660-10913-4245 0-5693-3580-5693-3580s3812-2718 8836-355c4653 2190 9023 355 9023 354-10-195-4192-1860-5822-3465-872-860-1285-1272-1652-1583a7136 7136 0 00-622-470 28293 28293 0 00-498-330c-1753-1140-5240-1076-5355-1073h-10c-953-1207-886-5188-832-6020-10-50-710 363-802 426a17507 17507 0 00-2349 2012 21048 21048 0 00-2244 2692l-1 3v-3a20284 20284 0 00-3225 7280c-10 52-865 3784-444 5720z"/>
+    <path fill="url(#ff-grad-k)" d="M34110 16760a13070 13070 0 012231 2910l360 296c5450 5020 2594 12120 2380 12626 4426-3646 7258-9038 6405-14604-2716-6774-7323-9506-11086-15453l-566-920a7372 7372 0 01-265-497 4370 4370 0 01-359-950 63 63 0 00-55-65 82 82 0 00-45 0l-12 7-17 10c-930 443-6440 9170 1030 16640z"/>
+    <path fill="url(#ff-grad-l)" d="M36702 19965a4743 4743 0 00-360-295l-150-110c-1283-900-3580-1792-5794-1407 8644 4322 6323 19203-5655 18640a10674 10674 0 01-3127-603 13451 13451 0 01-706-289 9064 9064 0 01-405-193l16 10c1670 1140 9924 3925 18550-3097l13-30c213-506 3068-7606-2380-12626z"/>
+    <path fill="url(#ff-grad-m)" d="M14844 27844s1110-4133 7943-4133c740 0 2850-2062 2890-2660s-4370 1836-9023-354c-5024-2363-8836 354-8836 354s1448 3580 5693 3580c-445 3930 1632 8510 6660 10913 113 53 218 112 334 164-2935-1517-5358-4384-5660-7865z"/>
+    <path fill="url(#ff-grad-n)" d="M47870 16735c-1044-2512-3160-5224-4820-6082 1352 2650 2134 5310 2433 7294l5 40c-2718-6773-7325-9505-11088-15452l-566-920a7372 7372 0 01-265-497 4370 4370 0 01-359-950 63 63 0 00-55-65 82 82 0 00-45 0l-12 7-17 10 10-14c-6037 3536-8085 10076-8274 13350a12025 12025 0 00-6614 2548 7136 7136 0 00-623-470 11134 11134 0 01-67-5873c-2470 1124-4390 2900-5785 4470h-10c-953-1207-886-5187-832-6020-10-50-710 363-802 426a17507 17507 0 00-2349 2012 21048 21048 0 00-2243 2692l-1 3v-3a20284 20284 0 00-3225 7280l-32 160a39787 39787 0 00-277 1515c-2 18 2-17 0 0a27956 27956 0 00-355 3353l-3 122c0 13270 10760 24030 24032 24030 11887 0 21756-8630 23690-19963l110-927c477-4120-53-8453-1560-12075zm-2384 1234l4 26v-2l-4-24z"/>
   </svg>
 ) : key === 'arc' || key === 'arc browser' ? (
-  <svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">
-    <rect width="20" height="20" x="2" y="2" rx="6" fill="#0E1525"/>
-    <path d="M6 16V8a6 6 0 0 1 12 0v8" stroke="#FF5C5C" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="12" cy="13" r="2.5" fill="#4B7BFF"/>
+  <svg viewBox="35 36 140 140" class={className} fill="none" aria-hidden="true">
+    <path style="fill-rule:evenodd;clip-rule:evenodd;fill:#1A007F;" d="M73.591,141.904l11.759-24.741 c-8.981-1.907-18.019-7.463-23.13-14.222l-12.296,25.852C56.758,134.589,64.961,139.145,73.591,141.904"/>
+    <path style="fill-rule:evenodd;clip-rule:evenodd;fill:#4E000A;" d="M122.665,102.2c-5.907,7.241-14.111,12.611-22.889,14.704 l11.722,24.667c8.556-2.889,16.556-7.556,23.463-13.537L122.665,102.2z"/>
+    <path style="fill-rule:evenodd;clip-rule:evenodd;fill:#1A007F;" d="M49.924,128.793l-6.148,12.926 c-3.13,6.574-0.778,14.667,5.667,18.093c6.833,3.63,15.241,0.796,18.537-6.111l5.611-11.796 C64.926,139.111,56.887,134.658,49.924,128.793"/>
+    <path style="fill-rule:evenodd;clip-rule:evenodd;fill:#FF9396;" d="M147.073,73.978c-0.872-0.174-1.761-0.263-2.65-0.263 c-6.413,0-11.983,4.569-13.239,10.856c-1.296,6.481-4.333,12.519-8.519,17.648l12.278,25.852 c11.333-9.833,19.704-23.222,22.704-38.204C159.11,82.534,154.369,75.423,147.073,73.978"/>
+    <path style="fill-rule:evenodd;clip-rule:evenodd;fill:#002DC8;" d="M99.776,116.904c-2.63,0.63-5.315,0.963-8,0.963 c-2.093,0-4.259-0.241-6.426-0.704c-8.981-1.907-18.019-7.463-23.13-14.222c-1.278-1.685-2.315-3.444-3.037-5.241 c-2.796-6.907-10.667-10.241-17.574-7.463c-6.907,2.796-10.241,10.667-7.463,17.574c3.167,7.852,8.759,15.056,15.778,20.982 c6.957,5.865,14.989,10.317,23.648,13.111c5.944,1.907,12.111,2.963,18.185,2.963c6.741,0,13.389-1.167,19.722-3.296 L99.776,116.904z"/>
+    <path style="fill-rule:evenodd;clip-rule:evenodd;fill:#FF536A;" d="M141.424,141.663l-6.481-13.63L122.665,102.2l-0.019,0.019 c0,0,0-0.019,0.019-0.019l-17.852-37.556c-2.233-4.694-6.987-7.7-12.185-7.704c-5.204,0-9.944,3-12.185,7.704l-18.204,38.296 c5.111,6.759,14.148,12.315,23.13,14.222l5.889-12.37c0.556-1.167,2.222-1.167,2.778,0l5.759,12.111h0.037h-0.037l11.722,24.667 l5.759,12.111c2.231,4.704,6.996,7.713,12.204,7.704c1.204,0,2.407-0.167,3.593-0.5 C141.202,158.645,145.054,149.293,141.424,141.663"/>
   </svg>
 ) : key === 'opera' || key === 'opera / gx' || key === 'opera gx' ? (
-  <svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">
-    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 16.5c-3 0-4.8-2.9-4.8-6.5S9 5.5 12 5.5s4.8 2.9 4.8 6.5-1.8 6.5-4.8 6.5z" fill="#FF1B2D"/>
+  <svg viewBox="0 0 1090 1090" class={className} fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="opera-grad-a" x1="461" x2="461" y1="59" y2="1033" gradientUnits="userSpaceOnUse">
+        <stop offset=".6" stop-color="#ff1b2d"/>
+        <stop offset="1" stop-color="#a70014"/>
+      </linearGradient>
+      <linearGradient id="opera-grad-b" x1="714" x2="714" y1="116" y2="978" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#9c0000"/>
+        <stop offset=".7" stop-color="#ff4b4b"/>
+      </linearGradient>
+    </defs>
+    <path fill="url(#opera-grad-a)" d="M545 42.5a502.5 502.5 0 10334.9 877.1 362.4 362.4 0 01-201.4 61.5c-119.7 0-226.8-59.4-299-153-55.6-65.6-91.5-162.5-94-271.3V533c2.5-108.8 38.4-205.8 94-271.3 72-93.6 179.3-153 299-153 73.6 0 142.5 22.5 201.4 61.6a500.8 500.8 0 00-333-127.9h-2z"/>
+    <path fill="url(#opera-grad-b)" d="M379.6 261.8c46-54.4 105.7-87.3 170.7-87.3 146.3 0 265 166 265 370.4 0 204.6-118.6 370.4-265 370.4-65 0-124.6-32.8-170.7-87.2 72 93.6 179.2 153 299 153A363 363 0 00880 919.6 501 501 0 001047.5 545a501.1 501.1 0 00-167.6-374.6 362.4 362.4 0 00-201.4-61.5c-119.7 0-226.8 59.4-299 153"/>
   </svg>
 ) : key === 'safari' || key === 'apple safari' ? (
   <svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">

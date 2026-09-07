@@ -1,7 +1,8 @@
 ---
 // FeaturedCard.astro
 import type { Extension } from '../data/extensions';
-import { Star, BadgeCheck, ArrowRight } from '@lucide/astro';
+import { Star, ArrowRight } from '@lucide/astro';
+import VerifiedBadge from './VerifiedBadge.astro';
 
 interface Props {
   extension: Extension;
@@ -41,7 +42,7 @@ const { extension } = Astro.props;
           />
           <span class="truncate">{extension.name}</span>
           {extension.isVerified && (
-            <BadgeCheck class="w-3.5 h-3.5 text-blue-600 shrink-0 inline" />
+            <VerifiedBadge class="w-3.5 h-3.5 shrink-0 inline" />
           )}
         </h3>
 
@@ -58,21 +59,15 @@ const { extension } = Astro.props;
     <!-- Bottom Details -->
     <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
       <div class="flex items-center gap-2">
-        <div class="flex items-center gap-1 font-semibold text-slate-800">
-          {extension.reviewCount > 0 && extension.rating > 0 ? (
-            <>
-              <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-              <span>{extension.rating.toFixed(1)}</span>
-            </>
-          ) : (
-            <span class="text-xs font-normal text-slate-400">Unrated</span>
-          )}
-        </div>
+        {extension.reviewCount > 0 && extension.rating > 0 && (
+          <div class="flex items-center gap-1 font-semibold text-slate-800">
+            <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <span>{extension.rating.toFixed(1)}</span>
+            {extension.userCount ? <span class="text-slate-300 font-normal ml-1">•</span> : null}
+          </div>
+        )}
         {extension.userCount ? (
-          <>
-            <span class="text-slate-300">•</span>
-            <span>{extension.userCount}</span>
-          </>
+          <span>{extension.userCount}</span>
         ) : null}
       </div>
 
