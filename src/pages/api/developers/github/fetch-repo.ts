@@ -48,10 +48,18 @@ async function fetchFileContent(
 ): Promise<string | null> {
   try {
     const cleanPath = filePath.replace(/^\.?\/+/, '');
-    const res = await fetch(
+    let res = await fetch(
       `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${cleanPath}?ref=${encodeURIComponent(branch)}`,
       { headers }
     );
+    if (res.status === 401 && headers['Authorization']) {
+      const publicHeaders = { ...headers };
+      delete publicHeaders['Authorization'];
+      res = await fetch(
+        `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${cleanPath}?ref=${encodeURIComponent(branch)}`,
+        { headers: publicHeaders }
+      );
+    }
     if (!res.ok) return null;
     const json = (await res.json()) as { content?: string; encoding?: string };
     if (json.content && json.encoding === 'base64') {
@@ -140,16 +148,54 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // 1. Fetch Repository Metadata
-    const repoRes = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, { headers });
+    let repoRes = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, { headers });
+
+    // If authenticated request fails with 401 Unauthorized, stored token is invalid or expired
+    if (repoRes.status === 401 && headers['Authorization']) {
+      console.warn(`[GitHub API] Stored token for user ${user.username} rejected with HTTP 401. Retrying unauthenticated...`);
+      delete headers['Authorization'];
+
+      // Clear invalid token from database
+      try {
+        await db.prepare('UPDATE users SET github_access_token = NULL WHERE id = ?').bind(user.id).run();
+      } catch (dbErr) {
+        console.error('Failed to clear invalid github_access_token:', dbErr);
+      }
+
+      // Retry as public fetch
+      repoRes = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, { headers });
+    }
+
     if (!repoRes.ok) {
       if (repoRes.status === 404) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: `Repository "${owner}/${repo}" was not found or is private without authorized access.`,
+            error: `Repository "${owner}/${repo}" was not found or is private without authorized access. If this is a private repository, please sign out and sign in with GitHub again.`,
           }),
           { status: 404, headers: { 'Content-Type': 'application/json' } }
         );
+      }
+      if (repoRes.status === 401) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'GitHub session expired or invalid credentials. Please sign out and sign back in with GitHub to reconnect your account.',
+          }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (repoRes.status === 403) {
+        const rateLimitRemaining = repoRes.headers.get('x-ratelimit-remaining');
+        if (rateLimitRemaining === '0') {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'GitHub API rate limit exceeded. Please wait a few minutes before trying again.',
+            }),
+            { status: 429, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
       }
       return new Response(
         JSON.stringify({ success: false, error: `GitHub API error: HTTP ${repoRes.status}` }),

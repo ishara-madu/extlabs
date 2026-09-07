@@ -4,22 +4,20 @@ import "../styles/global.css";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import { 
-  ArrowRight, 
   Check, 
   ChevronDown, 
   ShieldCheck, 
   HelpCircle, 
   Copy, 
-  CheckCircle2, 
-  FolderArchive, 
   Terminal, 
-  ToggleRight, 
-  FolderOpen, 
-  Pin,
-  ExternalLink,
-  Sparkles,
-  AlertCircle
+  Pin
 } from '@lucide/astro';
+
+const siteUrl = "https://extlabs.io";
+const pageUrl = `${siteUrl}/how-to-install`;
+const pageTitle = "How to Install Browser Extensions (.zip) on Chrome, Brave & Edge — ExtLabs";
+const pageDescription = "Complete step-by-step visual tutorial to installing downloaded .zip browser extensions in Google Chrome, Brave, Microsoft Edge, and Opera using Load Unpacked in Developer Mode.";
+const ogImage = `${siteUrl}/images/how-to-install/step-1-extract-zip.avif`;
 
 const browsers = [
   {
@@ -54,9 +52,13 @@ const browsers = [
 
 const installSteps = [
   {
+    id: "step-1",
     num: "01",
     title: "Extract the Downloaded .ZIP Package",
     summary: "Unpack the archive so the browser can read the extension manifest and scripts.",
+    image: "/images/how-to-install/step-1-extract-zip.avif",
+    imageAlt: "Step 1: Locate downloaded ZIP file, extract it to a permanent folder and verify manifest.json",
+    caption: "Figure 01: Extract the downloaded archive into a standard directory containing manifest.json.",
     details: [
       "Locate the downloaded `.zip` file in your system's Downloads folder.",
       "Right-click the file and select 'Extract All...' (Windows) or double-click to unzip (macOS).",
@@ -66,9 +68,13 @@ const installSteps = [
     proTip: "If you move or delete the unzipped folder later, the browser will not be able to load the extension upon restart."
   },
   {
+    id: "step-2",
     num: "02",
     title: "Open the Browser Extensions Manager",
     summary: "Navigate directly to your browser's internal extension management console.",
+    image: "/images/how-to-install/step-2-open-extensions-page.avif",
+    imageAlt: "Step 2: Enter chrome://extensions into the browser address bar to navigate to extensions manager",
+    caption: "Figure 02: Enter the internal extensions URL directly into your browser address bar.",
     details: [
       "Click your browser's address bar at the top of any window.",
       "Type or paste the internal URL: chrome://extensions (or brave://extensions / edge://extensions).",
@@ -78,9 +84,13 @@ const installSteps = [
     proTip: "Internal URLs cannot be opened via direct website links for security reasons; paste it directly into your address bar."
   },
   {
+    id: "step-3",
     num: "03",
     title: "Turn ON 'Developer Mode'",
     summary: "Unlock the ability to sideload independent and verified unpacked packages.",
+    image: "/images/how-to-install/step-3-enable-developer-mode.avif",
+    imageAlt: "Step 3: Toggle on Developer mode switch in the top-right corner to reveal action buttons",
+    caption: "Figure 03: Toggle Developer Mode in the top-right corner to reveal the action buttons.",
     details: [
       "Look at the top-right corner of the Extensions page (or left sidebar in Microsoft Edge).",
       "Locate the 'Developer mode' toggle switch.",
@@ -90,9 +100,13 @@ const installSteps = [
     proTip: "Developer mode is completely safe when installing verified packages from ExtLabs. It does not compromise browser security."
   },
   {
+    id: "step-4",
     num: "04",
     title: "Click 'Load Unpacked' & Select the Folder",
     summary: "Point your browser to the unzipped extension directory to complete installation.",
+    image: "/images/how-to-install/step-4-load-unpacked-extension.avif",
+    imageAlt: "Step 4: Click Load unpacked button and select the unzipped directory containing manifest.json",
+    caption: "Figure 04: Click 'Load unpacked' and choose the folder containing manifest.json.",
     details: [
       "Click the 'Load unpacked' button located on the top action bar.",
       "In the file picker dialog that appears, navigate to and select the unzipped folder from Step 01.",
@@ -125,17 +139,125 @@ const faqs = [
     a: "Yes. Navigate to `chrome://extensions`, find the extension card, and click 'Remove'. It will be instantly removed from your browser."
   }
 ];
+
+// Schema.org JSON-LD structured data for Google Rich Results
+const jsonLdSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": siteUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": `${siteUrl}/guides`
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "How to Install",
+          "item": pageUrl
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "name": "How to Install Browser Extensions from a .ZIP File",
+      "description": "Step-by-step visual walkthrough showing how to extract and load unpacked browser extensions in Google Chrome, Brave, Microsoft Edge, and Opera using Developer Mode.",
+      "image": ogImage,
+      "totalTime": "PT1M",
+      "estimatedCost": {
+        "@type": "MonetaryAmount",
+        "currency": "USD",
+        "value": "0"
+      },
+      "tool": [
+        {
+          "@type": "HowToTool",
+          "name": "Google Chrome, Brave, Microsoft Edge, or Opera Browser"
+        },
+        {
+          "@type": "HowToTool",
+          "name": "Extracted Extension ZIP package containing manifest.json"
+        }
+      ],
+      "supply": [
+        {
+          "@type": "HowToSupply",
+          "name": "ExtLabs .zip extension package"
+        }
+      ],
+      "step": installSteps.map((step) => ({
+        "@type": "HowToStep",
+        "url": `${pageUrl}#${step.id}`,
+        "name": step.title,
+        "text": `${step.summary} ${step.details.join(" ")}`,
+        "image": `${siteUrl}${step.image}`,
+        "itemListElement": step.details.map((detail, dIdx) => ({
+          "@type": "HowToDirection",
+          "position": dIdx + 1,
+          "text": detail
+        }))
+      }))
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": faqs.map((faq) => ({
+        "@type": "Question",
+        "name": faq.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.a
+        }
+      }))
+    }
+  ]
+};
 ---
 
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>How to Install Browser Extensions (.zip) — ExtLabs Guide</title>
-    <meta name="description" content="Simple step-by-step guide to installing downloaded .zip browser extensions in Google Chrome, Brave, Edge, and Opera using Load Unpacked." />
-    <link rel="canonical" href="https://extlabs.io/how-to-install" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{pageTitle}</title>
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content="how to install chrome extension zip, load unpacked chrome extension, sideload extension, install brave extension zip, edge developer mode extension, install unpacked extension, extlabs tutorial" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href={pageUrl} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1376" />
+    <meta property="og:image:height" content="768" />
+    <meta property="og:image:alt" content="How to Install Browser Extensions (.zip) Visual Guide" />
+    <meta property="og:site_name" content="ExtLabs" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={pageUrl} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Google Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
@@ -157,13 +279,13 @@ const faqs = [
 
       <!-- 1. Header Area (Crisp & Typographic) -->
       <header class="space-y-4 border-b border-slate-200 pb-10">
-        <div class="inline-flex items-center gap-2">
-          <span class="text-[11px] font-semibold text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-md">
-            Installation Guide
-          </span>
-          <span class="text-xs text-slate-500 font-medium">
-            4 Simple Steps • &lt; 60 Seconds
-          </span>
+        <div class="flex items-center gap-2 text-xs text-slate-600 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+          <span class="text-slate-900 font-semibold">Installation Guide</span>
+          <span class="text-slate-300">•</span>
+          <span>4 Simple Steps</span>
+          <span class="text-slate-300">•</span>
+          <span>&lt; 60 Seconds</span>
         </div>
 
         <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -197,7 +319,7 @@ const faqs = [
         </div>
       </header>
 
-      <!-- 2. Interactive Browser Switcher & URL Utility Box (Soft Shaded Style) -->
+      <!-- 2. Interactive Browser Switcher & URL Utility Box -->
       <section class="space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -229,7 +351,7 @@ const faqs = [
           </div>
         </div>
 
-        <!-- Address Bar Utility Box: Soft #f0f4f9 card with white pill elements -->
+        <!-- Address Bar Utility Box -->
         <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-3.5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="space-y-1.5">
@@ -258,7 +380,7 @@ const faqs = [
         </div>
       </section>
 
-      <!-- 3. The 4-Step Walkthrough with Custom Light SVG Visual Guides -->
+      <!-- 3. The 4-Step Walkthrough with Verified High-Definition Screenshots -->
       <section class="space-y-12">
         <div class="space-y-1 border-b border-slate-200 pb-4">
           <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
@@ -269,347 +391,67 @@ const faqs = [
           </p>
         </div>
 
-        <!-- STEP 01: Extract the ZIP -->
-        <div class="space-y-6 pb-12 border-b border-slate-200">
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2.5">
-              <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-                Step 01
-              </span>
-              <h3 class="text-lg font-bold text-slate-900 tracking-tight">
-                {installSteps[0].title}
-              </h3>
+        {installSteps.map((step, idx) => (
+          <div id={step.id} class="space-y-6 pb-12 border-b border-slate-200 scroll-mt-20">
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                <span class="text-xs font-mono font-bold text-blue-600 tracking-wider">
+                  Step {step.num}
+                </span>
+                <span class="text-slate-300">/</span>
+                <h3 class="text-lg font-bold text-slate-900 tracking-tight">
+                  {step.title}
+                </h3>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-500">
+                {step.summary}
+              </p>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500">
-              {installSteps[0].summary}
-            </p>
-          </div>
 
-          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
-            {installSteps[0].details.map((item) => (
-              <li class="flex items-start gap-2.5">
-                <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span class="leading-relaxed">{item}</span>
-              </li>
-            ))}
-          </ul>
+            <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+              {step.details.map((item) => (
+                <li class="flex items-start gap-2.5">
+                  <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span class="leading-relaxed">{item}</span>
+                </li>
+              ))}
+            </ul>
 
-          <!-- Figure 01 Light SVG Illustration -->
-          <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
-              <!-- Window Topbar -->
-              <div class="h-8 bg-white/80 px-3 flex items-center justify-between border-b border-slate-200/80 shrink-0">
-                <div class="flex items-center gap-1.5">
-                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                  <span class="text-[11px] text-slate-500 font-mono ml-2 font-medium">Downloads / Archive Extraction</span>
-                </div>
-                <span class="text-[10px] text-blue-600 font-mono font-semibold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">Step 01</span>
+            <!-- Verified Step Screenshot -->
+            <figure class="space-y-2 pt-2">
+              <div class="w-full aspect-[16/9] max-w-3xl bg-slate-950 rounded-xl border border-slate-200/90 overflow-hidden shadow-xs flex items-center justify-center">
+                <img 
+                  src={step.image} 
+                  alt={step.imageAlt}
+                  width="1376"
+                  height="768"
+                  loading={idx === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  class="w-full h-full object-contain"
+                />
               </div>
-              <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-slate-50/50">
-                <svg viewBox="0 0 700 320" class="w-full h-full max-h-72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Left: Zip File Card -->
-                  <rect x="40" y="50" width="220" height="220" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
-                  <rect x="65" y="75" width="48" height="48" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1" />
-                  <path d="M83 91h12v16H83z" fill="#3b82f6"/>
-                  <path d="M89 83v8m0 16v8" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
-                  <text x="65" y="150" fill="#0f172a" font-size="14" font-weight="bold" font-family="sans-serif">extension-package.zip</text>
-                  <text x="65" y="172" fill="#64748b" font-size="11" font-family="monospace">Size: ~1.2 MB • Compressed</text>
-                  <rect x="65" y="200" width="170" height="34" rx="6" fill="#f0f4f9" stroke="#cbd5e1" stroke-width="1" />
-                  <text x="80" y="222" fill="#0284c7" font-size="11" font-weight="600" font-family="sans-serif">Right click → Extract All</text>
+              <figcaption class="text-[12px] text-slate-500 pl-1">
+                {step.caption}
+              </figcaption>
+            </figure>
 
-                  <!-- Middle: Arrow Flow -->
-                  <path d="M290 160h60m0 0l-12-12m12 12l-12 12" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <text x="295" y="145" fill="#64748b" font-size="10" font-family="sans-serif" font-weight="600">UNPACK</text>
-
-                  <!-- Right: Extracted Folder with Contents -->
-                  <rect x="380" y="50" width="280" height="220" rx="12" fill="#ffffff" stroke="#10b981" stroke-width="1.5" />
-                  <rect x="405" y="70" width="36" height="36" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1" />
-                  <path d="M417 84h12l-2 10h-8l-2-10z" stroke="#059669" stroke-width="1.5"/>
-                  <text x="450" y="86" fill="#0f172a" font-size="13" font-weight="bold" font-family="sans-serif">/extension-package (Folder)</text>
-                  <text x="450" y="100" fill="#059669" font-size="10" font-family="monospace font-semibold">Ready for Load Unpacked</text>
-
-                  <!-- Inner files list -->
-                  <rect x="405" y="120" width="230" height="125" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
-                  <text x="425" y="145" fill="#0284c7" font-size="11" font-family="monospace font-bold">📄 manifest.json</text>
-                  <text x="560" y="145" fill="#16a34a" font-size="10" font-family="sans-serif" font-weight="bold">Required ✓</text>
-                  <text x="425" y="172" fill="#475569" font-size="11" font-family="monospace">📄 background.js</text>
-                  <text x="425" y="198" fill="#475569" font-size="11" font-family="monospace">📁 icons/</text>
-                  <text x="425" y="224" fill="#475569" font-size="11" font-family="monospace">📁 popup/</text>
-                </svg>
-              </div>
+            <!-- Pro Tip Note -->
+            <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-xl text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
+              <span class="text-blue-700 font-bold shrink-0">Pro-Tip:</span>
+              <span class="text-slate-700 leading-relaxed font-normal">{step.proTip}</span>
             </div>
-            <span class="text-[11px] text-slate-400 block pl-1">
-              Figure 01: Extract the downloaded archive into a standard directory containing manifest.json.
-            </span>
           </div>
-
-          <!-- Soft Pro Tip Card (Matching the user screenshot) -->
-          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
-            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
-            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[0].proTip}</span>
-          </div>
-        </div>
-
-        <!-- STEP 02: Open Extensions Manager -->
-        <div class="space-y-6 pb-12 border-b border-slate-200">
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2.5">
-              <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-                Step 02
-              </span>
-              <h3 class="text-lg font-bold text-slate-900 tracking-tight">
-                {installSteps[1].title}
-              </h3>
-            </div>
-            <p class="text-xs sm:text-sm text-slate-500">
-              {installSteps[1].summary}
-            </p>
-          </div>
-
-          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
-            {installSteps[1].details.map((item) => (
-              <li class="flex items-start gap-2.5">
-                <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span class="leading-relaxed">{item}</span>
-              </li>
-            ))}
-          </ul>
-
-          <!-- Figure 02 Light SVG Illustration -->
-          <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
-              <!-- Browser Chrome Mockup -->
-              <div class="h-10 bg-white px-3 flex items-center gap-3 border-b border-slate-200/90 shrink-0">
-                <div class="flex items-center gap-1.5">
-                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                  <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                </div>
-                <!-- Browser Tab -->
-                <div class="px-3 py-1 bg-[#f0f4f9] rounded-t-md text-[11px] text-slate-800 font-medium flex items-center gap-1.5 border-t border-x border-slate-200">
-                  <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                  <span>Extensions</span>
-                </div>
-              </div>
-
-              <!-- Address Bar Mockup -->
-              <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center gap-3">
-                <div class="flex items-center gap-2 text-slate-400">
-                  <span>←</span>
-                  <span>→</span>
-                  <span>↻</span>
-                </div>
-                <div class="flex-1 bg-white border border-blue-400 rounded-lg px-3 py-2 flex items-center justify-between text-xs font-mono shadow-2xs">
-                  <div class="flex items-center gap-2">
-                    <span class="text-slate-400">🔒</span>
-                    <span class="text-slate-900 font-semibold">chrome://extensions</span>
-                  </div>
-                  <span class="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-sans font-semibold">Press ↵ Enter</span>
-                </div>
-              </div>
-
-              <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-[#f0f4f9]/40">
-                <div class="p-5 bg-white border border-slate-200 rounded-xl shadow-2xs max-w-sm text-center space-y-2">
-                  <div class="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 text-blue-600 mx-auto flex items-center justify-center">
-                    <Terminal class="w-6 h-6" />
-                  </div>
-                  <h4 class="text-sm font-bold text-slate-900">Address Bar Navigation</h4>
-                  <p class="text-xs text-slate-600 leading-relaxed">
-                    Paste <code class="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-mono font-semibold">chrome://extensions</code> directly into your URL bar to immediately load the extension manager.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <span class="text-[11px] text-slate-400 block pl-1">
-              Figure 02: Enter the internal extensions URL directly into your browser address bar.
-            </span>
-          </div>
-
-          <!-- Soft Pro Tip Card -->
-          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
-            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
-            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[1].proTip}</span>
-          </div>
-        </div>
-
-        <!-- STEP 03: Turn ON Developer Mode -->
-        <div class="space-y-6 pb-12 border-b border-slate-200">
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2.5">
-              <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-                Step 03
-              </span>
-              <h3 class="text-lg font-bold text-slate-900 tracking-tight">
-                {installSteps[2].title}
-              </h3>
-            </div>
-            <p class="text-xs sm:text-sm text-slate-500">
-              {installSteps[2].summary}
-            </p>
-          </div>
-
-          <ul class="space-y-2.5 text-xs sm:text-slate-600 pl-1 max-w-3xl">
-            {installSteps[2].details.map((item) => (
-              <li class="flex items-start gap-2.5">
-                <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span class="leading-relaxed">{item}</span>
-              </li>
-            ))}
-          </ul>
-
-          <!-- Figure 03 Light SVG Illustration -->
-          <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
-              <!-- Mockup Header -->
-              <div class="h-8 bg-white/80 px-3 flex items-center justify-between border-b border-slate-200/80 shrink-0">
-                <span class="text-[11px] text-slate-500 font-mono font-medium">Extensions Management Bar</span>
-                <span class="text-[10px] text-blue-600 font-mono font-semibold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">Step 03</span>
-              </div>
-
-              <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-slate-50/50">
-                <svg viewBox="0 0 700 320" class="w-full h-full max-h-72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Browser page container -->
-                  <rect x="30" y="40" width="640" height="240" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
-                  
-                  <!-- Top Banner of Extensions Page -->
-                  <rect x="30" y="40" width="640" height="60" rx="10" fill="#ffffff" stroke="#e2e8f0" />
-                  <path d="M60 70h20v2H60zm0-6h20v2H60zm0 12h20v2H60z" fill="#64748b"/>
-                  <text x="95" y="76" fill="#0f172a" font-size="16" font-weight="bold" font-family="sans-serif">Extensions</text>
-
-                  <!-- Developer Mode Toggle Box Highlight -->
-                  <rect x="420" y="52" width="230" height="38" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 4" />
-                  <text x="435" y="76" fill="#1e3a8a" font-size="12" font-weight="bold" font-family="sans-serif">Developer mode</text>
-                  
-                  <!-- Modern Toggle Switch (ON) -->
-                  <rect x="580" y="60" width="44" height="22" rx="11" fill="#2563eb" />
-                  <circle cx="612" cy="71" r="8" fill="#ffffff" />
-                  <circle cx="612" cy="71" r="3" fill="#10b981" />
-
-                  <!-- Indicator Arrow -->
-                  <path d="M540 140l50-45" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
-                  <rect x="410" y="150" width="220" height="50" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1" />
-                  <text x="425" y="172" fill="#1e40af" font-size="11" font-weight="bold" font-family="sans-serif">Click to toggle ON (Right)</text>
-                  <text x="425" y="190" fill="#64748b" font-size="10" font-family="sans-serif">Reveals the "Load unpacked" button</text>
-
-                  <!-- Left: Unlocked buttons preview -->
-                  <rect x="60" y="130" width="300" height="110" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
-                  <text x="80" y="155" fill="#64748b" font-size="11" font-weight="600" font-family="sans-serif">Action bar unlocks below:</text>
-                  <rect x="80" y="175" width="115" height="32" rx="6" fill="#2563eb" stroke="#1d4ed8" stroke-width="1"/>
-                  <text x="92" y="195" fill="#ffffff" font-size="11" font-weight="bold" font-family="sans-serif">Load unpacked</text>
-                  
-                  <rect x="205" y="175" width="95" height="32" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-                  <text x="215" y="195" fill="#475569" font-size="11" font-family="sans-serif">Pack extension</text>
-                </svg>
-              </div>
-            </div>
-            <span class="text-[11px] text-slate-400 block pl-1">
-              Figure 03: Toggle Developer Mode in the top-right corner to reveal the action buttons.
-            </span>
-          </div>
-
-          <!-- Soft Pro Tip Card -->
-          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
-            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
-            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[2].proTip}</span>
-          </div>
-        </div>
-
-        <!-- STEP 04: Click Load Unpacked -->
-        <div class="space-y-6 pb-12 border-b border-slate-200">
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2.5">
-              <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-                Step 04
-              </span>
-              <h3 class="text-lg font-bold text-slate-900 tracking-tight">
-                {installSteps[3].title}
-              </h3>
-            </div>
-            <p class="text-xs sm:text-sm text-slate-500">
-              {installSteps[3].summary}
-            </p>
-          </div>
-
-          <ul class="space-y-2.5 text-xs sm:text-slate-600 pl-1 max-w-3xl">
-            {installSteps[3].details.map((item) => (
-              <li class="flex items-start gap-2.5">
-                <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span class="leading-relaxed">{item}</span>
-              </li>
-            ))}
-          </ul>
-
-          <!-- Figure 04 Light SVG Illustration -->
-          <div class="space-y-2 pt-2">
-            <div class="w-full aspect-[16/9] max-w-3xl bg-[#f0f4f9] rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs relative flex flex-col">
-              <!-- Mockup Header -->
-              <div class="h-8 bg-white/80 px-3 flex items-center justify-between border-b border-slate-200/80 shrink-0">
-                <span class="text-[11px] text-slate-500 font-mono font-medium">Select Unpacked Directory Dialog</span>
-                <span class="text-[10px] text-blue-600 font-mono font-semibold bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded">Step 04</span>
-              </div>
-
-              <!-- Graphic Canvas -->
-              <div class="flex-1 flex items-center justify-center p-6 bg-slate-50/50">
-                <svg viewBox="0 0 700 320" class="w-full h-full max-h-72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Main Page Background -->
-                  <rect x="20" y="30" width="660" height="260" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
-
-                  <!-- Button Row Top -->
-                  <rect x="45" y="55" width="120" height="34" rx="6" fill="#2563eb" stroke="#1d4ed8" stroke-width="1" />
-                  <text x="60" y="77" fill="#ffffff" font-size="12" font-weight="bold" font-family="sans-serif">Load unpacked</text>
-
-                  <rect x="175" y="55" width="105" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
-                  <text x="190" y="77" fill="#64748b" font-size="12" font-family="sans-serif">Pack extension</text>
-
-                  <rect x="290" y="55" width="70" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
-                  <text x="305" y="77" fill="#64748b" font-size="12" font-family="sans-serif">Update</text>
-
-                  <!-- File Picker Dialog Overlay -->
-                  <rect x="120" y="110" width="460" height="160" rx="10" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5" />
-                  
-                  <rect x="120" y="110" width="460" height="30" rx="10" fill="#f1f5f9" />
-                  <text x="140" y="130" fill="#0f172a" font-size="11" font-weight="bold" font-family="sans-serif">Select Extension Directory</text>
-
-                  <!-- Selected Folder Highlight -->
-                  <rect x="140" y="150" width="420" height="34" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
-                  <text x="160" y="172" fill="#1e40af" font-size="12" font-family="monospace font-bold">📁 deep-summarize-ai (contains manifest.json)</text>
-                  <text x="500" y="172" fill="#16a34a" font-size="10" font-weight="bold" font-family="sans-serif">Selected ✓</text>
-
-                  <!-- Dialog Action Buttons -->
-                  <rect x="420" y="225" width="95" height="30" rx="6" fill="#2563eb" />
-                  <text x="435" y="244" fill="#ffffff" font-size="11" font-weight="bold" font-family="sans-serif">Select Folder</text>
-
-                  <rect x="525" y="225" width="45" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-                  <text x="535" y="244" fill="#64748b" font-size="11" font-family="sans-serif">Cancel</text>
-                </svg>
-              </div>
-            </div>
-            <span class="text-[11px] text-slate-400 block pl-1">
-              Figure 04: Click 'Load unpacked' and choose the folder containing manifest.json.
-            </span>
-          </div>
-
-          <!-- Soft Pro Tip Card -->
-          <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl text-xs sm:text-sm flex items-start gap-3 max-w-3xl shadow-2xs">
-            <span class="text-xs font-bold text-blue-700 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-md shrink-0 shadow-2xs">Pro-Tip</span>
-            <span class="text-slate-700 leading-relaxed font-normal">{installSteps[3].proTip}</span>
-          </div>
-        </div>
-
+        ))}
       </section>
 
-      <!-- 4. Pinning Pro-Tip: Soft #f0f4f9 card with white pill elements -->
+      <!-- 4. Pinning Bonus Tip -->
       <section class="space-y-6">
         <div class="p-6 sm:p-7 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-4">
           <div class="flex items-center justify-between">
-            <div class="inline-flex items-center gap-2 bg-white border border-slate-200/90 rounded-full px-3 py-1 shadow-2xs">
-              <Pin class="w-3.5 h-3.5 text-blue-600" />
-              <span class="text-xs font-bold text-slate-800">Toolbar Quick Access</span>
+            <div class="flex items-center gap-2">
+              <Pin class="w-4 h-4 text-blue-600" />
+              <span class="text-xs font-bold text-slate-900">Toolbar Quick Access</span>
             </div>
             <span class="text-xs text-slate-500 font-medium">Recommended</span>
           </div>
