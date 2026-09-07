@@ -76,3 +76,67 @@ export async function getDeveloperExtensions(
 
   return results || [];
 }
+
+export interface TopGeographySummary {
+  topGeography: string | null;
+  secondaryGeography: string | null;
+}
+
+/**
+ * Fetch top geographies for a list of extension IDs from telemetry_daily
+ */
+export async function getExtensionsTopGeographies(
+  db: D1Database,
+  extensionIds: string[]
+): Promise<Record<string, TopGeographySummary>> {
+  const result: Record<string, TopGeographySummary> = {};
+  if (!extensionIds.length) return result;
+
+  const placeholders = extensionIds.map(() => '?').join(',');
+  const query = `
+    SELECT extension_id, country_code, SUM(downloads) as total_downloads
+    FROM telemetry_daily
+    WHERE extension_id IN (${placeholders})
+    GROUP BY extension_id, country_code
+    ORDER BY total_downloads DESC
+  `;
+
+  try {
+    const rows = await db.prepare(query).bind(...extensionIds).all<{
+      extension_id: string;
+      country_code: string;
+      total_downloads: number;
+    }>();
+
+    if (rows && rows.results) {
+      const byExt: Record<string, { country: string; count: number }[]> = {};
+      for (const r of rows.results) {
+        if (!byExt[r.extension_id]) byExt[r.extension_id] = [];
+        byExt[r.extension_id].push({
+          country: r.country_code,
+          count: Number(r.total_downloads) || 0,
+        });
+      }
+
+      for (const [extId, items] of Object.entries(byExt)) {
+        const total = items.reduce((acc, curr) => acc + curr.count, 0);
+        if (total > 0 && items.length > 0) {
+          const top = items[0];
+          const topPct = Math.round((top.count / total) * 100);
+          const topGeography = `${top.country} (${topPct}%)`;
+
+          const secondary = items.slice(1, 3);
+          const secondaryGeography = secondary.length > 0
+            ? secondary.map((s) => `${s.country} ${Math.round((s.count / total) * 100)}%`).join(' • ')
+            : null;
+
+          result[extId] = { topGeography, secondaryGeography };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch extensions top geographies:', err);
+  }
+
+  return result;
+}

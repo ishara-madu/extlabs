@@ -15,7 +15,8 @@ import {
 import { 
   getDb, 
   getDeveloperByUserIdOrSlug, 
-  getDeveloperExtensions 
+  getDeveloperExtensions,
+  getExtensionsTopGeographies 
 } from "../../lib/db";
 import { getSessionUser } from "../../lib/auth";
 
@@ -35,7 +36,7 @@ export interface DashboardExtension {
   status: 'Production' | 'In Review' | 'Draft';
   updateStatus: string;
   downloads: string;
-  downloadGrowth: string;
+  downloadGrowth?: string;
   rating: number;
   reviewCount: string;
   topGeography: string;
@@ -60,7 +61,10 @@ if (db && user) {
       const results = await getDeveloperExtensions(db, developer.id);
 
       if (results && results.length > 0) {
-        allExtensions = results.map((row, idx) => {
+        const extIds = results.map(r => r.id);
+        const topGeos = await getExtensionsTopGeographies(db, extIds);
+
+        allExtensions = results.map((row) => {
           const isProd = row.is_active === 1 && !row.is_suspended;
           const status = isProd ? 'Production' : (row.review_status === 'pending' ? 'In Review' : 'Draft');
           const updateStatus = isProd ? 'Live on Directory' : (row.review_status === 'pending' ? 'Pending security audit' : 'Not yet sent for review');
@@ -75,6 +79,10 @@ if (db && user) {
             } catch {}
           }
 
+          const geo = topGeos[row.id];
+          const revCount = row.review_count || 0;
+          const ratingVal = revCount > 0 && typeof row.rating === 'number' ? row.rating : 0;
+
           return {
             id: row.slug || row.id,
             name: row.name,
@@ -83,15 +91,15 @@ if (db && user) {
             status,
             updateStatus,
             downloads: formattedDownloads,
-            downloadGrowth: `${(15 + (idx * 4.5)).toFixed(1)}%`,
-            rating: typeof row.rating === 'number' ? row.rating : (Number(row.rating) || 5.0),
-            reviewCount: (row.review_count || 0).toLocaleString(),
-            topGeography: idx % 2 === 0 ? 'US (44%)' : 'US (38%)',
-            secondaryGeography: idx % 2 === 0 ? 'DE 18% • UK 14%' : 'CA 16% • UK 15%',
+            downloadGrowth: undefined,
+            rating: ratingVal,
+            reviewCount: revCount.toLocaleString(),
+            topGeography: geo?.topGeography || '—',
+            secondaryGeography: geo?.secondaryGeography || '',
             version: `v${row.version_name || row.current_version || '1.0.0'}`,
             targetEngine: 'Chromium Extension',
             iconUrl: row.icon_url || '/icons/extension-placeholder.avif',
-            isBookmarked: row.is_featured === 1 || idx < 2
+            isBookmarked: row.is_featured === 1
           };
         });
 
@@ -268,10 +276,16 @@ if (db && user) {
                     <div class="text-xl sm:text-2xl font-bold font-mono text-slate-900">
                       {item.downloads}
                     </div>
-                    <div class="flex items-center gap-1 text-[11px] font-mono text-emerald-600 font-medium">
-                      <span>↑ {item.downloadGrowth}</span>
-                      <span class="text-slate-400 font-sans">vs. previous 30 days</span>
-                    </div>
+                    {item.downloadGrowth ? (
+                      <div class="flex items-center gap-1 text-[11px] font-mono text-emerald-600 font-medium">
+                        <span>↑ {item.downloadGrowth}</span>
+                        <span class="text-slate-400 font-sans">vs. previous 30 days</span>
+                      </div>
+                    ) : (
+                      <div class="text-[11px] text-slate-400 font-sans">
+                        All-time installs
+                      </div>
+                    )}
                   </div>
 
                   <!-- Col 2: Store Rating -->
@@ -280,11 +294,17 @@ if (db && user) {
                       ExtLabs store rating
                     </span>
                     <div class="flex items-center gap-1.5 text-xl sm:text-2xl font-bold font-mono text-slate-900">
-                      <Star class="w-5 h-5 text-amber-500 fill-amber-500 -mt-0.5" />
-                      <span>{item.rating.toFixed(1)}</span>
+                      {item.rating > 0 ? (
+                        <>
+                          <Star class="w-5 h-5 text-amber-500 fill-amber-500 -mt-0.5" />
+                          <span>{item.rating.toFixed(1)}</span>
+                        </>
+                      ) : (
+                        <span class="text-sm font-medium text-slate-400">Unrated</span>
+                      )}
                     </div>
                     <div class="text-[11px] text-slate-400">
-                      {item.reviewCount} verified reviews
+                      {parseInt(item.reviewCount.replace(/,/g, ''), 10) > 0 ? `${item.reviewCount} verified reviews` : 'No reviews yet'}
                     </div>
                   </div>
 
@@ -297,7 +317,7 @@ if (db && user) {
                       {item.topGeography}
                     </div>
                     <div class="text-[11px] text-slate-400 font-mono">
-                      {item.secondaryGeography}
+                      {item.secondaryGeography || (item.topGeography !== '—' ? 'Primary region' : 'No geographic data yet')}
                     </div>
                   </div>
 
@@ -321,7 +341,7 @@ if (db && user) {
           })}
         </div>
 
-        <div id="bookmarked-empty-msg" class="hidden p-6 bg-white border border-slate-200 rounded-xl text-center space-y-1">
+        <div id="bookmarked-empty-msg" class={`${bookmarkedExtensions.length === 0 ? '' : 'hidden'} p-6 bg-white border border-slate-200 rounded-xl text-center space-y-1`}>
           <p class="text-xs font-medium text-slate-600">No extensions currently bookmarked.</p>
           <p class="text-[11px] text-slate-400">Click the bookmark icon on any extension in the list below to bookmark up to 5 items.</p>
         </div>

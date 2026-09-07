@@ -49,10 +49,20 @@ const { extension } = Astro.props;
     <!-- Bottom Details -->
     <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
       <div class="flex items-center gap-1">
-        <Star class="w-3 h-3 text-amber-500 fill-amber-500" />
-        <span class="font-medium text-slate-700">{extension.rating.toFixed(1)}</span>
-        <span class="text-slate-300">•</span>
-        <span>{extension.userCount}</span>
+        {extension.reviewCount > 0 && extension.rating > 0 ? (
+          <>
+            <Star class="w-3 h-3 text-amber-500 fill-amber-500" />
+            <span class="font-medium text-slate-700">{extension.rating.toFixed(1)}</span>
+          </>
+        ) : (
+          <span class="text-slate-400">Unrated</span>
+        )}
+        {extension.userCount ? (
+          <>
+            <span class="text-slate-300">•</span>
+            <span>{extension.userCount}</span>
+          </>
+        ) : null}
       </div>
 
       <span class="text-[10px] text-slate-400">

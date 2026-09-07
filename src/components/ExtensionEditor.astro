@@ -4076,13 +4076,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     if (savedSettings) {
       try {
         const profile = JSON.parse(savedSettings);
-        if (emailInput && (!emailInput.value || emailInput.value === 'support@neurallabs.dev') && profile.email) {
+        if (emailInput && !emailInput.value && profile.email) {
           emailInput.value = profile.email;
         }
-        if (websiteInput && (!websiteInput.value || websiteInput.value === 'https://neurallabs.dev') && profile.website) {
+        if (websiteInput && !websiteInput.value && profile.website) {
           websiteInput.value = profile.website;
         }
-        if (monetagInput && (!monetagInput.value || (!isEditMode && monetagInput.value === 'https://monetag.com/direct/54829103')) && profile.defaultMonetagUrl) {
+        if (monetagInput && !monetagInput.value && profile.defaultMonetagUrl) {
           monetagInput.value = profile.defaultMonetagUrl;
         }
         if (freqInput && profile.defaultFrequency && !isEditMode) {
@@ -4091,7 +4091,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       } catch (e) {}
     }
 
-    if (savedMonetag && monetagInput && (!monetagInput.value || (!isEditMode && monetagInput.value === 'https://monetag.com/direct/54829103'))) {
+    if (savedMonetag && monetagInput && !monetagInput.value) {
       monetagInput.value = savedMonetag;
     }
 
@@ -4100,17 +4100,17 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       .then((res) => res.json())
       .then((data) => {
         if (data && data.authenticated && data.user) {
-          if (websiteInput && (!websiteInput.value || websiteInput.value === 'https://neurallabs.dev')) {
+          if (websiteInput && !websiteInput.value) {
             if (data.user.website) {
               websiteInput.value = data.user.website;
               syncSupportBadges();
             }
           }
-          if (emailInput && (!emailInput.value || emailInput.value === 'support@neurallabs.dev') && data.user.email) {
+          if (emailInput && !emailInput.value && data.user.email) {
             emailInput.value = data.user.email;
             syncSupportBadges();
           }
-          if (data.user.defaultMonetagUrl && monetagInput && (!monetagInput.value || (!isEditMode && monetagInput.value === 'https://monetag.com/direct/54829103'))) {
+          if (data.user.defaultMonetagUrl && monetagInput && !monetagInput.value) {
             monetagInput.value = data.user.defaultMonetagUrl;
           }
           if (data.user.defaultFrequency && freqInput && !isEditMode) {

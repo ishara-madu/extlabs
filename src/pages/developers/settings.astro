@@ -325,7 +325,7 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                 <input
                   id="default-monetag-url"
                   type="url"
-                  value={developer?.default_monetag_url || "https://monetag.com/direct/54829103"}
+                  value={developer?.default_monetag_url || ""}
                   placeholder="https://monetag.com/direct/your-publisher-link"
                   class="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 font-mono font-medium"
                 />
@@ -564,8 +564,9 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                   id="webhook-secret-input"
                   type="password"
                   readonly
-                  value="whsec_extlabs_98f1274bc9a14820a3"
-                  class="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono text-slate-700 cursor-text"
+                  value=""
+                  placeholder="Click 'Rotate webhook secret' above to generate"
+                  class="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono text-slate-700 cursor-text placeholder-slate-400"
                 />
                 <button
                   type="button"
@@ -578,7 +579,7 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                   type="button"
                   id="copy-webhook-secret-btn"
                   class="copy-token-btn px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1.5 shrink-0"
-                  data-copy="whsec_extlabs_98f1274bc9a14820a3"
+                  data-copy=""
                 >
                   <Copy class="w-3.5 h-3.5 text-slate-500" />
                   <span>Copy</span>
@@ -634,8 +635,9 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                 id="api-token-input"
                 type="password"
                 readonly
-                value="extlabs_pat_live_920485918237192038"
-                class="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono text-slate-700 cursor-text"
+                value=""
+                placeholder="Click 'Generate new key' to create access token"
+                class="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono text-slate-700 cursor-text placeholder-slate-400"
               />
               <button
                 type="button"
@@ -648,7 +650,7 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                 type="button"
                 id="copy-api-token-btn"
                 class="copy-token-btn px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1.5 shrink-0"
-                data-copy="extlabs_pat_live_920485918237192038"
+                data-copy=""
               >
                 <Copy class="w-3.5 h-3.5 text-slate-500" />
                 <span>Copy</span>
@@ -821,7 +823,13 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
         const copyBtns = document.querySelectorAll('.copy-token-btn');
         copyBtns.forEach((btn) => {
           btn.addEventListener('click', () => {
-            const copyText = btn.getAttribute('data-copy') || '';
+            let copyText = btn.getAttribute('data-copy') || '';
+            if (!copyText) {
+              const input = btn.parentElement?.querySelector('input');
+              if (input && input.value) {
+                copyText = input.value;
+              }
+            }
             if (copyText) {
               navigator.clipboard.writeText(copyText);
               const label = btn.querySelector('span');
@@ -832,6 +840,8 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                   label.textContent = prev;
                 }, 1800);
               }
+            } else {
+              alert('Please generate a key or secret first.');
             }
           });
         });

@@ -29,9 +29,9 @@ if (db && user) {
   } catch {}
 }
 
-const defaultDevWebsite = developer?.website || (user?.username ? `https://github.com/${user.username}` : '');
+const defaultDevWebsite = developer?.website || '';
 const defaultSupportEmail = user?.email || '';
-const defaultMonetagUrl = developer?.default_monetag_url || "https://monetag.com/direct/54829103";
+const defaultMonetagUrl = developer?.default_monetag_url || '';
 const defaultFrequency = developer?.default_frequency || "24h";
 ---
 

@@ -200,7 +200,7 @@ const jsonLdSchema = {
 
               <!-- Metrics -->
               <div class="flex items-center gap-3 text-xs text-slate-500 flex-wrap pt-0.5">
-                {ext.reviewCount > 0 && (
+                {ext.reviewCount > 0 && ext.rating > 0 ? (
                   <>
                     <div class="flex items-center gap-1 font-semibold text-slate-800">
                       <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
@@ -213,6 +213,11 @@ const jsonLdSchema = {
                         <span>({ext.reviewCount.toLocaleString()})</span>
                       )}
                     </div>
+                    <span class="text-slate-300">•</span>
+                  </>
+                ) : (
+                  <>
+                    <span class="text-slate-400 font-medium">Unrated</span>
                     <span class="text-slate-300">•</span>
                   </>
                 )}
@@ -728,9 +733,9 @@ const jsonLdSchema = {
 
                         return (
                           <div class="flex items-center gap-2">
-                            <span class="w-8 font-mono text-slate-600 text-[11px] inline-flex items-center gap-0.5">
-                              <span>{star}</span>
-                              <Star class="w-2.5 h-2.5 text-amber-500 fill-amber-500 shrink-0" />
+                            <span class="w-8  text-slate-600 text-[11px] inline-flex items-center gap-0.5">
+                              <span class="w-2">{star}</span>
+                              <Star class="w-2.5 h-2.5 text-slate-800 fill-slate-800 shrink-0" />
                             </span>
                             <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                               <div class="h-full bg-amber-400 rounded-full" style={`width: ${percent}%;`}></div>
@@ -826,7 +831,7 @@ const jsonLdSchema = {
                     class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors inline-flex items-center gap-1"
                   >
                     <span>5</span>
-                    <Star class="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                    <Star class="w-2.5 h-2.5 text-slate-800 fill-slate-800" />
                   </button>
                   <button
                     type="button"
@@ -834,7 +839,7 @@ const jsonLdSchema = {
                     class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors inline-flex items-center gap-1"
                   >
                     <span>4</span>
-                    <Star class="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                    <Star class="w-2.5 h-2.5 text-slate-800 fill-slate-800" />
                   </button>
                   <button
                     type="button"
@@ -842,7 +847,7 @@ const jsonLdSchema = {
                     class="review-filter-btn px-2.5 py-1 text-[11px] font-medium rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors inline-flex items-center gap-1"
                   >
                     <span>3</span>
-                    <Star class="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                    <Star class="w-2.5 h-2.5 text-slate-800 fill-slate-800" />
                   </button>
                 </div>
               )}
@@ -1464,35 +1469,25 @@ const jsonLdSchema = {
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
+
+              // 3. Update button state
+              downloadBtn.innerHTML = `
+                <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Downloaded</span>
+              `;
+              downloadBtn.className = 'w-full sm:w-auto px-6 py-3 bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors';
+
+              showToast(`Downloading ${extName}. Follow the install guide below if needed.`);
+
+              // 4. Open Post-Download Install Quick Guide Modal
+              const postDownloadModal = document.getElementById('post-download-modal') as HTMLDialogElement | null;
+              if (postDownloadModal && typeof postDownloadModal.showModal === 'function') {
+                postDownloadModal.showModal();
+              }
             } else {
-              // Fallback package generation if no direct link configured
-              const dummyPackage = `Package: ${extName}\nVersion: ${extVersion}\nDeveloper: ${extDeveloper}\nManifest: Manifest ${extManifest.toUpperCase()} Compliant\nVerified by: ExtLabs Directory`;
-              const blob = new Blob([dummyPackage], { type: 'application/zip' });
-              const downloadUrl = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = downloadUrl;
-              a.download = `${extId}-v${extVersion}.zip`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(downloadUrl);
-            }
-
-            // 3. Update button state
-            downloadBtn.innerHTML = `
-              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Downloaded</span>
-            `;
-            downloadBtn.className = 'w-full sm:w-auto px-6 py-3 bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors';
-
-            showToast(`Downloading ${extName}. Follow the install guide below if needed.`);
-
-            // 4. Open Post-Download Install Quick Guide Modal
-            const postDownloadModal = document.getElementById('post-download-modal') as HTMLDialogElement | null;
-            if (postDownloadModal && typeof postDownloadModal.showModal === 'function') {
-              postDownloadModal.showModal();
+              showToast(`Direct download package is not yet published for ${extName}.`);
             }
           });
         }
@@ -1675,7 +1670,7 @@ const jsonLdSchema = {
                 }),
               });
 
-              const data = await res.json();
+              const data = (await res.json()) as { success?: boolean; error?: string };
               if (!res.ok || !data.success) {
                 throw new Error(data.error || 'Failed to submit review.');
               }
@@ -1720,7 +1715,7 @@ const jsonLdSchema = {
                 body: JSON.stringify({ extensionId }),
               });
 
-              const data = await res.json();
+              const data = (await res.json()) as { success?: boolean; error?: string };
               if (!res.ok || !data.success) {
                 throw new Error(data.error || 'Failed to delete review.');
               }

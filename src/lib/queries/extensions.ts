@@ -138,83 +138,41 @@ export function generateExtensionBannerSvg(name: string, category: string): stri
 }
 
 /**
- * Calculate rating star breakdown based on average rating and review count
+ * Fetch real rating star breakdown from reviews table in Cloudflare D1
  */
-export function calculateRatingBreakdown(rating: number, reviewCount: number): { 5: number; 4: number; 3: number; 2: number; 1: number } {
-  if (!reviewCount || reviewCount <= 0) {
-    return { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-  }
-  const r = typeof rating === 'number' && rating > 0 ? rating : 5.0;
-  if (r >= 4.8) {
-    const c5 = Math.round(reviewCount * 0.88);
-    const c4 = Math.round(reviewCount * 0.08);
-    const c3 = Math.round(reviewCount * 0.02);
-    const c2 = Math.max(0, Math.round(reviewCount * 0.01));
-    const c1 = Math.max(0, reviewCount - c5 - c4 - c3 - c2);
-    return { 5: c5, 4: c4, 3: c3, 2: c2, 1: c1 };
-  } else if (r >= 4.5) {
-    const c5 = Math.round(reviewCount * 0.72);
-    const c4 = Math.round(reviewCount * 0.18);
-    const c3 = Math.round(reviewCount * 0.06);
-    const c2 = Math.round(reviewCount * 0.02);
-    const c1 = Math.max(0, reviewCount - c5 - c4 - c3 - c2);
-    return { 5: c5, 4: c4, 3: c3, 2: c2, 1: c1 };
-  } else if (r >= 4.0) {
-    const c5 = Math.round(reviewCount * 0.55);
-    const c4 = Math.round(reviewCount * 0.28);
-    const c3 = Math.round(reviewCount * 0.10);
-    const c2 = Math.round(reviewCount * 0.04);
-    const c1 = Math.max(0, reviewCount - c5 - c4 - c3 - c2);
-    return { 5: c5, 4: c4, 3: c3, 2: c2, 1: c1 };
-  } else {
-    const c5 = Math.round(reviewCount * 0.35);
-    const c4 = Math.round(reviewCount * 0.25);
-    const c3 = Math.round(reviewCount * 0.20);
-    const c2 = Math.round(reviewCount * 0.12);
-    const c1 = Math.max(0, reviewCount - c5 - c4 - c3 - c2);
-    return { 5: c5, 4: c4, 3: c3, 2: c2, 1: c1 };
-  }
-}
+export async function getExtensionRatingBreakdown(
+  db: D1Database | null,
+  extensionId: string
+): Promise<{ 5: number; 4: number; 3: number; 2: number; 1: number }> {
+  const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  if (!db || !extensionId) return breakdown;
 
-/**
- * Fallback verified user reviews for an extension when database reviews table has no rows
- */
-export function getDefaultReviewsForExtension(name: string, rating: number = 5): ReviewItem[] {
-  const effectiveRating = typeof rating === 'number' && rating > 0 ? rating : 5;
-  return [
-    {
-      author: 'Alex Mercer',
-      date: '2 days ago',
-      rating: Math.min(5, Math.max(4, Math.round(effectiveRating))),
-      title: 'Indispensable tool in my daily workflow!',
-      comment: `I have been using ${name} every single day. The speed is remarkable and it saves me significant time daily. Highly recommended!`,
-      verified: true,
-    },
-    {
-      author: 'Sarah Chen',
-      date: '1 week ago',
-      rating: 5,
-      title: 'Clean, fast, and no unnecessary clutter',
-      comment: 'Super crisp UI that fits right into my browser. Love the zero-latency response and respectful privacy permissions.',
-      verified: true,
-    },
-    {
-      author: 'David Miller',
-      date: '3 weeks ago',
-      rating: Math.max(3, Math.min(5, Math.floor(effectiveRating))),
-      title: 'Great extension with solid performance',
-      comment: 'Works flawlessly on Chromium browsers. Would love to see even more custom keyboard shortcuts in the next update!',
-      verified: true,
-    },
-    {
-      author: 'Elena Rostova',
-      date: '1 month ago',
-      rating: 5,
-      title: 'Exactly what I was looking for',
-      comment: 'Lightweight, seamless, and completely unobtrusive. It just works without slowing down any tabs.',
-      verified: true,
-    },
-  ];
+  try {
+    const ext = await db
+      .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+      .bind(extensionId, extensionId)
+      .first<{ id: string }>();
+
+    if (!ext) return breakdown;
+
+    const rows = await db
+      .prepare('SELECT rating, COUNT(*) as count FROM reviews WHERE extension_id = ? GROUP BY rating')
+      .bind(ext.id)
+      .all<{ rating: number; count: number }>();
+
+    if (rows && rows.results) {
+      for (const r of rows.results) {
+        const star = Math.round(Number(r.rating));
+        if (star >= 1 && star <= 5) {
+          breakdown[star as 1 | 2 | 3 | 4 | 5] = Number(r.count) || 0;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to calculate rating breakdown from D1:', err);
+  }
+
+  return breakdown;
 }
 
 /**
@@ -448,7 +406,11 @@ export async function deleteExtensionReview(
 /**
  * Map database extension to store frontend Extension format
  */
-export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper, customReviews?: ReviewItem[]): Extension {
+export function mapDbExtensionToStoreItem(
+  dbExt: ExtensionWithDeveloper,
+  customReviews?: ReviewItem[],
+  customBreakdown?: { 5: number; 4: number; 3: number; 2: number; 1: number }
+): Extension {
   let tags: string[] = [];
   try {
     tags = JSON.parse(dbExt.tags || '[]');
@@ -512,14 +474,10 @@ export function mapDbExtensionToStoreItem(dbExt: ExtensionWithDeveloper, customR
     ? `<img src="${dbExt.header_image_url}" alt="${dbExt.name}" class="w-full h-full object-cover" />`
     : generateExtensionBannerSvg(dbExt.name, dbExt.category);
 
-  const rating = typeof dbExt.rating === 'number' ? dbExt.rating : 0;
   const reviewCount = typeof dbExt.review_count === 'number' ? dbExt.review_count : 0;
-  const ratingBreakdown = reviewCount > 0 ? calculateRatingBreakdown(rating, reviewCount) : undefined;
-
-  let reviews: ReviewItem[] | undefined = customReviews;
-  if ((!reviews || reviews.length === 0) && reviewCount > 0) {
-    reviews = getDefaultReviewsForExtension(dbExt.name, rating);
-  }
+  const rating = reviewCount > 0 && typeof dbExt.rating === 'number' ? dbExt.rating : 0;
+  const reviews: ReviewItem[] = customReviews || [];
+  const ratingBreakdown = reviewCount > 0 ? (customBreakdown || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }) : undefined;
 
   let supportedBrowsers: string[] = ['chrome', 'brave', 'edge', 'opera'];
   try {
@@ -636,13 +594,19 @@ export async function getStoreExtensionByIdOrSlug(db: D1Database | null, idOrSlu
   try {
     const ext = await getExtensionBySlug(db, idOrSlug);
     if (ext) {
-      const reviews = await getExtensionReviews(db, ext.id);
-      return mapDbExtensionToStoreItem(ext, reviews);
+      const [reviews, ratingBreakdown] = await Promise.all([
+        getExtensionReviews(db, ext.id),
+        getExtensionRatingBreakdown(db, ext.id),
+      ]);
+      return mapDbExtensionToStoreItem(ext, reviews, ratingBreakdown);
     }
     const extById = await getExtensionById(db, idOrSlug);
     if (extById) {
-      const reviews = await getExtensionReviews(db, extById.id);
-      return mapDbExtensionToStoreItem(extById, reviews);
+      const [reviews, ratingBreakdown] = await Promise.all([
+        getExtensionReviews(db, extById.id),
+        getExtensionRatingBreakdown(db, extById.id),
+      ]);
+      return mapDbExtensionToStoreItem(extById, reviews, ratingBreakdown);
     }
   } catch (err) {
     console.warn('Failed to fetch extension by slug from D1:', err);
@@ -692,12 +656,9 @@ export async function getDeveloperExtensionDetail(
     LIMIT 1
   `;
 
-  const stmt = db.prepare(query);
-  const result = developerId
-    ? await stmt.bind(idOrSlug, idOrSlug, developerId).first<ManageExtensionDetail>()
-    : await stmt.bind(idOrSlug, idOrSlug).first<ManageExtensionDetail>();
-
-  return result || null;
+  const bindings = developerId ? [idOrSlug, idOrSlug, developerId] : [idOrSlug, idOrSlug];
+  const row = await db.prepare(query).bind(...bindings).first<ManageExtensionDetail>();
+  return row || null;
 }
 
 export interface ExtensionRegionalTelemetry {
@@ -712,6 +673,12 @@ export async function getExtensionRegionalAnalytics(
   db: D1Database,
   extensionId: string
 ): Promise<ExtensionRegionalTelemetry[]> {
+  const ext = await db
+    .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+    .bind(extensionId, extensionId)
+    .first<{ id: string }>();
+  const resolvedId = ext ? ext.id : extensionId;
+
   const query = `
     SELECT 
       country_code, 
@@ -722,7 +689,7 @@ export async function getExtensionRegionalAnalytics(
     ORDER BY total_downloads DESC
   `;
 
-  const { results } = await db.prepare(query).bind(extensionId).all<ExtensionRegionalTelemetry>();
+  const { results } = await db.prepare(query).bind(resolvedId).all<ExtensionRegionalTelemetry>();
   return results || [];
 }
 
