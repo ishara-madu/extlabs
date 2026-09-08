@@ -58,6 +58,7 @@ export interface Extension {
   userCount: string;
   version: string;
   updatedDate: string;
+  createdDate?: string;
   size?: string;
   featured?: boolean;
   editorsPick?: boolean;

@@ -507,6 +507,7 @@ export function mapDbExtensionToStoreItem(
     userCount: usersCountFormatted,
     version: dbExt.current_version || '1.0.0',
     updatedDate: dbExt.updated_at ? dbExt.updated_at.split(' ')[0] : '',
+    createdDate: dbExt.created_at ? dbExt.created_at.split(' ')[0] : (dbExt.updated_at ? dbExt.updated_at.split(' ')[0] : ''),
     size: undefined,
     featured: Boolean(dbExt.is_featured),
     editorsPick: Boolean(dbExt.is_editors_pick),

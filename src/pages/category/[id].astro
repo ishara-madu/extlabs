@@ -27,6 +27,15 @@ const allStoreExtensions = await getStoreExtensions(db);
 const categoryExtensions = allStoreExtensions.filter(e => e.category === category.id);
 const topFeatured = categoryExtensions.find(ext => ext.featured) || categoryExtensions[0];
 
+const topFeaturedIsNew = topFeatured ? (() => {
+  const dateStr = topFeatured.createdDate || topFeatured.updatedDate;
+  if (!dateStr) return true;
+  const d = new Date(dateStr).getTime();
+  if (isNaN(d)) return true;
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+  return (Date.now() - d) < thirtyDaysMs;
+})() : false;
+
 const categoryCounts: Record<string, number> = {};
 for (const ext of allStoreExtensions) {
   categoryCounts[ext.category] = (categoryCounts[ext.category] || 0) + 1;
@@ -205,13 +214,22 @@ Astro.response.headers.set('Vary', 'Cookie');
 
                 <div class="flex items-center justify-between pt-2">
                   <div class="flex items-center gap-3 text-xs text-slate-500">
-                    {topFeatured.reviewCount > 0 && (
+                    {topFeatured.reviewCount > 0 && topFeatured.rating > 0 ? (
                       <>
                         <div class="flex items-center gap-1 font-semibold text-slate-800">
                           <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                           <span>{topFeatured.rating.toFixed(1)}</span>
                           <span class="text-slate-400 font-normal">({topFeatured.reviewCount.toLocaleString()})</span>
                         </div>
+                        {topFeatured.userCount ? <span class="text-slate-300">•</span> : null}
+                      </>
+                    ) : (
+                      <>
+                        {topFeaturedIsNew ? (
+                          <span class="font-semibold text-blue-600">New Release</span>
+                        ) : (
+                          <span class="font-mono text-slate-400">v{topFeatured.version}</span>
+                        )}
                         {topFeatured.userCount ? <span class="text-slate-300">•</span> : null}
                       </>
                     )}

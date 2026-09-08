@@ -39,6 +39,14 @@ const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id
 
 const screenshotsList: string[] = Array.isArray(ext.screenshots) && ext.screenshots.length > 0 ? ext.screenshots : [];
 const hasRating = (typeof ext.rating === 'number' && ext.rating > 0) || ext.reviewCount > 0;
+const isNew = (() => {
+  const dateStr = ext.createdDate || ext.updatedDate;
+  if (!dateStr) return true;
+  const d = new Date(dateStr).getTime();
+  if (isNaN(d)) return true;
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+  return (Date.now() - d) < thirtyDaysMs;
+})();
 const otherReviews = ext.reviews
   ? ext.reviews.filter(r => !currentUser || (r.userId !== currentUser.id && r.id !== userReview?.id))
   : [];
@@ -212,7 +220,7 @@ const jsonLdSchema = {
 
               <!-- Metrics -->
               <div class="flex items-center gap-3 text-xs text-slate-500 flex-wrap pt-0.5">
-                {ext.reviewCount > 0 && ext.rating > 0 && (
+                {ext.reviewCount > 0 && ext.rating > 0 ? (
                   <>
                     <div class="flex items-center gap-1 font-semibold text-slate-800">
                       <Star class="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
@@ -224,6 +232,21 @@ const jsonLdSchema = {
                       ) : (
                         <span>({ext.reviewCount.toLocaleString()})</span>
                       )}
+                    </div>
+                    <span class="text-slate-300">•</span>
+                  </>
+                ) : (
+                  <>
+                    <div class="flex items-center gap-1.5">
+                      {isNew ? (
+                        <span class="font-semibold text-blue-600">New Release</span>
+                      ) : (
+                        <span class="font-mono text-slate-400">v{ext.version}</span>
+                      )}
+                      <span class="text-slate-300">•</span>
+                      <a href="#reviews-section" class="text-slate-500 hover:text-slate-900 underline font-normal">
+                        Be the first to review
+                      </a>
                     </div>
                     <span class="text-slate-300">•</span>
                   </>
