@@ -1,7 +1,7 @@
-// src/pages/api/extensions/review.ts
 import type { APIRoute } from 'astro';
 import { getDb, submitExtensionReview, deleteExtensionReview } from '../../../lib/db';
 import { getReviewerUser } from '../../../lib/auth';
+import { purgeExtensionStoreCache } from '../../../lib/cache-purge';
 
 export const prerender = false;
 
@@ -112,6 +112,23 @@ export const POST: APIRoute = async ({ request }) => {
       comment: trimmedComment,
     });
 
+    // On-demand Cache Purge: Invalidate Edge CDN cache so new rating and review appear immediately
+    try {
+      const ext = await db
+        .prepare('SELECT id, slug, category FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+        .bind(extensionId, extensionId)
+        .first<{ id: string; slug: string; category: string }>();
+      if (ext) {
+        await purgeExtensionStoreCache(request, {
+          extensionId: ext.id,
+          extensionSlug: ext.slug,
+          category: ext.category,
+        });
+      }
+    } catch (purgeErr) {
+      console.warn('Cache purge after review submission failed non-critically:', purgeErr);
+    }
+
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -163,6 +180,24 @@ export const DELETE: APIRoute = async ({ request }) => {
 
   try {
     const result = await deleteExtensionReview(db, extensionId, user.id);
+
+    // On-demand Cache Purge: Invalidate Edge CDN cache so deleted review reflects immediately
+    try {
+      const ext = await db
+        .prepare('SELECT id, slug, category FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+        .bind(extensionId, extensionId)
+        .first<{ id: string; slug: string; category: string }>();
+      if (ext) {
+        await purgeExtensionStoreCache(request, {
+          extensionId: ext.id,
+          extensionSlug: ext.slug,
+          category: ext.category,
+        });
+      }
+    } catch (purgeErr) {
+      console.warn('Cache purge after review deletion failed non-critically:', purgeErr);
+    }
+
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

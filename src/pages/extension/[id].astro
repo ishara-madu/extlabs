@@ -26,9 +26,9 @@ const hasSessionCookie = Boolean(Astro.request.headers.get('Cookie')?.includes('
 const currentUser = (db && hasSessionCookie) ? await getReviewerUser(db, Astro.request) : null;
 const userReview = currentUser && db ? await getUserReviewForExtension(db, ext.id, currentUser.id) : null;
 
-// Edge CDN Caching: Unauthenticated traffic served directly from Cloudflare Edge (0 DB queries)
+// Edge CDN Caching: Unauthenticated traffic served directly from Cloudflare Edge for 7 days (0 DB queries)
 if (!currentUser) {
-  Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=3600');
+  Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=604800, stale-while-revalidate=86400');
   Astro.response.headers.set('Vary', 'Cookie');
 } else {
   Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');

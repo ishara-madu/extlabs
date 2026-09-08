@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug, saveExtensionSpecs } from '../../../../lib/db';
+import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
 
 export const prerender = false;
 
@@ -154,6 +155,23 @@ export const POST: APIRoute = async ({ request }) => {
       privacyPolicyUrl: cleanPrivacy || null,
       publish: Boolean(publish),
     });
+
+    // Invalidate Edge CDN cache so updated specs appear immediately globally
+    try {
+      const ext = await db
+        .prepare('SELECT id, slug, category FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+        .bind(result.id, result.id)
+        .first<{ id: string; slug: string; category: string }>();
+      if (ext) {
+        await purgeExtensionStoreCache(request, {
+          extensionId: ext.id,
+          extensionSlug: ext.slug,
+          category: ext.category,
+        });
+      }
+    } catch (purgeErr) {
+      console.warn('Cache purge after save-specs failed non-critically:', purgeErr);
+    }
 
     return new Response(JSON.stringify({
       success: true,

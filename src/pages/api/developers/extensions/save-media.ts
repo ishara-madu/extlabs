@@ -3,6 +3,7 @@ import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug, saveExtensionMedia } from '../../../../lib/db';
 import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryFolder } from '../../../../lib/cloudinary';
+import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
 
 export const prerender = false;
 
@@ -211,6 +212,23 @@ export const POST: APIRoute = async ({ request }) => {
       screenshots: targetScreenshots,
       youtubeVideoUrl: finalYoutube || null,
     });
+
+    // Invalidate Edge CDN cache so updated screenshots and icons appear immediately globally
+    try {
+      const ext = await db
+        .prepare('SELECT id, slug, category FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+        .bind(result.id, result.id)
+        .first<{ id: string; slug: string; category: string }>();
+      if (ext) {
+        await purgeExtensionStoreCache(request, {
+          extensionId: ext.id,
+          extensionSlug: ext.slug,
+          category: ext.category,
+        });
+      }
+    } catch (purgeErr) {
+      console.warn('Cache purge after save-media failed non-critically:', purgeErr);
+    }
 
     const isCloudinaryActive = isCloudinaryConfigured();
 
