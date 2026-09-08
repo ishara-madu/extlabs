@@ -8,7 +8,7 @@ import Footer from "../../components/Footer.astro";
 import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { CATEGORIES, type CategoryInfo } from "../../data/extensions";
 import { getDb, getStoreExtensions } from "../../lib/db";
-import { Home, Star, Search, ArrowRight } from '@lucide/astro';
+import { Home, Star, Search, ArrowRight, SlidersHorizontal, ChevronDown, Check } from '@lucide/astro';
 
 const categoryId = Astro.params.id || 'productivity';
 const category = CATEGORIES.find(c => c.id === categoryId) || {
@@ -265,18 +265,37 @@ Astro.response.headers.set('Vary', 'Cookie');
             />
           </div>
 
-          <!-- Sort Select -->
-          <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end text-xs text-slate-500">
-            <span class="text-xs font-medium text-slate-600">Sort by:</span>
-            <select
-              id="category-sort-select"
-              class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 cursor-pointer"
-            >
-              <option value="popular">Most Popular</option>
-              <option value="rating">Highest Rated</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="recent">Recently Updated</option>
-            </select>
+          <!-- Sleek Theme-Matched Sort Dropdown -->
+          <div class="relative w-full sm:w-auto flex justify-end">
+            <details id="category-sort-dropdown" class="relative group select-none text-left w-full sm:w-auto">
+              <summary class="inline-flex items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-lg cursor-pointer shadow-2xs transition-all list-none [&::-webkit-details-marker]:hidden focus:outline-none focus:border-slate-400 w-full sm:w-auto">
+                <div class="flex items-center gap-1.5">
+                  <SlidersHorizontal class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span class="text-slate-400 font-normal">Sort:</span>
+                  <span id="category-sort-active-label" class="font-semibold text-slate-800">Most Popular</span>
+                </div>
+                <ChevronDown class="w-3.5 h-3.5 text-slate-400 group-open:rotate-180 transition-transform shrink-0 ml-0.5" />
+              </summary>
+
+              <div class="absolute right-0 z-30 mt-1.5 w-44 bg-white rounded-xl border border-slate-200/90 shadow-lg py-1 text-xs">
+                {[
+                  { value: 'popular', label: 'Most Popular' },
+                  { value: 'rating', label: 'Highest Rated' },
+                  { value: 'name', label: 'Name (A-Z)' },
+                  { value: 'recent', label: 'Recently Updated' },
+                ].map((opt) => (
+                  <button
+                    type="button"
+                    class="category-sort-option w-full flex items-center justify-between px-3.5 py-2 text-left transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+                    data-value={opt.value}
+                    data-label={opt.label}
+                  >
+                    <span>{opt.label}</span>
+                    <Check class={`w-3.5 h-3.5 text-blue-600 shrink-0 ${opt.value === 'popular' ? 'opacity-100' : 'opacity-0'} check-icon`} />
+                  </button>
+                ))}
+              </div>
+            </details>
           </div>
         </div>
 
@@ -320,7 +339,10 @@ Astro.response.headers.set('Vary', 'Cookie');
 
       document.addEventListener('DOMContentLoaded', () => {
         const searchInput = document.getElementById('category-search-input');
-        const sortSelect = document.getElementById('category-sort-select');
+        const sortOptionsBtns = document.querySelectorAll('.category-sort-option');
+        const sortLabel = document.getElementById('category-sort-active-label');
+        const sortDropdown = document.getElementById('category-sort-dropdown') as HTMLDetailsElement | null;
+        let currentSort = 'popular';
         const tagButtons = document.querySelectorAll('.sub-tag-btn');
         const grid = document.getElementById('category-grid');
         const emptyState = document.getElementById('category-empty-state');
@@ -350,7 +372,7 @@ Astro.response.headers.set('Vary', 'Cookie');
           });
 
           // Sorting
-          const sortVal = sortSelect ? sortSelect.value : 'popular';
+          const sortVal = currentSort;
           visibleCards.sort((a, b) => {
             const idA = a.getAttribute('data-id');
             const idB = b.getAttribute('data-id');
@@ -388,11 +410,41 @@ Astro.response.headers.set('Vary', 'Cookie');
           });
         }
 
-        if (sortSelect) {
-          sortSelect.addEventListener('change', () => {
+        sortOptionsBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const val = btn.getAttribute('data-value') || 'popular';
+            const label = btn.getAttribute('data-label') || 'Most Popular';
+            currentSort = val;
+            if (sortLabel) sortLabel.textContent = label;
+
+            sortOptionsBtns.forEach(b => {
+              const check = b.querySelector('.check-icon');
+              if (check) {
+                if (b.getAttribute('data-value') === val) {
+                  check.classList.remove('opacity-0');
+                  check.classList.add('opacity-100');
+                  b.classList.add('font-semibold', 'text-slate-900', 'bg-slate-50/80');
+                  b.classList.remove('text-slate-600');
+                } else {
+                  check.classList.remove('opacity-100');
+                  check.classList.add('opacity-0');
+                  b.classList.remove('font-semibold', 'text-slate-900', 'bg-slate-50/80');
+                  b.classList.add('text-slate-600');
+                }
+              }
+            });
+
+            if (sortDropdown) sortDropdown.removeAttribute('open');
             filterAndSort();
           });
-        }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (sortDropdown && sortDropdown.open && !sortDropdown.contains(e.target as Node)) {
+            sortDropdown.removeAttribute('open');
+          }
+        });
 
         tagButtons.forEach(btn => {
           btn.addEventListener('click', () => {

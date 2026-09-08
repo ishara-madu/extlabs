@@ -8,12 +8,21 @@ import Footer from "../components/Footer.astro";
 import ExtensionCard from "../components/ExtensionCard.astro";
 import { CATEGORIES } from "../data/extensions";
 import { getDb, searchStoreExtensions } from "../lib/db";
-import { Search, SlidersHorizontal, X, ArrowRight, Sparkles, Box } from '@lucide/astro';
+import { Search, SlidersHorizontal, X, ArrowRight, Sparkles, Box, ChevronDown, Check } from '@lucide/astro';
 
 const url = new URL(Astro.request.url);
 const queryParam = (url.searchParams.get('q') || '').trim();
 const categoryParam = (url.searchParams.get('category') || '').trim();
 const sortParam = (url.searchParams.get('sort') || 'popular').trim();
+
+const sortOptions = [
+  { value: 'popular', label: 'Most Popular' },
+  { value: 'rating', label: 'Highest Rated' },
+  { value: 'newest', label: 'Newest Release' },
+  { value: 'name', label: 'Name (A-Z)' },
+];
+
+const activeSortOption = sortOptions.find(o => o.value === sortParam) || sortOptions[0];
 
 const db = getDb();
 const extensions = await searchStoreExtensions(db, {
@@ -141,33 +150,47 @@ const pageDescription = queryParam
             )}
           </div>
 
-          <!-- Hidden category state to preserve on search submit -->
+          <!-- Hidden filters preserved on search submit -->
           {categoryParam && (
             <input type="hidden" name="category" value={categoryParam} />
           )}
+          {sortParam && sortParam !== 'popular' && (
+            <input type="hidden" name="sort" value={sortParam} />
+          )}
 
-          <!-- Sort Select Dropdown -->
-          <div class="flex items-center gap-2.5 justify-end shrink-0 text-xs text-slate-500 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-            <span class="text-xs font-medium text-slate-600 whitespace-nowrap">Sort by:</span>
-            <select
-              name="sort"
-              class="px-3 py-2 text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 cursor-pointer"
-              onchange="this.form.submit()"
-            >
-              <option value="popular" selected={sortParam === 'popular'}>Most Popular</option>
-              <option value="rating" selected={sortParam === 'rating'}>Highest Rated</option>
-              <option value="newest" selected={sortParam === 'newest'}>Newest Release</option>
-              <option value="name" selected={sortParam === 'name'}>Name (A-Z)</option>
-            </select>
+          <!-- Sleek Theme-Matched Custom Sort Dropdown -->
+          <div class="relative shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex items-center justify-end">
+            <details id="sort-dropdown" class="relative group select-none text-left">
+              <summary class="inline-flex items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-lg cursor-pointer shadow-2xs transition-all list-none [&::-webkit-details-marker]:hidden focus:outline-none focus:border-slate-400">
+                <div class="flex items-center gap-1.5">
+                  <SlidersHorizontal class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span class="text-slate-400 font-normal">Sort:</span>
+                  <span class="font-semibold text-slate-800">{activeSortOption.label}</span>
+                </div>
+                <ChevronDown class="w-3.5 h-3.5 text-slate-400 group-open:rotate-180 transition-transform shrink-0 ml-0.5" />
+              </summary>
 
-            <noscript>
-              <button
-                type="submit"
-                class="px-3 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg"
-              >
-                Apply
-              </button>
-            </noscript>
+              <div class="absolute right-0 z-30 mt-1.5 w-44 bg-white rounded-xl border border-slate-200/90 shadow-lg py-1 text-xs">
+                {sortOptions.map((opt) => {
+                  const isSelected = sortParam === opt.value;
+                  return (
+                    <a
+                      href={buildSearchUrl(undefined, opt.value)}
+                      class={`flex items-center justify-between px-3.5 py-2 transition-colors ${
+                        isSelected
+                          ? 'font-semibold text-slate-900 bg-slate-50/80'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      {isSelected && (
+                        <Check class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      )}
+                    </a>
+                  );
+                })}
+              </div>
+            </details>
           </div>
         </form>
 
@@ -297,5 +320,14 @@ const pageDescription = queryParam
     <!-- Footer -->
     <Footer />
 
+    <script>
+      // Close sort dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('sort-dropdown') as HTMLDetailsElement | null;
+        if (dropdown && dropdown.open && !dropdown.contains(e.target as Node)) {
+          dropdown.removeAttribute('open');
+        }
+      });
+    </script>
   </body>
 </html>
