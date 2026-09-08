@@ -3,80 +3,93 @@
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
-import { 
-  ExternalLink, 
-  ArrowRight, 
-  ChevronDown, 
-  Check, 
-  UploadCloud, 
-  ShieldCheck, 
-  Layers, 
-  BarChart3, 
-  Sparkles, 
-  Code2, 
-  Terminal, 
-  Users, 
-  Star, 
-  Coins, 
-  FileCode2, 
-  Globe, 
-  Sliders, 
+import {
+  ExternalLink,
+  ArrowRight,
+  ChevronDown,
+  Check,
+  UploadCloud,
+  ShieldCheck,
+  Layers,
+  BarChart3,
+  Sparkles,
+  Code2,
+  Terminal,
+  Users,
+  Star,
+  Coins,
+  FileCode2,
+  Globe,
+  Sliders,
   BookOpen,
-  CheckCircle2
-} from '@lucide/astro';
+  CheckCircle2,
+} from "@lucide/astro";
 
 const developerFaqs = [
   {
     question: "How do I publish my browser extension on ExtLabs?",
-    answer: "Sign in with your GitHub account, navigate to the Developer Console (/developers/new), upload your Manifest V3 package (.zip), fill in the store listing metadata and screenshots, and submit. Your package undergoes an automated security audit before going live."
+    answer:
+      "Sign in with your GitHub account, navigate to the Developer Console (/developers/new), upload your Manifest V3 package (.zip), fill in the store listing metadata and screenshots, and submit. Your package undergoes an automated security audit before going live.",
   },
   {
-    question: "Can I publish tools rejected by other corporate stores (e.g. bypass tools, scrapers)?",
-    answer: "Yes! ExtLabs believes in developer freedom and open software. Unlike corporate stores with arbitrary policy bans, we welcome clean utility tools, link/paywall bypassers, power scrapers, script modifiers, and media helpers as long as your package is 100% virus-free, free of malicious spyware/malware, and transparent in its manifest permissions."
+    question:
+      "Can I publish tools rejected by other corporate stores (e.g. bypass tools, scrapers)?",
+    answer:
+      "Yes! ExtLabs believes in developer freedom and open software. Unlike corporate stores with arbitrary policy bans, we welcome clean utility tools, link/paywall bypassers, power scrapers, script modifiers, and media helpers as long as your package is 100% virus-free, free of malicious spyware/malware, and transparent in its manifest permissions.",
   },
   {
     question: "What manifest versions and browser platforms are supported?",
-    answer: "ExtLabs supports Manifest V3 extensions built for Chromium browsers, including Google Chrome, Brave, Microsoft Edge, Opera, and Vivaldi. Both open-source packages and indie developer utilities are welcome."
+    answer:
+      "ExtLabs supports Manifest V3 extensions built for Chromium browsers, including Google Chrome, Brave, Microsoft Edge, Opera, and Vivaldi. Both open-source packages and indie developer utilities are welcome.",
   },
   {
     question: "Are there any listing fees or developer subscription costs?",
-    answer: "No. ExtLabs is 100% free for developers. There are no registration fees, monthly subscription charges, or upfront publishing costs to distribute your extensions."
+    answer:
+      "No. ExtLabs is 100% free for developers. There are no registration fees, monthly subscription charges, or upfront publishing costs to distribute your extensions.",
   },
   {
     question: "How does extension monetization and ad link integration work?",
-    answer: "ExtLabs provides an optional Dual-Action direct monetization integration. You can attach your personal Monetag Direct Link URL to your listing. When a user downloads your extension, the file downloads instantly while your ad link opens in a separate tab, sending 100% direct revenue to your publisher account."
+    answer:
+      "ExtLabs provides an optional Dual-Action direct monetization integration. You can attach your personal Monetag Direct Link URL to your listing. When a user downloads your extension, the file downloads instantly while your ad link opens in a separate tab, sending 100% direct revenue to your publisher account.",
   },
   {
     question: "What security and verification checks are conducted?",
-    answer: "Every submitted .zip package undergoes automated static code verification to ensure compliance with Chromium Manifest V3 standards, verify cryptographic manifest integrity, and prevent obfuscated or malicious code injection."
-  }
+    answer:
+      "Every submitted .zip package undergoes automated static code verification to ensure compliance with Chromium Manifest V3 standards, verify cryptographic manifest integrity, and prevent obfuscated or malicious code injection.",
+  },
 ];
 
 const developerFeatures = [
   {
     title: "Open Policy (No Arbitrary Bans)",
-    description: "Publish power utilities rejected by mainstream stores — such as bypassers, scrapers, and downloaders — as long as they are 100% virus-free."
+    description:
+      "Publish power utilities rejected by mainstream stores — such as bypassers, scrapers, and downloaders — as long as they are 100% virus-free.",
   },
   {
     title: "Manifest V3 Native",
-    description: "Built strictly around modern Chromium extension architecture for Chrome, Brave, Edge, and Opera."
+    description:
+      "Built strictly around modern Chromium extension architecture for Chrome, Brave, Edge, and Opera.",
   },
   {
     title: "Instant Package Publishing",
-    description: "Upload your .zip build and go live in minutes with automated static security verification."
+    description:
+      "Upload your .zip build and go live in minutes with automated static security verification.",
   },
   {
     title: "Dedicated Showcase Pages",
-    description: "Every extension receives a high-converting SEO landing page with Schema.org rich snippets and comparison tables."
+    description:
+      "Every extension receives a high-converting SEO landing page with Schema.org rich snippets and comparison tables.",
   },
   {
     title: "Developer Telemetry & Analytics",
-    description: "Track live download counts, retention rates, version adoption, and user ratings in real-time."
+    description:
+      "Track live download counts, retention rates, version adoption, and user ratings in real-time.",
   },
   {
     title: "100% Creator Monetization",
-    description: "Optionally connect your Direct Link sponsor stream with 0% platform fee and configurable cooldown rules."
-  }
+    description:
+      "Optionally connect your Direct Link sponsor stream with 0% platform fee and configurable cooldown rules.",
+  },
 ];
 ---
 
@@ -88,21 +101,29 @@ const developerFeatures = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>Developer Hub & Extension Publishing Platform — ExtLabs</title>
-    <meta name="description" content="Publish, distribute, and scale your browser extensions on ExtLabs. Open publishing policy, Manifest V3 support, developer telemetry, fast automated security audits, and creator monetization." />
+    <meta
+      name="description"
+      content="Publish, distribute, and scale your browser extensions on ExtLabs. Open publishing policy, Manifest V3 support, developer telemetry, fast automated security audits, and creator monetization."
+    />
   </head>
 
-  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
-    
+  <body
+    class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans"
+  >
     <!-- Top Navigation -->
     <Navbar />
 
     <!-- Main Content Area with Generous Visual Hierarchy -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-20 sm:space-y-24">
-      
+    <main
+      class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-20 sm:space-y-24"
+    >
       <!-- Top Header / Hero Group -->
       <div class="space-y-8">
         <!-- Breadcrumb Navigation -->
-        <nav class="flex items-center gap-2 text-xs text-slate-500" aria-label="Breadcrumb">
+        <nav
+          class="flex items-center gap-2 text-xs text-slate-500"
+          aria-label="Breadcrumb"
+        >
           <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
           <span class="text-slate-300">/</span>
           <span class="text-slate-900 font-medium">Developer Portal</span>
@@ -110,43 +131,62 @@ const developerFeatures = [
 
         <!-- 1. Hero Section with Dedicated Image Slot -->
         <section class="space-y-8">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
+          <div
+            class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
+          >
             <!-- Left Content (6 Cols) -->
             <div class="lg:col-span-6 space-y-5">
-              <div class="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
-                <span class="text-blue-600 font-semibold">ExtLabs Developer Hub</span>
+              <div
+                class="flex items-center gap-2 text-xs text-slate-500 flex-wrap"
+              >
+                <span class="text-blue-600 font-semibold"
+                  >ExtLabs Developer Hub</span
+                >
                 <span class="text-slate-300">•</span>
                 <span>Open Extension Policy</span>
                 <span class="text-slate-300">•</span>
                 <span>100% Virus-Free Verified</span>
               </div>
 
-              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                Build, distribute, and scale your <span class="text-blue-600">browser extensions</span>
+              <h1
+                class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight"
+              >
+                Build, distribute, and scale your <span class="text-blue-600"
+                  >browser extensions</span
+                >
               </h1>
 
-              <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
-                An open, developer-first platform for Chromium extension creators. Publish any virus-free Manifest V3 package — including bypass tools, power utilities, and developer helpers rejected by corporate stores. Showcase your tools with dedicated SEO pages, track real-time telemetry, and monetize with zero platform fees.
+              <p
+                class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl"
+              >
+                An open, developer-first platform for Chromium extension
+                creators. Publish any virus-free Manifest V3 package — including
+                bypass tools, power utilities, and developer helpers rejected by
+                corporate stores. Showcase your tools with dedicated SEO pages,
+                track real-time telemetry, and monetize with zero platform fees.
               </p>
 
               <!-- Metrics Strip -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
+              <div
+                class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100"
+              >
                 <div class="space-y-0.5">
-                  <span class="block text-xl font-bold text-slate-900 font-mono">Open</span>
+                  <span class="block text-xl font-bold text-slate-900 font-mono"
+                    >Open</span
+                  >
                   <span class="text-xs text-slate-500">Store Policy</span>
                 </div>
                 <div class="space-y-0.5">
-                  <span class="block text-xl font-bold text-slate-900 font-mono">$0.00</span>
+                  <span class="block text-xl font-bold text-slate-900 font-mono"
+                    >$0.00</span
+                  >
                   <span class="text-xs text-slate-500">Listing Fees</span>
                 </div>
                 <div class="space-y-0.5">
-                  <span class="block text-xl font-bold text-slate-900 font-mono">Manifest V3</span>
+                  <span class="block text-xl font-bold text-slate-900 font-mono"
+                    >Manifest V3</span
+                  >
                   <span class="text-xs text-slate-500">Chromium Ready</span>
-                </div>
-                <div class="space-y-0.5">
-                  <span class="block text-xl font-bold text-slate-900 font-mono">&lt; 2 mins</span>
-                  <span class="text-xs text-slate-500">Fast Publishing</span>
                 </div>
               </div>
 
@@ -156,8 +196,15 @@ const developerFeatures = [
                   href="/developers/dashboard"
                   class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-2 cursor-pointer transition-colors shadow-2xs group"
                 >
-                  <svg class="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                  <svg
+                    class="w-3.5 h-3.5 fill-current text-white"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                    ></path>
                   </svg>
                   <span>Developer Console</span>
                 </a>
@@ -174,17 +221,33 @@ const developerFeatures = [
 
             <!-- Right Image Container Slot (6 Cols, Elevated Window Mockup) -->
             <div class="lg:col-span-6 w-full">
-              <div class="rounded-2xl border border-slate-300/80 bg-white shadow-xl shadow-slate-200/80 overflow-hidden ring-1 ring-slate-900/5 transition-all">
+              <div
+                class="rounded-2xl border border-slate-300/80 bg-white shadow-xl shadow-slate-200/80 overflow-hidden ring-1 ring-slate-900/5 transition-all"
+              >
                 <!-- Window Topbar -->
-                <div class="h-8 sm:h-9 bg-slate-100/90 border-b border-slate-200 px-3.5 flex items-center justify-between select-none">
+                <div
+                  class="h-8 sm:h-9 bg-slate-100/90 border-b border-slate-200 px-3.5 flex items-center justify-between select-none"
+                >
                   <div class="flex items-center gap-1.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
                     <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
                     <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
                   </div>
-                  <div class="flex items-center gap-1.5 text-[11px] font-mono text-slate-500 bg-white/90 px-3 py-0.5 rounded-md border border-slate-200/80 shadow-2xs">
-                    <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  <div
+                    class="flex items-center gap-1.5 text-[11px] font-mono text-slate-500 bg-white/90 px-3 py-0.5 rounded-md border border-slate-200/80 shadow-2xs"
+                  >
+                    <svg
+                      class="w-3 h-3 text-slate-400 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      ></path>
                     </svg>
                     <span>extlabs.io/developers/dashboard</span>
                   </div>
@@ -192,8 +255,12 @@ const developerFeatures = [
                 </div>
 
                 <!-- Window Content (Image on soft contrasting canvas) -->
-                <div class="p-2 sm:p-2.5 bg-slate-100/70 border-t border-slate-200/70">
-                  <div class="rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-white">
+                <div
+                  class="p-2 sm:p-2.5 bg-slate-100/70 border-t border-slate-200/70"
+                >
+                  <div
+                    class="rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-white"
+                  >
                     <img
                       src="/images/developer-hero.avif"
                       alt="Developer Portal & Extension Management Dashboard"
@@ -206,7 +273,6 @@ const developerFeatures = [
                 </div>
               </div>
             </div>
-
           </div>
         </section>
       </div>
@@ -214,49 +280,63 @@ const developerFeatures = [
       <!-- 2. How Publishing Works (Open 3-Stage Pipeline) -->
       <section id="how-it-works" class="space-y-6">
         <div class="border-b border-slate-200/90 pb-3">
-          <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+          <h2
+            class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight"
+          >
             How Publishing Works
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            A fast, developer-friendly pipeline from local archive to global users.
+            A fast, developer-friendly pipeline from local archive to global
+            users.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-1">
-          
           <!-- Step 1 -->
           <div class="space-y-2">
-            <span class="text-xs font-mono font-medium text-slate-500 block">Step 1</span>
+            <span class="text-xs font-mono font-medium text-slate-500 block"
+              >Step 1</span
+            >
             <h3 class="text-sm font-semibold text-slate-900">
               Package Manifest V3 Extension
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              Build and package your Chromium extension as a standard <code>.zip</code> archive containing your <code>manifest.json</code>, icons, and background workers.
+              Build and package your Chromium extension as a standard <code
+                >.zip</code
+              > archive containing your <code>manifest.json</code>, icons, and
+              background workers.
             </p>
           </div>
 
           <!-- Step 2 -->
           <div class="space-y-2">
-            <span class="text-xs font-mono font-medium text-slate-500 block">Step 2</span>
+            <span class="text-xs font-mono font-medium text-slate-500 block"
+              >Step 2</span
+            >
             <h3 class="text-sm font-semibold text-slate-900">
               Submit in Developer Console
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              Upload your archive via the Developer Console (/developers/new), enter your listing description, features, screenshots, and optional monetization link.
+              Upload your archive via the Developer Console (/developers/new),
+              enter your listing description, features, screenshots, and
+              optional monetization link.
             </p>
           </div>
 
           <!-- Step 3 -->
           <div class="space-y-2">
-            <span class="text-xs font-mono font-medium text-emerald-700 block">Step 3</span>
+            <span class="text-xs font-mono font-medium text-emerald-700 block"
+              >Step 3</span
+            >
             <h3 class="text-sm font-semibold text-slate-900">
               Go Live & Track Telemetry
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              Your extension gets a dedicated SEO showcase page with one-click direct installs, live download telemetry, rating breakdowns, and developer replies.
+              Your extension gets a dedicated SEO showcase page with one-click
+              direct installs, live download telemetry, rating breakdowns, and
+              developer replies.
             </p>
           </div>
-
         </div>
       </section>
 
@@ -264,35 +344,55 @@ const developerFeatures = [
       <section id="monetization" class="space-y-6">
         <div class="border-b border-slate-200/90 pb-3">
           <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <span class="text-emerald-700 font-semibold">100% Direct Payouts</span>
+            <span class="text-emerald-700 font-semibold"
+              >100% Direct Payouts</span
+            >
             <span class="text-slate-300">•</span>
             <span>0% Platform Commission</span>
             <span class="text-slate-300">•</span>
             <span>Weekly Withdrawals</span>
           </div>
-          <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+          <h2
+            class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight"
+          >
             Earn 100% Direct Revenue on Every Extension Install
           </h2>
           <p class="text-xs text-slate-500 mt-0.5 max-w-2xl">
-            Attach your personal Monetag Direct Link to earn real-time ad impressions whenever users download or update your packages.
+            Attach your personal Monetag Direct Link to earn real-time ad
+            impressions whenever users download or update your packages.
           </p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2">
-          
           <!-- Left Visual Proof Image (7 Cols, Elevated Window Mockup) -->
           <div class="lg:col-span-7 w-full">
-            <div class="rounded-2xl border border-slate-300/80 bg-white shadow-xl shadow-slate-200/80 overflow-hidden ring-1 ring-slate-900/5 group">
+            <div
+              class="rounded-2xl border border-slate-300/80 bg-white shadow-xl shadow-slate-200/80 overflow-hidden ring-1 ring-slate-900/5 group"
+            >
               <!-- Window Topbar -->
-              <div class="h-8 sm:h-9 bg-slate-100/90 border-b border-slate-200 px-3.5 flex items-center justify-between select-none">
+              <div
+                class="h-8 sm:h-9 bg-slate-100/90 border-b border-slate-200 px-3.5 flex items-center justify-between select-none"
+              >
                 <div class="flex items-center gap-1.5">
                   <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></span>
                   <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></span>
                   <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></span>
                 </div>
-                <div class="flex items-center gap-1.5 text-[11px] font-mono text-slate-500 bg-white/90 px-3 py-0.5 rounded-md border border-slate-200/80 shadow-2xs">
-                  <svg class="w-3 h-3 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                <div
+                  class="flex items-center gap-1.5 text-[11px] font-mono text-slate-500 bg-white/90 px-3 py-0.5 rounded-md border border-slate-200/80 shadow-2xs"
+                >
+                  <svg
+                    class="w-3 h-3 text-emerald-600 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
                   </svg>
                   <span>monetag.com/publishers/statistics</span>
                 </div>
@@ -300,8 +400,12 @@ const developerFeatures = [
               </div>
 
               <!-- Window Content (Image on soft contrasting canvas) -->
-              <div class="p-2 sm:p-2.5 bg-slate-100/70 border-t border-slate-200/70">
-                <div class="rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-white">
+              <div
+                class="p-2 sm:p-2.5 bg-slate-100/70 border-t border-slate-200/70"
+              >
+                <div
+                  class="rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-white"
+                >
                   <img
                     src="/images/developer-earnings-showcase.avif"
                     alt="Developer Monetization Overview and Earnings Telemetry Dashboard"
@@ -318,37 +422,47 @@ const developerFeatures = [
           <!-- Right Feature Breakdown (5 Cols) -->
           <div class="lg:col-span-5 space-y-5">
             <div class="space-y-4">
-              
               <div class="space-y-1">
-                <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <span class="text-emerald-700 font-mono font-semibold">01.</span>
+                <h3
+                  class="text-xs font-bold text-slate-900 flex items-center gap-1.5"
+                >
+                  <span class="text-emerald-700 font-mono font-semibold"
+                    >01.</span
+                  >
                   <span>0% ExtLabs Platform Cut</span>
                 </h3>
                 <p class="text-xs text-slate-500 leading-relaxed">
-                  100% of ad impressions stream straight to your personal Monetag Publisher Account in real-time. ExtLabs takes zero fees.
+                  100% of ad impressions stream straight to your personal
+                  Monetag Publisher Account in real-time. ExtLabs takes zero
+                  fees.
                 </p>
               </div>
 
               <div class="space-y-1">
-                <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <h3
+                  class="text-xs font-bold text-slate-900 flex items-center gap-1.5"
+                >
                   <span class="text-blue-700 font-mono font-semibold">02.</span>
                   <span>Weekly Payouts from $5.00</span>
                 </h3>
                 <p class="text-xs text-slate-500 leading-relaxed">
-                  Withdraw earnings automatically every week via PayPal, Cryptocurrency (USDT TRC20/ERC20), Payoneer, or Bank Wire.
+                  Withdraw earnings automatically every week via PayPal,
+                  Cryptocurrency (USDT TRC20/ERC20), Payoneer, or Bank Wire.
                 </p>
               </div>
 
               <div class="space-y-1">
-                <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <h3
+                  class="text-xs font-bold text-slate-900 flex items-center gap-1.5"
+                >
                   <span class="text-blue-700 font-mono font-semibold">03.</span>
                   <span>Smart 24h Cooldown Protection</span>
                 </h3>
                 <p class="text-xs text-slate-500 leading-relaxed">
-                  Configure cooldown frequencies to ensure high user retention and 5-star reviews without spamming repeat downloaders.
+                  Configure cooldown frequencies to ensure high user retention
+                  and 5-star reviews without spamming repeat downloaders.
                 </p>
               </div>
-
             </div>
 
             <div class="pt-2 flex flex-wrap items-center gap-3">
@@ -370,44 +484,59 @@ const developerFeatures = [
                 <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
               </a>
             </div>
-
           </div>
-
         </div>
       </section>
 
       <!-- 3. Key Developer Advantages (Open Typographic Grid) -->
       <section class="space-y-6">
         <div class="border-b border-slate-200/90 pb-3">
-          <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+          <h2
+            class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight"
+          >
             Developer Platform Capabilities
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            Engineered to empower extension developers, open-source maintainers, and indie software studios.
+            Engineered to empower extension developers, open-source maintainers,
+            and indie software studios.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 pt-1">
-          {developerFeatures.map((feat) => (
-            <div class="space-y-1.5">
-              <h3 class="text-xs font-semibold text-slate-900">
-                {feat.title}
-              </h3>
-              <p class="text-xs text-slate-500 leading-relaxed">
-                {feat.description}
-              </p>
-            </div>
-          ))}
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8 pt-1"
+        >
+          {
+            developerFeatures.map((feat) => (
+              <div class="space-y-1.5">
+                <h3 class="text-xs font-semibold text-slate-900">
+                  {feat.title}
+                </h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                  {feat.description}
+                </p>
+              </div>
+            ))
+          }
         </div>
 
         <!-- Open Ecosystem & Malware-Free Guarantee Callout -->
-        <div class="p-6 sm:p-7 bg-slate-900 rounded-xl text-white space-y-2.5 shadow-2xs mt-8 sm:mt-10">
+        <div
+          class="p-6 sm:p-7 bg-slate-900 rounded-xl text-white space-y-2.5 shadow-2xs mt-8 sm:mt-10"
+        >
           <div class="flex items-center gap-2">
             <ShieldCheck class="w-4 h-4 text-emerald-400 shrink-0" />
-            <span class="text-xs sm:text-sm font-bold text-slate-100">Open Developer Policy — No Arbitrary Corporate Restrictions</span>
+            <span class="text-xs sm:text-sm font-bold text-slate-100"
+              >Open Developer Policy — No Arbitrary Corporate Restrictions</span
+            >
           </div>
           <p class="text-xs text-slate-300 leading-relaxed max-w-4xl">
-            Mainstream corporate stores frequently reject power utilities, link/paywall bypass tools, scraper helpers, and media downloaders under ambiguous terms. On ExtLabs, <strong>any extension is welcome</strong> as long as our automated security audit verifies that your build is <strong>100% free of viruses, malware, and malicious spyware</strong>.
+            Mainstream corporate stores frequently reject power utilities,
+            link/paywall bypass tools, scraper helpers, and media downloaders
+            under ambiguous terms. On ExtLabs, <strong
+              >any extension is welcome</strong
+            > as long as our automated security audit verifies that your build is
+            <strong>100% free of viruses, malware, and malicious spyware</strong
+            >.
           </p>
         </div>
       </section>
@@ -415,21 +544,28 @@ const developerFeatures = [
       <!-- 4. Unified Developer Workspace (2-Column Feature Cards) -->
       <section class="space-y-6">
         <div class="border-b border-slate-200/90 pb-3">
-          <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+          <h2
+            class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight"
+          >
             Comprehensive Management Suite
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            Full lifecycle control from initial package release to user community feedback.
+            Full lifecycle control from initial package release to user
+            community feedback.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
-          <div class="p-6 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-3 shadow-2xs">
+          <div
+            class="p-6 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-3 shadow-2xs"
+          >
             <h3 class="text-sm font-bold text-slate-900">
               Telemetry & Review Moderation
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              Track installation spikes, monitor star ratings across versions, and engage directly with your user base by publishing official developer replies to user reviews.
+              Track installation spikes, monitor star ratings across versions,
+              and engage directly with your user base by publishing official
+              developer replies to user reviews.
             </p>
             <div class="pt-2">
               <a
@@ -442,12 +578,16 @@ const developerFeatures = [
             </div>
           </div>
 
-          <div class="p-6 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-3 shadow-2xs">
+          <div
+            class="p-6 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-3 shadow-2xs"
+          >
             <h3 class="text-sm font-bold text-slate-900">
               CI/CD Automation & Settings
             </h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              Generate API deployment tokens, configure webhook triggers for automated GitHub release packaging, and maintain publisher profile branding effortlessly.
+              Generate API deployment tokens, configure webhook triggers for
+              automated GitHub release packaging, and maintain publisher profile
+              branding effortlessly.
             </p>
             <div class="pt-2">
               <a
@@ -464,11 +604,12 @@ const developerFeatures = [
 
       <!-- 5. Developer FAQs & Submission Notice (2-Column Balanced Section) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        
         <!-- Left Column (6 Cols): Frequently Asked Questions -->
         <section class="lg:col-span-6 space-y-4">
           <div class="border-b border-slate-200/90 pb-3">
-            <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+            <h2
+              class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight"
+            >
               Developer Questions & Answers
             </h2>
             <p class="text-xs text-slate-500 mt-0.5">
@@ -477,24 +618,28 @@ const developerFeatures = [
           </div>
 
           <div class="divide-y divide-slate-100">
-            {developerFaqs.map((faq) => (
-              <details class="group py-3 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
-                <summary class="flex items-center justify-between text-xs font-semibold text-slate-900 group-hover:text-blue-600 select-none transition-colors">
-                  <span>{faq.question}</span>
-                  <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 group-hover:text-blue-600 transition-all" />
-                </summary>
-                <p class="mt-2 text-xs text-slate-600 leading-relaxed">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
+            {
+              developerFaqs.map((faq) => (
+                <details class="group py-3 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
+                  <summary class="flex items-center justify-between text-xs font-semibold text-slate-900 group-hover:text-blue-600 select-none transition-colors">
+                    <span>{faq.question}</span>
+                    <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 group-hover:text-blue-600 transition-all" />
+                  </summary>
+                  <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </details>
+              ))
+            }
           </div>
         </section>
 
         <!-- Right Column (6 Cols): Developer Onboarding Card -->
         <section class="lg:col-span-6 space-y-4">
           <div class="border-b border-slate-200/90 pb-3">
-            <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+            <h2
+              class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight"
+            >
               Ready to Publish?
             </h2>
             <p class="text-xs text-slate-500 mt-0.5">
@@ -502,13 +647,18 @@ const developerFeatures = [
             </p>
           </div>
 
-          <div class="p-6 rounded-xl border border-slate-200 bg-white space-y-4 shadow-2xs">
+          <div
+            class="p-6 rounded-xl border border-slate-200 bg-white space-y-4 shadow-2xs"
+          >
             <div class="space-y-1.5">
               <span class="text-xs font-semibold text-slate-900 block">
                 Instant Developer Onboarding
               </span>
               <p class="text-xs text-slate-600 leading-relaxed">
-                Connect your GitHub account to access the ExtLabs Developer Console. Submit your Manifest V3 package (including bypass & power tools), customize your showcase page, and monitor performance in real time.
+                Connect your GitHub account to access the ExtLabs Developer
+                Console. Submit your Manifest V3 package (including bypass &
+                power tools), customize your showcase page, and monitor
+                performance in real time.
               </p>
             </div>
 
@@ -531,13 +681,10 @@ const developerFeatures = [
             </div>
           </div>
         </section>
-
       </div>
-
     </main>
 
     <!-- Footer -->
     <Footer />
-
   </body>
 </html>

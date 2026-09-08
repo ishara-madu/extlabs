@@ -28,22 +28,24 @@ import { Box, Search, Plus, HelpCircle } from '@lucide/astro';
       </div>
 
       <!-- Search Input -->
-      <div class="flex-1 max-w-md hidden sm:block">
+      <form action="/search" method="GET" class="flex-1 max-w-md hidden sm:block">
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             <Search class="w-4 h-4" />
           </div>
           <input
             id="global-search-input"
-            type="text"
+            name="q"
+            type="search"
             placeholder="Search extensions and tools..."
-            class="w-full pl-10 pr-12 py-2 text-xs bg-slate-50 hover:bg-slate-100 focus:bg-white text-slate-900 rounded-lg border border-slate-200 focus:border-slate-400 focus:outline-none placeholder-slate-400"
+            class="w-full pl-10 pr-12 py-2 text-xs bg-slate-50 hover:bg-slate-100 focus:bg-white text-slate-900 rounded-lg border border-slate-200 focus:border-slate-400 focus:outline-none placeholder-slate-400 transition-colors"
+            autocomplete="off"
           />
           <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
             <kbd class="text-[10px] font-sans font-medium text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded">⌘K</kbd>
           </div>
         </div>
-      </div>
+      </form>
 
       <!-- Right Action Items -->
       <div class="flex items-center gap-2">
@@ -64,18 +66,39 @@ import { Box, Search, Plus, HelpCircle } from '@lucide/astro';
           <span>Submit Extension</span>
         </a>
 
-        </div>
+      </div>
 
     </div>
   </div>
 
   <!-- Mobile Search Bar -->
   <div class="sm:hidden px-6 pb-3">
-    <input
-      id="mobile-search-input"
-      type="text"
-      placeholder="Search extensions..."
-      class="w-full px-3 py-1.5 text-xs bg-slate-50 text-slate-800 rounded-lg border border-slate-200 focus:outline-none"
-    />
+    <form action="/search" method="GET">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+          <Search class="w-3.5 h-3.5" />
+        </div>
+        <input
+          id="mobile-search-input"
+          name="q"
+          type="search"
+          placeholder="Search extensions..."
+          class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 text-slate-800 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
+          autocomplete="off"
+        />
+      </div>
+    </form>
   </div>
 </header>
+
+<script>
+  // Keyboard shortcut: Cmd+K or Ctrl+K focuses global search
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      const input = (document.getElementById('global-search-input') || document.getElementById('mobile-search-input')) as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
+    }
+  });
+</script>

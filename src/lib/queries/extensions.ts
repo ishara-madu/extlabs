@@ -1244,3 +1244,80 @@ export async function recordExtensionDownload(
   return { success: true, extensionId: ext.id };
 }
 
+export interface SearchExtensionParams {
+  query?: string;
+  category?: string;
+  sort?: 'popular' | 'rating' | 'newest' | 'name' | string;
+}
+
+/**
+ * Search live store extensions with keyword, category filter, and sorting
+ */
+export async function searchStoreExtensions(
+  db: D1Database | null,
+  params: SearchExtensionParams = {}
+): Promise<Extension[]> {
+  if (!db) return [];
+  try {
+    const { query = '', category = '', sort = 'popular' } = params;
+    const cleanQuery = query.trim().toLowerCase();
+
+    let sql = `
+      SELECT 
+        e.*, 
+        COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
+        COALESCE(d.slug, 'developer') AS developer_slug, 
+        COALESCE(d.is_verified, 1) AS developer_verified,
+        d.website AS developer_website
+      FROM extensions e
+      LEFT JOIN developers d ON e.developer_id = d.id
+      WHERE e.is_active = 1 AND e.is_suspended = 0
+    `;
+
+    const bindings: any[] = [];
+
+    if (category && category !== 'all') {
+      sql += ` AND e.category = ?`;
+      bindings.push(category);
+    }
+
+    if (cleanQuery) {
+      sql += ` AND (
+        LOWER(e.name) LIKE ? OR 
+        LOWER(e.slug) LIKE ? OR 
+        LOWER(e.short_description) LIKE ? OR 
+        LOWER(COALESCE(e.full_description, '')) LIKE ? OR 
+        LOWER(e.category) LIKE ?
+      )`;
+      const wildQuery = `%${cleanQuery}%`;
+      bindings.push(wildQuery, wildQuery, wildQuery, wildQuery, wildQuery);
+    }
+
+    switch (sort) {
+      case 'rating':
+        sql += ` ORDER BY e.rating DESC, e.review_count DESC, e.weekly_active_users DESC`;
+        break;
+      case 'newest':
+        sql += ` ORDER BY e.created_at DESC, e.id DESC`;
+        break;
+      case 'name':
+        sql += ` ORDER BY e.name ASC`;
+        break;
+      case 'popular':
+      default:
+        sql += ` ORDER BY e.is_featured DESC, e.weekly_active_users DESC, e.rating DESC`;
+        break;
+    }
+
+    const stmt = bindings.length > 0 ? db.prepare(sql).bind(...bindings) : db.prepare(sql);
+    const { results } = await stmt.all<ExtensionWithDeveloper>();
+
+    if (results && results.length > 0) {
+      return results.map(mapDbExtensionToStoreItem);
+    }
+  } catch (err) {
+    console.warn('Failed to execute searchStoreExtensions on D1:', err);
+  }
+  return [];
+}
+
