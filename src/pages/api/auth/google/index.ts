@@ -35,5 +35,11 @@ export const GET: APIRoute = async ({ request }) => {
   const callbackUrl = `${url.origin}/api/auth/google/callback`;
   const googleUrl = getGoogleAuthUrl(clientId, encodedState, callbackUrl);
 
-  return Response.redirect(googleUrl, 302);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: googleUrl,
+      'Set-Cookie': `oauth_state_google=${encodeURIComponent(stateToken)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600; Secure`,
+    },
+  });
 };

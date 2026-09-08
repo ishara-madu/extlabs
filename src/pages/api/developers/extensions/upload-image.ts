@@ -62,6 +62,27 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    // Payload size guard: Max 1MB for icons, max 3MB for screenshots/banners
+    const MAX_ICON_BYTES = 1 * 1024 * 1024; // 1 MB
+    const MAX_MEDIA_BYTES = 3 * 1024 * 1024; // 3 MB
+    const base64Data = image.includes(',') ? image.split(',')[1] : image;
+    const estimatedBytes = Math.round(base64Data.length * 0.75);
+    const maxBytes = type === 'icon' ? MAX_ICON_BYTES : MAX_MEDIA_BYTES;
+    const maxMb = type === 'icon' ? '1MB' : '3MB';
+
+    if (estimatedBytes > maxBytes) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `File size (${(estimatedBytes / (1024 * 1024)).toFixed(1)}MB) exceeds maximum allowed limit of ${maxMb} for ${type}s.`
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     let folder = getCloudinaryFolder('screenshots');
     if (type === 'icon') {
       folder = getCloudinaryFolder('icons');

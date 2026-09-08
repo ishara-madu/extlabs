@@ -21,9 +21,17 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   let redirectTo = '/';
+  const cookieHeader = request.headers.get('Cookie') || '';
+  const stateMatch = cookieHeader.match(/(?:^|; )oauth_state_google=([^;]*)/);
+  const cookieStateToken = stateMatch ? decodeURIComponent(stateMatch[1]) : null;
+
   if (encodedState) {
     try {
       const parsedState = JSON.parse(atob(encodedState));
+      // CSRF check: Verify state token from Google matches our secure cookie
+      if (cookieStateToken && parsedState.token && cookieStateToken !== parsedState.token) {
+        return new Response('Invalid OAuth state. Potential CSRF detected.', { status: 403 });
+      }
       if (parsedState.redirect && (parsedState.redirect.startsWith('/') || parsedState.redirect.startsWith('#'))) {
         redirectTo = parsedState.redirect;
       }
@@ -94,11 +102,13 @@ export const GET: APIRoute = async ({ request }) => {
 </body>
 </html>`;
 
-  return new Response(html, {
+  const response = new Response(html, {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Set-Cookie': cookieValue,
     },
   });
+  response.headers.append('Set-Cookie', cookieValue);
+  response.headers.append('Set-Cookie', 'oauth_state_google=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax; Secure');
+  return response;
 };

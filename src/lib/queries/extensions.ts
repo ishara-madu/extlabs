@@ -1113,12 +1113,101 @@ export async function saveExtensionSpecs(
   return { id: existing.id, success: true };
 }
 
+export interface TelemetryBatchItem {
+  extensionId: string;
+  date: string;
+  countryCode: string;
+  downloads: number;
+  pageVisits: number;
+  devAdClicks: number;
+  extlabsAdClicks: number;
+}
+
 /**
- * Record an extension download event in Cloudflare D1 with minimal database overhead.
- * - Resolves the extension ID to protect against invalid/spam writes
- * - Increments extensions.download_count
- * - Upserts telemetry_daily using a deterministic ID (`tel_${extId}_${date}_${country}`)
- * - Executes both write statements inside a single atomic D1 batch (`db.batch`)
+ * Flush an aggregated batch of telemetry events to Cloudflare D1 in a single atomic transaction.
+ * - Aggregates total downloads per extension to update extensions.download_count
+ * - Upserts telemetry_daily with all 4 metrics (downloads, page_visits, dev_ad_clicks, extlabs_ad_clicks)
+ * - Executes the entire batch in a single D1 roundtrip (db.batch)
+ */
+export async function flushTelemetryBatch(
+  db: D1Database,
+  items: TelemetryBatchItem[]
+): Promise<boolean> {
+  if (!items || items.length === 0) return true;
+
+  // 1. Group downloads by extensionId for the extensions table increment
+  const downloadIncrements = new Map<string, number>();
+  for (const item of items) {
+    if (item.downloads > 0) {
+      downloadIncrements.set(
+        item.extensionId,
+        (downloadIncrements.get(item.extensionId) || 0) + item.downloads
+      );
+    }
+  }
+
+  const statements: any[] = [];
+
+  // 2. Prepare extensions download_count update statements
+  for (const [extId, count] of downloadIncrements.entries()) {
+    statements.push(
+      db
+        .prepare(`
+          UPDATE extensions
+          SET download_count = download_count + ?,
+              updated_at = DATETIME('now')
+          WHERE id = ?
+        `)
+        .bind(count, extId)
+    );
+  }
+
+  // 3. Prepare telemetry_daily upsert statements
+  for (const item of items) {
+    const cleanCountry = (item.countryCode || 'GLOBAL').toUpperCase().slice(0, 8);
+    const telemetryId = `tel_${item.extensionId}_${item.date}_${cleanCountry}`;
+
+    statements.push(
+      db
+        .prepare(`
+          INSERT INTO telemetry_daily (
+            id,
+            extension_id,
+            date,
+            downloads,
+            page_visits,
+            dev_ad_clicks,
+            extlabs_ad_clicks,
+            country_code
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            downloads = downloads + excluded.downloads,
+            page_visits = page_visits + excluded.page_visits,
+            dev_ad_clicks = dev_ad_clicks + excluded.dev_ad_clicks,
+            extlabs_ad_clicks = extlabs_ad_clicks + excluded.extlabs_ad_clicks
+        `)
+        .bind(
+          telemetryId,
+          item.extensionId,
+          item.date,
+          item.downloads,
+          item.pageVisits,
+          item.devAdClicks,
+          item.extlabsAdClicks,
+          cleanCountry
+        )
+    );
+  }
+
+  if (statements.length > 0) {
+    await db.batch(statements);
+  }
+
+  return true;
+}
+
+/**
+ * Direct record fallback for single download event
  */
 export async function recordExtensionDownload(
   db: D1Database,
@@ -1129,7 +1218,6 @@ export async function recordExtensionDownload(
     return { success: false };
   }
 
-  // 1. Resolve actual extension ID to ensure validity and foreign key integrity
   const ext = await db
     .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
     .bind(extensionIdOrSlug, extensionIdOrSlug)
@@ -1139,36 +1227,19 @@ export async function recordExtensionDownload(
     return { success: false };
   }
 
-  const resolvedId = ext.id;
-  const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
-  const cleanCountry = (countryCode || 'GLOBAL').toUpperCase().slice(0, 8);
-  const telemetryId = `tel_${resolvedId}_${today}_${cleanCountry}`;
+  const today = new Date().toISOString().split('T')[0];
+  await flushTelemetryBatch(db, [
+    {
+      extensionId: ext.id,
+      date: today,
+      countryCode,
+      downloads: 1,
+      pageVisits: 0,
+      devAdClicks: 0,
+      extlabsAdClicks: 0
+    }
+  ]);
 
-  // 2. Prepare single batched atomic execution (1 network roundtrip to D1)
-  const updateExtensionStmt = db
-    .prepare(`
-      UPDATE extensions
-      SET download_count = download_count + 1,
-          updated_at = DATETIME('now')
-      WHERE id = ?
-    `)
-    .bind(resolvedId);
-
-  const upsertTelemetryStmt = db
-    .prepare(`
-      INSERT INTO telemetry_daily (
-        id,
-        extension_id,
-        date,
-        downloads,
-        country_code
-      ) VALUES (?, ?, ?, 1, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        downloads = downloads + 1
-    `)
-    .bind(telemetryId, resolvedId, today, cleanCountry);
-
-  await db.batch([updateExtensionStmt, upsertTelemetryStmt]);
-  return { success: true, extensionId: resolvedId };
+  return { success: true, extensionId: ext.id };
 }
 

@@ -35,5 +35,11 @@ export const GET: APIRoute = async ({ request }) => {
   const callbackUrl = `${url.origin}/api/auth/github/callback`;
   const githubUrl = getGitHubAuthUrl(clientId, encodedState, callbackUrl);
 
-  return Response.redirect(githubUrl, 302);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: githubUrl,
+      'Set-Cookie': `oauth_state_github=${encodeURIComponent(stateToken)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600; Secure`,
+    },
+  });
 };

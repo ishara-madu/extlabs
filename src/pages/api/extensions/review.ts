@@ -5,6 +5,29 @@ import { getReviewerUser } from '../../../lib/auth';
 
 export const prerender = false;
 
+// In-memory rate limiting map: userId -> last submission timestamp (20s cooldown)
+const reviewCooldownMap = new Map<string, number>();
+const REVIEW_COOLDOWN_MS = 20 * 1000;
+
+function checkReviewRateLimit(userId: string): { limited: boolean; remainingSec: number } {
+  const now = Date.now();
+  const lastTime = reviewCooldownMap.get(userId);
+  if (lastTime && (now - lastTime) < REVIEW_COOLDOWN_MS) {
+    const remainingSec = Math.ceil((REVIEW_COOLDOWN_MS - (now - lastTime)) / 1000);
+    return { limited: true, remainingSec };
+  }
+  reviewCooldownMap.set(userId, now);
+  // Clean up expired entries if map gets large
+  if (reviewCooldownMap.size > 500) {
+    for (const [id, time] of reviewCooldownMap.entries()) {
+      if (now - time > REVIEW_COOLDOWN_MS * 3) {
+        reviewCooldownMap.delete(id);
+      }
+    }
+  }
+  return { limited: false, remainingSec: 0 };
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const db = getDb();
   if (!db) {
@@ -23,7 +46,19 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  // 2. Parse and validate payload
+  // 2. Cooldown Rate-Limit Guard (Prevents write burst attacks on D1)
+  const rateCheck = checkReviewRateLimit(user.id);
+  if (rateCheck.limited) {
+    return new Response(
+      JSON.stringify({ error: `Please wait ${rateCheck.remainingSec}s before submitting or updating another review.` }),
+      {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  // 3. Parse and validate payload
   let body: any;
   try {
     body = await request.json();

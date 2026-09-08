@@ -20,8 +20,19 @@ if (!rawExtension) {
 }
 
 const ext = rawExtension;
-const currentUser = db ? await getReviewerUser(db, Astro.request) : null;
+
+// Optimize: Only query DB for reviewer session if session cookie is present
+const hasSessionCookie = Boolean(Astro.request.headers.get('Cookie')?.includes('extlabs_user_session='));
+const currentUser = (db && hasSessionCookie) ? await getReviewerUser(db, Astro.request) : null;
 const userReview = currentUser && db ? await getUserReviewForExtension(db, ext.id, currentUser.id) : null;
+
+// Edge CDN Caching: Unauthenticated traffic served directly from Cloudflare Edge (0 DB queries)
+if (!currentUser) {
+  Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=3600');
+  Astro.response.headers.set('Vary', 'Cookie');
+} else {
+  Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+}
 
 const categoryExtensions = await getStoreExtensionsByCategory(db, ext.category);
 const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id !== rawExtension.id).slice(0, 3);
@@ -1439,31 +1450,16 @@ const jsonLdSchema = {
           }
         }
 
-        // Low-overhead deduplicated download tracking (24h cooldown to minimize DB queries)
-        function trackDownloadSafely(extId) {
-          if (!extId) return;
+        // Non-blocking telemetry dispatcher (accumulates in 5-minute server memory buffer)
+        function sendTelemetry(extId, type) {
+          if (!extId || !type) return;
 
-          const cooldownKey = 'extlabs_dl_' + extId;
-          const cooldownDurationMs = 24 * 60 * 60 * 1000; // 24 hours
-          const now = Date.now();
-
-          try {
-            const lastTracked = localStorage.getItem(cooldownKey);
-            if (lastTracked && (now - Number(lastTracked)) < cooldownDurationMs) {
-              // Deduplicated: user already downloaded recently, zero DB queries
-              return;
-            }
-            localStorage.setItem(cooldownKey, String(now));
-          } catch {
-            // Private browsing or storage quota error
-          }
-
-          const payload = JSON.stringify({ extensionId: extId });
+          const payload = JSON.stringify({ extensionId: extId, type: type });
           if (typeof navigator.sendBeacon === 'function') {
             const blob = new Blob([payload], { type: 'application/json' });
-            navigator.sendBeacon('/api/extensions/track-download', blob);
+            navigator.sendBeacon('/api/telemetry', blob);
           } else {
-            fetch('/api/extensions/track-download', {
+            fetch('/api/telemetry', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: payload,
@@ -1475,18 +1471,31 @@ const jsonLdSchema = {
         // Dual-Action Download CTA Button
         const downloadBtn = document.getElementById('detail-download-btn');
         if (downloadBtn) {
+          const extId = downloadBtn.getAttribute('data-ext-id') || 'ext';
+          
+          // Track page visit on load (accumulated in 5-minute server buffer)
+          if (extId) {
+            sendTelemetry(extId, 'page_visit');
+          }
+
           downloadBtn.addEventListener('click', () => {
             const extName = downloadBtn.getAttribute('data-ext-name') || 'extension';
-            const extId = downloadBtn.getAttribute('data-ext-id') || 'ext';
             const extVersion = downloadBtn.getAttribute('data-ext-version') || '1.0.0';
-            const extDeveloper = downloadBtn.getAttribute('data-ext-developer') || 'Developer';
-            const extManifest = downloadBtn.getAttribute('data-manifest-version') || 'v3';
-            const monetagUrl = downloadBtn.getAttribute('data-monetag-url') || 'https://monetag.com';
+            const monetagUrl = downloadBtn.getAttribute('data-monetag-url') || '';
             const realDownloadUrl = downloadBtn.getAttribute('data-download-url');
 
-            // 1. Open Monetag Direct Link in a new tab (Generates revenue for developer) if configured
-            if (monetagUrl && monetagUrl !== '#' && monetagUrl.startsWith('http')) {
-              window.open(monetagUrl, '_blank', 'noopener,noreferrer');
+            // 1. Dual-Action Monetization: 5:1 pacing split
+            let adClickCount = Number(localStorage.getItem('extlabs_ad_split_count') || 0) + 1;
+            localStorage.setItem('extlabs_ad_split_count', String(adClickCount));
+
+            const isPlatformAd = (adClickCount % 6 === 0);
+            const targetAdUrl = isPlatformAd
+              ? 'https://monetag.com' // ExtLabs platform Monetag tag
+              : monetagUrl;
+
+            if (targetAdUrl && targetAdUrl !== '#' && targetAdUrl.startsWith('http')) {
+              window.open(targetAdUrl, '_blank', 'noopener,noreferrer');
+              sendTelemetry(extId, isPlatformAd ? 'extlabs_ad_click' : 'dev_ad_click');
             }
 
             // 2. Trigger real extension package download
@@ -1501,10 +1510,10 @@ const jsonLdSchema = {
               a.click();
               document.body.removeChild(a);
 
-              // Track download with 24-hour client-side deduplication
-              trackDownloadSafely(extId);
+              // 3. Track download on every click (buffered in server memory)
+              sendTelemetry(extId, 'download');
 
-              // 3. Update button state
+              // 4. Update button state
               downloadBtn.innerHTML = `
                 <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="20 6 9 17 4 12"/>
@@ -1515,7 +1524,7 @@ const jsonLdSchema = {
 
               showToast(`Downloading ${extName}. Follow the install guide below if needed.`);
 
-              // 4. Open Post-Download Install Quick Guide Modal
+              // 5. Open Post-Download Install Quick Guide Modal
               const postDownloadModal = document.getElementById('post-download-modal') as HTMLDialogElement | null;
               if (postDownloadModal && typeof postDownloadModal.showModal === 'function') {
                 postDownloadModal.showModal();
@@ -1537,7 +1546,7 @@ const jsonLdSchema = {
         if (modalFallbackBtn) {
           modalFallbackBtn.addEventListener('click', () => {
             const extId = modalFallbackBtn.getAttribute('data-ext-id');
-            if (extId) trackDownloadSafely(extId);
+            if (extId) sendTelemetry(extId, 'download');
           });
         }
 
