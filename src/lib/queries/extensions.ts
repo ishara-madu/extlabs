@@ -1113,3 +1113,62 @@ export async function saveExtensionSpecs(
   return { id: existing.id, success: true };
 }
 
+/**
+ * Record an extension download event in Cloudflare D1 with minimal database overhead.
+ * - Resolves the extension ID to protect against invalid/spam writes
+ * - Increments extensions.download_count
+ * - Upserts telemetry_daily using a deterministic ID (`tel_${extId}_${date}_${country}`)
+ * - Executes both write statements inside a single atomic D1 batch (`db.batch`)
+ */
+export async function recordExtensionDownload(
+  db: D1Database,
+  extensionIdOrSlug: string,
+  countryCode: string = 'GLOBAL'
+): Promise<{ success: boolean; extensionId?: string }> {
+  if (!extensionIdOrSlug || typeof extensionIdOrSlug !== 'string') {
+    return { success: false };
+  }
+
+  // 1. Resolve actual extension ID to ensure validity and foreign key integrity
+  const ext = await db
+    .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+    .bind(extensionIdOrSlug, extensionIdOrSlug)
+    .first<{ id: string }>();
+
+  if (!ext || !ext.id) {
+    return { success: false };
+  }
+
+  const resolvedId = ext.id;
+  const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+  const cleanCountry = (countryCode || 'GLOBAL').toUpperCase().slice(0, 8);
+  const telemetryId = `tel_${resolvedId}_${today}_${cleanCountry}`;
+
+  // 2. Prepare single batched atomic execution (1 network roundtrip to D1)
+  const updateExtensionStmt = db
+    .prepare(`
+      UPDATE extensions
+      SET download_count = download_count + 1,
+          updated_at = DATETIME('now')
+      WHERE id = ?
+    `)
+    .bind(resolvedId);
+
+  const upsertTelemetryStmt = db
+    .prepare(`
+      INSERT INTO telemetry_daily (
+        id,
+        extension_id,
+        date,
+        downloads,
+        country_code
+      ) VALUES (?, ?, ?, 1, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        downloads = downloads + 1
+    `)
+    .bind(telemetryId, resolvedId, today, cleanCountry);
+
+  await db.batch([updateExtensionStmt, upsertTelemetryStmt]);
+  return { success: true, extensionId: resolvedId };
+}
+
