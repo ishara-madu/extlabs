@@ -25,6 +25,10 @@ if (!user && db) {
   } catch {}
 }
 
+if (!user) {
+  return Astro.redirect('/developers/login?auth_required=true&redirect=/developers/settings', 302);
+}
+
 let developer: DbDeveloper | null = null;
 if (db && user) {
   try {
@@ -103,7 +107,7 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
             .then(function(data) {
               if (!data.authenticated) {
                 localStorage.removeItem('extlabs_dev_session');
-                window.location.href = '/developers/login?auth_required=true';
+                window.location.href = '/developers/login?auth_required=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
               } else if (data.user) {
                 localStorage.setItem('extlabs_dev_session', 'true');
                 var u = data.user;

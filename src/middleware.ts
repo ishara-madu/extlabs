@@ -25,7 +25,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
     // If no active session or not an authorized admin role, redirect to admin login
     if (!user || (user.role !== 'super_admin' && user.role !== 'moderator' && user.role !== 'security_auditor')) {
-      return context.redirect('/admin/login?auth_required=true', 302);
+      const returnUrl = url.pathname + url.search;
+      return context.redirect(`/admin/login?auth_required=true&redirect=${encodeURIComponent(returnUrl)}`, 302);
     }
 
     (context.locals as any).user = user;
@@ -49,9 +50,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
     }
 
-    // If no active session, redirect to developer login
+    // If no active session, redirect to developer login preserving target page
     if (!user) {
-      return context.redirect('/developers/login?auth_required=true', 302);
+      const returnUrl = url.pathname + url.search;
+      return context.redirect(`/developers/login?auth_required=true&redirect=${encodeURIComponent(returnUrl)}`, 302);
     }
 
     (context.locals as any).user = user;

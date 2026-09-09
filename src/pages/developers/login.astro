@@ -1,10 +1,32 @@
 ---
 // src/pages/developers/login.astro
+export const prerender = false;
+
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
 import Logo from "../../components/Logo.astro";
 import { ShieldCheck, ArrowRight, ArrowLeft, Check, AlertCircle } from '@lucide/astro';
+import { getDb } from "../../lib/db";
+import { getSessionUser } from "../../lib/auth";
+
+const db = getDb();
+let user = (Astro.locals as any)?.user;
+if (!user && db) {
+  try {
+    user = await getSessionUser(db, Astro.request);
+  } catch {}
+}
+
+const redirectParam = Astro.url.searchParams.get('redirect') || '/developers/dashboard';
+const safeRedirect = (redirectParam.startsWith('/') && !redirectParam.startsWith('//')) 
+  ? redirectParam 
+  : '/developers/dashboard';
+
+// If user is already authenticated, forward them directly to their target page
+if (user) {
+  return Astro.redirect(safeRedirect, 302);
+}
 ---
 
 <html lang="en" data-theme="light">
@@ -62,7 +84,7 @@ import { ShieldCheck, ArrowRight, ArrowLeft, Check, AlertCircle } from '@lucide/
           <!-- Primary GitHub Auth Action -->
           <div class="space-y-3 pt-2">
             <a
-              href="/api/auth/github?redirect=/developers/dashboard"
+              href={`/api/auth/github?redirect=${encodeURIComponent(safeRedirect)}`}
               id="github-login-btn"
               class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-xl inline-flex items-center justify-center gap-2.5 cursor-pointer transition-colors shadow-2xs group"
             >
@@ -120,19 +142,19 @@ import { ShieldCheck, ArrowRight, ArrowLeft, Check, AlertCircle } from '@lucide/
       document.addEventListener('DOMContentLoaded', () => {
         // Check if redirected because unauthenticated
         const urlParams = new URLSearchParams(window.location.search);
+        const redirectParam = urlParams.get('redirect') || '/developers/dashboard';
+        const safeTarget = (redirectParam.startsWith('/') && !redirectParam.startsWith('//'))
+          ? redirectParam
+          : '/developers/dashboard';
+
         const authAlert = document.getElementById('auth-alert');
         if (urlParams.get('auth_required') === 'true' && authAlert) {
           authAlert.classList.remove('hidden');
         }
 
-        const loginBtn = document.getElementById('github-login-btn');
+        const loginBtn = document.getElementById('github-login-btn') as HTMLAnchorElement | null;
         if (loginBtn) {
-          loginBtn.addEventListener('click', () => {
-            // Set authenticated session in localStorage
-            localStorage.setItem('extlabs_dev_session', 'true');
-            // Redirect to Developer Console Dashboard
-            window.location.href = '/developers/dashboard';
-          });
+          loginBtn.href = `/api/auth/github?redirect=${encodeURIComponent(safeTarget)}`;
         }
       });
     </script>

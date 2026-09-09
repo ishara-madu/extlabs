@@ -7,7 +7,10 @@ export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
-  const redirectTo = url.searchParams.get('redirect') || '/developers/dashboard';
+  const rawRedirect = url.searchParams.get('redirect') || '/developers/dashboard';
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
+    ? rawRedirect
+    : '/developers/dashboard';
 
   // Retrieve environment variables via cloudflare:workers env or process.env
   const cf = env as any;
@@ -30,7 +33,7 @@ export const GET: APIRoute = async ({ request }) => {
   const randomBytes = crypto.getRandomValues(new Uint8Array(16));
   const stateToken = Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
   const state = JSON.stringify({ token: stateToken, redirect: redirectTo });
-  const encodedState = btoa(state);
+  const encodedState = btoa(unescape(encodeURIComponent(state)));
 
   const callbackUrl = `${url.origin}/api/auth/github/callback`;
   const githubUrl = getGitHubAuthUrl(clientId, encodedState, callbackUrl);

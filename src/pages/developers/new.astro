@@ -19,7 +19,7 @@ if (!user && db) {
 }
 
 if (!user) {
-  return Astro.redirect('/developers/login?auth_required=true', 302);
+  return Astro.redirect('/developers/login?auth_required=true&redirect=/developers/new', 302);
 }
 
 let developer = null;
@@ -57,7 +57,7 @@ const defaultFrequency = developer?.default_frequency || "24h";
             .then(function(data) {
               if (!data.authenticated) {
                 localStorage.removeItem('extlabs_dev_session');
-                window.location.href = '/developers/login?auth_required=true';
+                window.location.href = '/developers/login?auth_required=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
               } else {
                 localStorage.setItem('extlabs_dev_session', 'true');
               }

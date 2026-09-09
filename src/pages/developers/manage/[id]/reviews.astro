@@ -43,6 +43,10 @@ if (!user && db) {
   } catch {}
 }
 
+if (!user) {
+  return Astro.redirect(`/developers/login?auth_required=true&redirect=${encodeURIComponent(`/developers/manage/${id}/reviews`)}`, 302);
+}
+
 let developer = null;
 let dbExtension: ManageExtensionDetail | null = null;
 let dbReviews: any[] = [];
@@ -138,7 +142,7 @@ const reviewsList = dbReviews.map((r) => ({
             .then(function(data) {
               if (!data.authenticated) {
                 localStorage.removeItem('extlabs_dev_session');
-                window.location.href = '/developers/login?auth_required=true';
+                window.location.href = '/developers/login?auth_required=true&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
               } else {
                 localStorage.setItem('extlabs_dev_session', 'true');
               }

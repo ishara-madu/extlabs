@@ -27,12 +27,18 @@ export const GET: APIRoute = async ({ request }) => {
 
   if (encodedState) {
     try {
-      const parsedState = JSON.parse(atob(encodedState));
+      let decodedJson = '';
+      try {
+        decodedJson = decodeURIComponent(escape(atob(encodedState)));
+      } catch {
+        decodedJson = atob(encodedState);
+      }
+      const parsedState = JSON.parse(decodedJson);
       // CSRF check: Verify state token from GitHub matches our secure cookie
       if (cookieStateToken && parsedState.token && cookieStateToken !== parsedState.token) {
         return new Response('Invalid OAuth state. Potential CSRF detected.', { status: 403 });
       }
-      if (parsedState.redirect && parsedState.redirect.startsWith('/')) {
+      if (parsedState.redirect && parsedState.redirect.startsWith('/') && !parsedState.redirect.startsWith('//')) {
         redirectTo = parsedState.redirect;
       }
     } catch {
@@ -73,9 +79,7 @@ export const GET: APIRoute = async ({ request }) => {
   const { user, sessionId } = await createOrUpdateUserSession(db, profile, superAdmin, accessToken);
 
   const isAdmin = user.role === 'super_admin' || user.role === 'moderator' || user.role === 'security_auditor';
-  if (isAdmin && redirectTo === '/developers/dashboard') {
-    redirectTo = '/admin';
-  }
+
 
   // 4. Set session cookie and redirect with client state sync
   const cookieValue = createSessionCookie(sessionId);

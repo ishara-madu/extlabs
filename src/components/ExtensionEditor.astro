@@ -621,21 +621,70 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             <p id="err-ext-version" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
-          <!-- Manifest Version -->
-          <div class="space-y-1.5">
+          <!-- Manifest Version Standard -->
+          <div class="space-y-1.5 relative" id="manifest-tab1-dropdown-container">
             <div class="flex items-center justify-between">
-              <label for="ext-manifest-input-tab1" class="block text-xs font-semibold text-slate-700">
+              <label for="manifest-tab1-dropdown-btn" class="block text-xs font-semibold text-slate-700">
                 Manifest Version Standard <span class="text-red-500">*</span>
               </label>
               <span class="text-[10px] font-mono text-slate-400">Extension spec</span>
             </div>
+
+            <!-- Hidden native select for form serialization & programmatic sync -->
             <select
               id="ext-manifest-input-tab1"
-              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900 cursor-pointer"
+              class="hidden"
             >
               <option value="v3" selected={data.manifestVersion === "v3"}>Manifest V3 (Modern Standard - Chrome 88+, Firefox 109+, Edge)</option>
               <option value="v2" selected={data.manifestVersion === "v2"}>Manifest V2 (Legacy Extension Standard)</option>
             </select>
+
+            <!-- Custom Dropdown Trigger Button -->
+            <button
+              type="button"
+              id="manifest-tab1-dropdown-btn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              class="w-full px-3.5 py-2 text-xs bg-white hover:bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none rounded-lg text-slate-800 flex items-center justify-between transition-colors cursor-pointer text-left shadow-2xs"
+            >
+              <span id="manifest-tab1-selected-label" class="font-medium text-slate-900 truncate">
+                {data.manifestVersion === "v2" ? "Manifest V2 (Legacy Extension Standard)" : "Manifest V3 (Modern Standard - Chrome 88+, Firefox 109+, Edge)"}
+              </span>
+              <ChevronDown class="w-3.5 h-3.5 text-slate-400 manifest-tab1-chevron transition-transform duration-150 shrink-0 ml-2" />
+            </button>
+
+            <!-- Custom Dropdown Menu -->
+            <div
+              id="manifest-tab1-dropdown-menu"
+              class="hidden absolute left-0 top-full mt-1.5 w-full bg-white rounded-xl border border-slate-200 shadow-xl z-30 overflow-hidden divide-y divide-slate-100"
+              role="listbox"
+            >
+              <div
+                class={`manifest-tab1-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.manifestVersion !== "v2" ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="v3"
+                data-label="Manifest V3 (Modern Standard - Chrome 88+, Firefox 109+, Edge)"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">Manifest V3</span>
+                  <span class="text-[11px] text-slate-500 block">Modern Chromium standard with service workers (Chrome 88+, Firefox 109+, Edge, Brave)</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 manifest-tab1-check shrink-0 ${data.manifestVersion !== "v2" ? "" : "hidden"}`} />
+              </div>
+
+              <div
+                class={`manifest-tab1-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.manifestVersion === "v2" ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="v2"
+                data-label="Manifest V2 (Legacy Extension Standard)"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">Manifest V2</span>
+                  <span class="text-[11px] text-slate-500 block">Legacy background page standard (deprecated on modern Chrome, supported on Firefox)</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 manifest-tab1-check shrink-0 ${data.manifestVersion === "v2" ? "" : "hidden"}`} />
+              </div>
+            </div>
           </div>
 
           <!-- Tagline -->
