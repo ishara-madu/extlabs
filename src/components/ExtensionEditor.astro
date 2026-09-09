@@ -39,7 +39,9 @@ import {
   ArrowRight,
   Search,
   ChevronDown,
-  Info
+  Info,
+  FolderRoot,
+  FolderSync
 } from '@lucide/astro';
 import { CATEGORIES } from '../data/extensions';
 
@@ -299,7 +301,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
       <div>
         <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-          <Sparkles class="w-3.5 h-3.5 text-blue-600" />
+          <FolderRoot class="w-3.5 h-3.5 text-blue-600" />
           <span>Magic Auto-Fill from GitHub</span>
         </span>
         <span class="text-[11px] text-slate-500">Search and select any repository from your connected GitHub account to auto-populate your listing.</span>
@@ -352,7 +354,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         id="magic-import-btn"
         class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-2xs"
       >
-        <Sparkles class="w-3.5 h-3.5" />
+        <FolderSync class="w-3.5 h-3.5" />
         <span>Fetch & Auto-Fill</span>
       </button>
     </div>
