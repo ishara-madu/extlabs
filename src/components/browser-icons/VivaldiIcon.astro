@@ -1,0 +1,13 @@
+---
+// src/components/browser-icons/VivaldiIcon.astro
+interface Props {
+  class?: string;
+}
+
+const { class: className = 'w-3.5 h-3.5' } = Astro.props;
+---
+
+<svg viewBox="0 0 24 24" class={className} fill="none" aria-hidden="true">
+  <rect width="20" height="20" x="2" y="2" rx="5" fill="#EF3939"/>
+  <path d="M8 8l4 8 4-8" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

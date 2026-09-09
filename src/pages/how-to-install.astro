@@ -298,23 +298,23 @@ const jsonLdSchema = {
 
         <!-- Quick Summary Strip -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
-          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Format</span>
-            <span class="font-medium text-slate-800">Unpacked .ZIP</span>
+            <span class="font-medium text-slate-200">Unpacked .ZIP</span>
           </div>
-          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Standard</span>
-            <span class="font-medium text-slate-800">Chromium Native</span>
+            <span class="font-medium text-slate-200">Chromium Native</span>
           </div>
-          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Security</span>
-            <span class="font-medium text-emerald-600 flex items-center gap-1">
-              <ShieldCheck class="w-3.5 h-3.5" /> 100% Virus-Free
+            <span class="font-medium text-emerald-400 flex items-center gap-1">
+              <ShieldCheck class="w-3.5 h-3.5 text-emerald-400" /> 100% Virus-Free
             </span>
           </div>
-          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs">
             <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Permissions</span>
-            <span class="font-medium text-slate-800">Client-Side Only</span>
+            <span class="font-medium text-slate-200">Client-Side Only</span>
           </div>
         </div>
       </header>
@@ -352,13 +352,13 @@ const jsonLdSchema = {
         </div>
 
         <!-- Address Bar Utility Box -->
-        <div class="p-5 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-3.5">
+        <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xs space-y-3.5 text-white">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="space-y-1.5">
-              <span class="text-[11px] uppercase font-bold text-slate-500 tracking-wider block">
+              <span class="text-[11px] uppercase font-bold text-slate-400 tracking-wider block">
                 Internal Extension URL
               </span>
-              <div class="flex items-center gap-2 text-xs sm:text-sm font-mono text-blue-700 font-semibold bg-white border border-slate-200/90 px-3 py-1.5 rounded-lg shadow-2xs w-fit">
+              <div class="flex items-center gap-2 text-xs sm:text-sm font-mono text-blue-400 font-semibold bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg shadow-2xs w-fit">
                 <Terminal class="w-4 h-4 text-slate-400 shrink-0" />
                 <span id="active-browser-url">chrome://extensions</span>
               </div>
@@ -367,14 +367,14 @@ const jsonLdSchema = {
             <button
               type="button"
               id="copy-url-btn"
-              class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-2xs"
+              class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-2xs"
             >
-              <Copy class="w-3.5 h-3.5 text-slate-500" id="copy-icon" />
+              <Copy class="w-3.5 h-3.5 text-slate-400" id="copy-icon" />
               <span id="copy-btn-text">Copy URL</span>
             </button>
           </div>
 
-          <p id="active-browser-notes" class="text-xs text-slate-600 leading-relaxed border-t border-slate-200/80 pt-3">
+          <p id="active-browser-notes" class="text-xs text-slate-300 leading-relaxed border-t border-slate-800 pt-3">
             Default Chromium browser. Developer mode toggle is located in the top-right corner.
           </p>
         </div>
@@ -436,10 +436,10 @@ const jsonLdSchema = {
               </figcaption>
             </figure>
 
-            <!-- Pro Tip Note -->
-            <div class="p-4 bg-[#f0f4f9] border border-slate-200/90 rounded-xl text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
-              <span class="text-blue-700 font-bold shrink-0">Pro-Tip:</span>
-              <span class="text-slate-700 leading-relaxed font-normal">{step.proTip}</span>
+            <!-- Dark Note Style for Pro Tip -->
+            <div class="p-4 bg-slate-900 rounded-xl text-white text-xs sm:text-sm flex items-start gap-2.5 max-w-3xl shadow-2xs">
+              <span class="text-emerald-400 font-bold shrink-0">Pro-Tip:</span>
+              <span class="text-slate-300 leading-relaxed">{step.proTip}</span>
             </div>
           </div>
         ))}
@@ -447,44 +447,44 @@ const jsonLdSchema = {
 
       <!-- 4. Pinning Bonus Tip -->
       <section class="space-y-6">
-        <div class="p-6 sm:p-7 bg-[#f0f4f9] border border-slate-200/90 rounded-2xl shadow-2xs space-y-4">
+        <div class="p-6 sm:p-7 bg-slate-900 rounded-2xl shadow-2xs space-y-4 text-white">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <Pin class="w-4 h-4 text-blue-600" />
-              <span class="text-xs font-bold text-slate-900">Toolbar Quick Access</span>
+              <Pin class="w-4 h-4 text-blue-400" />
+              <span class="text-xs font-bold text-slate-100">Toolbar Quick Access</span>
             </div>
-            <span class="text-xs text-slate-500 font-medium">Recommended</span>
+            <span class="text-xs text-slate-400 font-medium">Recommended</span>
           </div>
 
-          <h3 class="text-base font-bold text-slate-900 tracking-tight">
+          <h3 class="text-base font-bold text-white tracking-tight">
             Bonus Tip: Pin the Extension for 1-Click Access
           </h3>
 
-          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
             Modern browsers automatically hide newly installed extensions inside the extensions menu. To keep your extension visible in your main browser toolbar:
           </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-            <div class="p-4 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1.5">
-              <span class="text-xs font-mono font-bold text-blue-600">01. Puzzle Icon</span>
-              <h4 class="text-xs font-bold text-slate-900">Click Extensions Menu</h4>
-              <p class="text-[11px] text-slate-600 leading-relaxed">
+            <div class="p-4 bg-slate-800/90 rounded-xl border border-slate-700/80 shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-400">01. Puzzle Icon</span>
+              <h4 class="text-xs font-bold text-slate-100">Click Extensions Menu</h4>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
                 Click the small jigsaw puzzle piece icon (🧩) to the right of your address bar.
               </p>
             </div>
 
-            <div class="p-4 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1.5">
-              <span class="text-xs font-mono font-bold text-blue-600">02. Find Extension</span>
-              <h4 class="text-xs font-bold text-slate-900">Locate Your Utility</h4>
-              <p class="text-[11px] text-slate-600 leading-relaxed">
+            <div class="p-4 bg-slate-800/90 rounded-xl border border-slate-700/80 shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-400">02. Find Extension</span>
+              <h4 class="text-xs font-bold text-slate-100">Locate Your Utility</h4>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
                 Scroll through the dropdown list to locate your freshly installed extension.
               </p>
             </div>
 
-            <div class="p-4 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-1.5">
-              <span class="text-xs font-mono font-bold text-blue-600">03. Click Pin (📌)</span>
-              <h4 class="text-xs font-bold text-slate-900">Pin to Toolbar</h4>
-              <p class="text-[11px] text-slate-600 leading-relaxed">
+            <div class="p-4 bg-slate-800/90 rounded-xl border border-slate-700/80 shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-400">03. Click Pin (📌)</span>
+              <h4 class="text-xs font-bold text-slate-100">Pin to Toolbar</h4>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
                 Click the pin icon. Its button turns blue and the extension icon remains permanently accessible!
               </p>
             </div>
@@ -522,12 +522,12 @@ const jsonLdSchema = {
       </section>
 
       <!-- 6. Bottom Clean CTA Strip -->
-      <section class="p-8 bg-[#f0f4f9] rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+      <section class="p-8 bg-slate-900 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left shadow-2xs">
         <div class="space-y-1">
-          <h3 class="text-lg font-bold text-slate-900 tracking-tight">
+          <h3 class="text-lg font-bold text-white tracking-tight">
             Ready to discover verified extensions?
           </h3>
-          <p class="text-xs sm:text-sm text-slate-500">
+          <p class="text-xs sm:text-sm text-slate-300">
             Explore AI utilities, privacy suites, and developer power tools.
           </p>
         </div>
@@ -535,13 +535,13 @@ const jsonLdSchema = {
         <div class="flex items-center gap-3 shrink-0">
           <a
             href="/"
-            class="px-4 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-lg shadow-2xs transition-colors"
+            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-2xs transition-colors"
           >
             Browse Store
           </a>
           <a
             href="/developers"
-            class="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-colors"
+            class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors"
           >
             Developer Hub
           </a>
@@ -588,10 +588,10 @@ const jsonLdSchema = {
             try {
               await navigator.clipboard.writeText(urlToCopy);
               if (copyBtnText) copyBtnText.textContent = 'Copied!';
-              copyBtn.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-300');
+              copyBtn.classList.add('bg-emerald-950', 'text-emerald-400', 'border-emerald-700');
               setTimeout(() => {
                 if (copyBtnText) copyBtnText.textContent = 'Copy URL';
-                copyBtn.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-300');
+                copyBtn.classList.remove('bg-emerald-950', 'text-emerald-400', 'border-emerald-700');
               }, 2000);
             } catch (err) {
               // Fallback
@@ -602,8 +602,10 @@ const jsonLdSchema = {
               document.execCommand('copy');
               document.body.removeChild(input);
               if (copyBtnText) copyBtnText.textContent = 'Copied!';
+              copyBtn.classList.add('bg-emerald-950', 'text-emerald-400', 'border-emerald-700');
               setTimeout(() => {
                 if (copyBtnText) copyBtnText.textContent = 'Copy URL';
+                copyBtn.classList.remove('bg-emerald-950', 'text-emerald-400', 'border-emerald-700');
               }, 2000);
             }
           });
