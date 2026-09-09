@@ -1,0 +1,21 @@
+---
+// src/components/Logo.astro
+interface Props {
+  class?: string;
+}
+
+const { class: className = 'w-8 h-8' } = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 120 120"
+  class={className}
+  fill="none"
+  role="img"
+  aria-label="ExtLabs logo"
+>
+  <rect x="28" y="54" width="52" height="34" rx="4" fill="#0f172a" />
+  <rect x="34" y="43" width="52" height="34" rx="4" fill="#64748b" />
+  <rect x="40" y="32" width="52" height="34" rx="4" fill="#2563eb" />
+</svg>

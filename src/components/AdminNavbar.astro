@@ -1,5 +1,6 @@
 ---
 // src/components/AdminNavbar.astro
+import Logo from './Logo.astro';
 import { 
   Box, 
   ShieldCheck, 
@@ -24,9 +25,7 @@ import {
       <!-- Left: Logo, Title & Role Info -->
       <div class="flex items-center gap-3">
         <a href="/admin" class="flex items-center gap-2.5 group">
-          <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-2xs">
-            <KeyRound class="w-4 h-4 text-white" />
-          </div>
+          <Logo class="w-8 h-8 shrink-0" />
           <div class="flex flex-col">
             <span class="text-sm font-bold tracking-tight text-slate-900">ExtLabs</span>
             <span class="text-[10px] text-blue-600 font-semibold tracking-wider uppercase -mt-0.5 font-mono">Admin Console</span>

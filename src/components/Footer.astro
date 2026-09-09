@@ -1,6 +1,6 @@
 ---
 // Footer.astro
-import { Box } from '@lucide/astro';
+import Logo from './Logo.astro';
 ---
 
 <footer class="bg-slate-50 border-t border-slate-200 mt-20">
@@ -10,9 +10,7 @@ import { Box } from '@lucide/astro';
       <!-- Brand & Tagline -->
       <div class="space-y-3 md:col-span-1">
         <div class="flex items-center gap-2">
-          <div class="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center">
-            <Box class="w-3.5 h-3.5 text-white" />
-          </div>
+          <Logo class="w-6 h-6 shrink-0" />
           <span class="text-sm font-bold text-slate-900 tracking-tight">ExtLabs</span>
         </div>
 

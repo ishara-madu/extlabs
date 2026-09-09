@@ -1,7 +1,7 @@
 ---
 // src/components/DeveloperNavbar.astro
+import Logo from './Logo.astro';
 import { 
-  Box, 
   Bell, 
   HelpCircle, 
   LogOut, 
@@ -23,9 +23,7 @@ import {
       <!-- Brand & Console Title -->
       <div class="flex items-center gap-3">
         <a href="/" class="flex items-center gap-2.5 group">
-          <div class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center shadow-2xs">
-            <Box class="w-3.5 h-3.5 text-white" />
-          </div>
+          <Logo class="w-7 h-7 shrink-0" />
           <span class="text-sm font-bold tracking-tight text-slate-900">ExtLabs</span>
         </a>
         

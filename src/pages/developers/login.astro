@@ -3,7 +3,8 @@
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
-import { ShieldCheck, ArrowRight, ArrowLeft, Check, Box, AlertCircle } from '@lucide/astro';
+import Logo from "../../components/Logo.astro";
+import { ShieldCheck, ArrowRight, ArrowLeft, Check, AlertCircle } from '@lucide/astro';
 ---
 
 <html lang="en" data-theme="light">
@@ -41,9 +42,7 @@ import { ShieldCheck, ArrowRight, ArrowLeft, Check, Box, AlertCircle } from '@lu
           
           <!-- Card Header -->
           <div class="space-y-2 text-center">
-            <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mx-auto shadow-2xs">
-              <Box class="w-5 h-5 text-white" />
-            </div>
+            <Logo class="w-12 h-12 mx-auto" />
             
             <h1 class="text-xl font-bold text-slate-900 tracking-tight">
               Developer Console Sign In
