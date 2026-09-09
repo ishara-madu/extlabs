@@ -203,6 +203,22 @@ const allAvailableBrowsers: SupportedBrowserOption[] = [
   { id: "safari", name: "Safari", checkedByDefault: false }
 ];
 
+export interface LicenseOption {
+  value: string;
+  name: string;
+  desc: string;
+  full: string;
+}
+
+const allAvailableLicenses: LicenseOption[] = [
+  { value: "MIT", name: "MIT License", desc: "Permissive & standard open source", full: "MIT License (Permissive & Open Source)" },
+  { value: "Apache-2.0", name: "Apache 2.0", desc: "Permissive with patent rights grant", full: "Apache 2.0 (Permissive with Patent Grant)" },
+  { value: "GPL-3.0", name: "GNU GPLv3", desc: "Strong copyleft open source", full: "GNU GPLv3 (Copyleft Open Source)" },
+  { value: "BSD-3-Clause", name: "BSD 3-Clause", desc: "Permissive with non-endorsement", full: "BSD 3-Clause (Permissive)" },
+  { value: "MPL-2.0", name: "Mozilla Public License 2.0", desc: "Weak copyleft, file-level", full: "Mozilla Public License 2.0" },
+  { value: "Proprietary", name: "Proprietary", desc: "All rights reserved / Closed source", full: "Proprietary / Closed Source" },
+];
+
 const data = {
   id: initialData.id || "",
   slug: initialData.slug || initialData.id || "",
@@ -1661,19 +1677,100 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             </span>
           </div>
 
-          <div class="space-y-1.5">
-            <label for="ext-freq-input" class="block text-xs font-semibold text-slate-700">
-              Ad Tab Trigger Frequency
-            </label>
+          <div class="space-y-1.5 relative" id="freq-dropdown-container">
+            <div class="flex items-center justify-between">
+              <label for="freq-dropdown-btn" class="block text-xs font-semibold text-slate-700">
+                Ad Tab Trigger Frequency
+              </label>
+              <span class="text-[10px] font-mono text-slate-400">Cooldown window</span>
+            </div>
+
+            <!-- Hidden native select for form serialization & programmatic sync -->
             <select
               id="ext-freq-input"
-              class="w-full sm:w-96 px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+              class="hidden"
             >
               <option value="24h" selected={data.frequency === "24h"}>Once every 24 hours per user (Recommended)</option>
               <option value="download" selected={data.frequency === "download"}>On every download event (Max Monetization)</option>
               <option value="12h" selected={data.frequency === "12h"}>Twice every 24 hours (12h cooldown)</option>
               <option value="session" selected={data.frequency === "session"}>Once per browser session startup</option>
             </select>
+
+            <!-- Custom Dropdown Trigger Button -->
+            <button
+              type="button"
+              id="freq-dropdown-btn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              class="w-full sm:w-96 px-3.5 py-2 text-xs bg-white hover:bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none rounded-lg text-slate-800 flex items-center justify-between transition-colors cursor-pointer text-left shadow-2xs"
+            >
+              <span id="freq-selected-label" class="font-medium text-slate-900 truncate">
+                {data.frequency === "download" ? "On every download event (Max Monetization)" :
+                 data.frequency === "12h" ? "Twice every 24 hours (12h cooldown)" :
+                 data.frequency === "session" ? "Once per browser session startup" :
+                 "Once every 24 hours per user (Recommended)"}
+              </span>
+              <ChevronDown class="w-3.5 h-3.5 text-slate-400 freq-chevron transition-transform duration-150 shrink-0 ml-2" />
+            </button>
+
+            <!-- Custom Dropdown Menu -->
+            <div
+              id="freq-dropdown-menu"
+              class="hidden absolute left-0 top-full mt-1.5 w-full sm:w-96 bg-white rounded-xl border border-slate-200 shadow-xl z-30 overflow-hidden divide-y divide-slate-100"
+              role="listbox"
+            >
+              <div
+                class={`freq-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.frequency === "24h" || !data.frequency ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="24h"
+                data-label="Once every 24 hours per user (Recommended)"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">Once every 24 hours per user</span>
+                  <span class="text-[11px] text-slate-500 block">Optimal balance between developer CPM and user experience (Recommended)</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 freq-check shrink-0 ${data.frequency === "24h" || !data.frequency ? "" : "hidden"}`} />
+              </div>
+
+              <div
+                class={`freq-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.frequency === "download" ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="download"
+                data-label="On every download event (Max Monetization)"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">On every download event</span>
+                  <span class="text-[11px] text-slate-500 block">Triggers Monetag SmartLink on every extension download click (Highest revenue)</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 freq-check shrink-0 ${data.frequency === "download" ? "" : "hidden"}`} />
+              </div>
+
+              <div
+                class={`freq-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.frequency === "12h" ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="12h"
+                data-label="Twice every 24 hours (12h cooldown)"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">Twice every 24 hours</span>
+                  <span class="text-[11px] text-slate-500 block">Moderate cooldown allowing up to 2 direct link impressions per day</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 freq-check shrink-0 ${data.frequency === "12h" ? "" : "hidden"}`} />
+              </div>
+
+              <div
+                class={`freq-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.frequency === "session" ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="session"
+                data-label="Once per browser session startup"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">Once per browser session</span>
+                  <span class="text-[11px] text-slate-500 block">Triggers once per active browser session upon user visit</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 freq-check shrink-0 ${data.frequency === "session" ? "" : "hidden"}`} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1790,45 +1887,132 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <!-- Manifest Standard -->
-          <div class="space-y-1.5">
+          <div class="space-y-1.5 relative" id="manifest-specs-dropdown-container">
             <div class="flex items-center justify-between">
-              <label for="ext-manifest-input" class="block text-xs font-semibold text-slate-700">
+              <label for="manifest-specs-dropdown-btn" class="block text-xs font-semibold text-slate-700">
                 Extension Standard (Manifest) <span class="text-red-500">*</span>
               </label>
               <span class="text-[10px] font-mono text-emerald-600 font-medium">
                 Auto-detected
               </span>
             </div>
+
+            <!-- Hidden native select for form serialization & programmatic sync -->
             <select
               id="ext-manifest-input"
-              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+              class="hidden"
             >
               <option value="v3" selected={data.manifestVersion === "v3"}>Manifest V3 (Modern Standard - Chrome 88+, Firefox 109+, Edge)</option>
               <option value="v2" selected={data.manifestVersion === "v2"}>Manifest V2 (Legacy Extension Standard)</option>
             </select>
+
+            <!-- Custom Dropdown Trigger Button -->
+            <button
+              type="button"
+              id="manifest-specs-dropdown-btn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              class="w-full px-3.5 py-2 text-xs bg-white hover:bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none rounded-lg text-slate-800 flex items-center justify-between transition-colors cursor-pointer text-left shadow-2xs"
+            >
+              <span id="manifest-specs-selected-label" class="font-medium text-slate-900 truncate">
+                {data.manifestVersion === "v2" ? "Manifest V2 (Legacy Extension Standard)" : "Manifest V3 (Modern Standard - Chrome 88+, Firefox 109+, Edge)"}
+              </span>
+              <ChevronDown class="w-3.5 h-3.5 text-slate-400 manifest-specs-chevron transition-transform duration-150 shrink-0 ml-2" />
+            </button>
+
+            <!-- Custom Dropdown Menu -->
+            <div
+              id="manifest-specs-dropdown-menu"
+              class="hidden absolute left-0 top-full mt-1.5 w-full bg-white rounded-xl border border-slate-200 shadow-xl z-30 overflow-hidden divide-y divide-slate-100"
+              role="listbox"
+            >
+              <div
+                class={`manifest-specs-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.manifestVersion !== "v2" ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="v3"
+                data-label="Manifest V3 (Modern Standard - Chrome 88+, Firefox 109+, Edge)"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">Manifest V3</span>
+                  <span class="text-[11px] text-slate-500 block">Modern Chromium standard with service workers (Chrome 88+, Firefox 109+, Edge, Brave)</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 manifest-specs-check shrink-0 ${data.manifestVersion !== "v2" ? "" : "hidden"}`} />
+              </div>
+
+              <div
+                class={`manifest-specs-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${data.manifestVersion === "v2" ? "bg-slate-50/80 font-medium" : ""}`}
+                data-value="v2"
+                data-label="Manifest V2 (Legacy Extension Standard)"
+                role="option"
+              >
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-slate-900 block">Manifest V2</span>
+                  <span class="text-[11px] text-slate-500 block">Legacy background page standard (deprecated on modern Chrome, supported on Firefox)</span>
+                </div>
+                <Check class={`w-4 h-4 text-blue-600 manifest-specs-check shrink-0 ${data.manifestVersion === "v2" ? "" : "hidden"}`} />
+              </div>
+            </div>
           </div>
 
           <!-- Software License -->
-          <div class="space-y-1.5">
+          <div class="space-y-1.5 relative" id="license-dropdown-container">
             <div class="flex items-center justify-between">
-              <label for="ext-license-input" class="block text-xs font-semibold text-slate-700">
+              <label for="license-dropdown-btn" class="block text-xs font-semibold text-slate-700">
                 Software License <span class="text-red-500">*</span>
               </label>
               <span class="text-[10px] font-mono text-slate-400 font-medium">
                 Default: MIT
               </span>
             </div>
+
+            <!-- Hidden native select for form serialization & programmatic sync -->
             <select
               id="ext-license-input"
-              class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-800 cursor-pointer"
+              class="hidden"
             >
-              <option value="MIT" selected={data.license === "MIT"}>MIT License (Permissive & Open Source)</option>
-              <option value="Apache-2.0" selected={data.license === "Apache-2.0"}>Apache 2.0 (Permissive with Patent Grant)</option>
-              <option value="GPL-3.0" selected={data.license === "GPL-3.0"}>GNU GPLv3 (Copyleft Open Source)</option>
-              <option value="BSD-3-Clause" selected={data.license === "BSD-3-Clause"}>BSD 3-Clause (Permissive)</option>
-              <option value="MPL-2.0" selected={data.license === "MPL-2.0"}>Mozilla Public License 2.0</option>
-              <option value="Proprietary" selected={data.license === "Proprietary"}>Proprietary / Closed Source</option>
+              {allAvailableLicenses.map((lic) => (
+                <option value={lic.value} selected={data.license === lic.value}>{lic.full}</option>
+              ))}
             </select>
+
+            <!-- Custom Dropdown Trigger Button -->
+            <button
+              type="button"
+              id="license-dropdown-btn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              class="w-full px-3.5 py-2 text-xs bg-white hover:bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none rounded-lg text-slate-800 flex items-center justify-between transition-colors cursor-pointer text-left shadow-2xs"
+            >
+              <span id="license-selected-label" class="font-medium text-slate-900 truncate">
+                {(allAvailableLicenses.find((lic) => lic.value === data.license) || allAvailableLicenses[0]).full}
+              </span>
+              <ChevronDown class="w-3.5 h-3.5 text-slate-400 license-chevron transition-transform duration-150 shrink-0 ml-2" />
+            </button>
+
+            <!-- Custom Dropdown Menu -->
+            <div
+              id="license-dropdown-menu"
+              class="hidden absolute left-0 top-full mt-1.5 w-full bg-white rounded-xl border border-slate-200 shadow-xl z-30 overflow-hidden max-h-64 overflow-y-auto divide-y divide-slate-100"
+              role="listbox"
+            >
+              {allAvailableLicenses.map((lic) => {
+                const isSelected = (data.license || "MIT") === lic.value;
+                return (
+                  <div
+                    class={`license-option p-2.5 px-3.5 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-left ${isSelected ? "bg-slate-50/80 font-medium" : ""}`}
+                    data-value={lic.value}
+                    data-label={lic.full}
+                    role="option"
+                  >
+                    <div class="space-y-0.5">
+                      <span class="text-xs font-semibold text-slate-900 block">{lic.name}</span>
+                      <span class="text-[11px] text-slate-500 block">{lic.desc}</span>
+                    </div>
+                    <Check class={`w-4 h-4 text-blue-600 license-check shrink-0 ${isSelected ? "" : "hidden"}`} />
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <!-- Supported Browsers -->
@@ -2100,13 +2284,19 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     const errBrowsers = document.getElementById('err-ext-browsers');
     const errPrivacy = document.getElementById('err-ext-privacy');
 
-    // Synchronize Manifest Version selectors between Tab 1 and Tab 4
+    // Synchronize Manifest Version selectors between Tab 1 and Tab 5
     if (manifestInputTab1 && manifestInput) {
       manifestInputTab1.addEventListener('change', () => {
-        manifestInput.value = manifestInputTab1.value;
+        if (manifestInput.value !== manifestInputTab1.value) {
+          manifestInput.value = manifestInputTab1.value;
+          manifestInput.dispatchEvent(new Event('change'));
+        }
       });
       manifestInput.addEventListener('change', () => {
-        manifestInputTab1.value = manifestInput.value;
+        if (manifestInputTab1.value !== manifestInput.value) {
+          manifestInputTab1.value = manifestInput.value;
+          manifestInputTab1.dispatchEvent(new Event('change'));
+        }
       });
     }
 
@@ -2936,6 +3126,168 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       if (categoryInput.value) {
         updateCategoryUI(categoryInput.value, false);
       }
+    });
+
+    // =========================================================================
+    // Generic Custom Select Dropdown Controller (Manifest, Frequency, License)
+    // =========================================================================
+    function setupCustomDropdown(config: {
+      containerId: string;
+      btnId: string;
+      menuId: string;
+      chevronClass: string;
+      labelId: string;
+      optionClass: string;
+      checkClass: string;
+      selectId: string;
+    }) {
+      const container = document.getElementById(config.containerId);
+      const btn = document.getElementById(config.btnId) as HTMLButtonElement | null;
+      const menu = document.getElementById(config.menuId);
+      const chevron = container?.querySelector(`.${config.chevronClass}`);
+      const labelEl = document.getElementById(config.labelId);
+      const options = container ? container.querySelectorAll<HTMLElement>(`.${config.optionClass}`) : [];
+      const select = document.getElementById(config.selectId) as HTMLSelectElement | null;
+
+      if (!container || !btn || !menu || !select) return;
+
+      function updateUI(value: string, dispatch = true) {
+        if (!select) return;
+        if (select.value !== value) {
+          select.value = value;
+          if (dispatch) {
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            select.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+
+        const matchingOpt = Array.from(options).find(opt => opt.getAttribute('data-value') === value);
+        if (matchingOpt && labelEl) {
+          labelEl.textContent = matchingOpt.getAttribute('data-label') || value;
+        }
+
+        options.forEach(opt => {
+          const isMatch = opt.getAttribute('data-value') === value;
+          opt.classList.toggle('bg-slate-50/80', isMatch);
+          opt.classList.toggle('font-medium', isMatch);
+          opt.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+          opt.querySelector(`.${config.checkClass}`)?.classList.toggle('hidden', !isMatch);
+        });
+      }
+
+      function closeMenu() {
+        if (!menu) return;
+        menu.classList.add('hidden');
+        chevron?.classList.remove('rotate-180');
+        btn?.setAttribute('aria-expanded', 'false');
+      }
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close category menu if open
+        if (typeof closeCategoryMenu === 'function') {
+          closeCategoryMenu();
+        }
+        // Close other custom dropdown menus
+        document.querySelectorAll('[id$="-dropdown-menu"]').forEach(otherMenu => {
+          if (otherMenu !== menu && !otherMenu.classList.contains('hidden')) {
+            otherMenu.classList.add('hidden');
+            const parent = otherMenu.parentElement;
+            parent?.querySelector('svg')?.classList.remove('rotate-180');
+            parent?.querySelector('button')?.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        const isHidden = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden');
+        const isOpen = !isHidden;
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        chevron?.classList.toggle('rotate-180', isOpen);
+      });
+
+      options.forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const val = opt.getAttribute('data-value') || '';
+          updateUI(val, true);
+          closeMenu();
+          btn.focus();
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target as Node)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+          closeMenu();
+          btn.focus();
+        }
+      });
+
+      // Listen to programmatic changes on native select
+      select.addEventListener('change', () => {
+        updateUI(select.value, false);
+      });
+      select.addEventListener('input', () => {
+        updateUI(select.value, false);
+      });
+
+      // Initial sync with current value
+      if (select.value) {
+        updateUI(select.value, false);
+      }
+    }
+
+    // 1. Tab 1: Manifest Version Standard
+    setupCustomDropdown({
+      containerId: 'manifest-tab1-dropdown-container',
+      btnId: 'manifest-tab1-dropdown-btn',
+      menuId: 'manifest-tab1-dropdown-menu',
+      chevronClass: 'manifest-tab1-chevron',
+      labelId: 'manifest-tab1-selected-label',
+      optionClass: 'manifest-tab1-option',
+      checkClass: 'manifest-tab1-check',
+      selectId: 'ext-manifest-input-tab1',
+    });
+
+    // 2. Tab 4: Ad Tab Trigger Frequency
+    setupCustomDropdown({
+      containerId: 'freq-dropdown-container',
+      btnId: 'freq-dropdown-btn',
+      menuId: 'freq-dropdown-menu',
+      chevronClass: 'freq-chevron',
+      labelId: 'freq-selected-label',
+      optionClass: 'freq-option',
+      checkClass: 'freq-check',
+      selectId: 'ext-freq-input',
+    });
+
+    // 3. Tab 5: Technical Specs - Extension Standard (Manifest)
+    setupCustomDropdown({
+      containerId: 'manifest-specs-dropdown-container',
+      btnId: 'manifest-specs-dropdown-btn',
+      menuId: 'manifest-specs-dropdown-menu',
+      chevronClass: 'manifest-specs-chevron',
+      labelId: 'manifest-specs-selected-label',
+      optionClass: 'manifest-specs-option',
+      checkClass: 'manifest-specs-check',
+      selectId: 'ext-manifest-input',
+    });
+
+    // 4. Tab 5: Technical Specs - Software License
+    setupCustomDropdown({
+      containerId: 'license-dropdown-container',
+      btnId: 'license-dropdown-btn',
+      menuId: 'license-dropdown-menu',
+      chevronClass: 'license-chevron',
+      labelId: 'license-selected-label',
+      optionClass: 'license-option',
+      checkClass: 'license-check',
+      selectId: 'ext-license-input',
     });
 
     // Save Basic & Source to Cloudflare D1
@@ -4136,6 +4488,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         }
         if (freqInput && profile.defaultFrequency && !isEditMode) {
           freqInput.value = profile.defaultFrequency;
+          freqInput.dispatchEvent(new Event('change'));
         }
       } catch (e) {}
     }
@@ -4164,6 +4517,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           }
           if (data.user.defaultFrequency && freqInput && !isEditMode) {
             freqInput.value = data.user.defaultFrequency;
+            freqInput.dispatchEvent(new Event('change'));
           }
           syncMonetagBadge();
         }
