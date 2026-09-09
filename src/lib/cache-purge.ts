@@ -1,5 +1,6 @@
 // src/lib/cache-purge.ts
 import { env } from 'cloudflare:workers';
+import { clearMemoryCache } from './queries/extensions';
 
 export interface PurgeOptions {
   extensionSlug?: string;
@@ -20,6 +21,9 @@ export async function purgeExtensionStoreCache(
   options: PurgeOptions = {}
 ): Promise<{ success: boolean; purgedUrls: string[]; reason?: string }> {
   try {
+    // 0. Instantly flush Worker L1 In-Memory Cache
+    clearMemoryCache();
+
     const url = new URL(request.url);
     const origin = url.origin;
     const urlsToPurge: Set<string> = new Set();

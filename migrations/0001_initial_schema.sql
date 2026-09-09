@@ -80,6 +80,10 @@ CREATE INDEX IF NOT EXISTS idx_extensions_slug ON extensions(slug);
 CREATE INDEX IF NOT EXISTS idx_extensions_category ON extensions(category);
 CREATE INDEX IF NOT EXISTS idx_extensions_featured ON extensions(is_featured);
 CREATE INDEX IF NOT EXISTS idx_extensions_developer ON extensions(developer_id);
+CREATE INDEX IF NOT EXISTS idx_extensions_active_suspended ON extensions(is_active, is_suspended);
+CREATE INDEX IF NOT EXISTS idx_extensions_category_active ON extensions(category, is_active, is_suspended);
+CREATE INDEX IF NOT EXISTS idx_extensions_store_rank ON extensions(is_active, is_suspended, is_featured, weekly_active_users, rating);
+
 
 -- 5. EXTENSION VERSIONS (Releases & Review Queue)
 CREATE TABLE IF NOT EXISTS extension_versions (

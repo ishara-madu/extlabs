@@ -9,10 +9,56 @@ export interface ExtensionWithDeveloper extends DbExtension {
   developer_website?: string | null;
 }
 
+// ==========================================
+// L1 Worker In-Memory Cache (Sub-millisecond D1 Protection)
+// ==========================================
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+
+const memoryCache = new Map<string, CacheEntry<any>>();
+
+export function getMemoryCached<T>(key: string): T | null {
+  const entry = memoryCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+export function setMemoryCached<T>(key: string, data: T, ttlMs: number = 60_000): void {
+  if (memoryCache.size > 100) {
+    const now = Date.now();
+    for (const [k, v] of memoryCache.entries()) {
+      if (now > v.expiresAt) memoryCache.delete(k);
+    }
+  }
+  memoryCache.set(key, { data, expiresAt: Date.now() + ttlMs });
+}
+
+export function clearMemoryCache(keyPattern?: string): void {
+  if (!keyPattern) {
+    memoryCache.clear();
+    return;
+  }
+  for (const key of memoryCache.keys()) {
+    if (key.includes(keyPattern)) {
+      memoryCache.delete(key);
+    }
+  }
+}
+
 /**
- * Fetch all live extensions from D1
+ * Fetch all live extensions from D1 (L1 In-Memory Cached for 60s)
  */
 export async function getLiveExtensions(db: D1Database): Promise<ExtensionWithDeveloper[]> {
+  const cacheKey = 'd1:live_extensions';
+  const cached = getMemoryCached<ExtensionWithDeveloper[]>(cacheKey);
+  if (cached) return cached;
+
   const query = `
     SELECT 
       e.*, 
@@ -26,16 +72,22 @@ export async function getLiveExtensions(db: D1Database): Promise<ExtensionWithDe
     ORDER BY e.is_featured DESC, e.rating DESC, e.weekly_active_users DESC
   `;
   const { results } = await db.prepare(query).all<ExtensionWithDeveloper>();
-  return results || [];
+  const data = results || [];
+  setMemoryCached(cacheKey, data, 60_000);
+  return data;
 }
 
 /**
- * Fetch extension by slug with developer info
+ * Fetch extension by slug with developer info (L1 In-Memory Cached for 60s)
  */
 export async function getExtensionBySlug(
   db: D1Database,
   slug: string
 ): Promise<ExtensionWithDeveloper | null> {
+  const cacheKey = `d1:ext_slug:${slug}`;
+  const cached = getMemoryCached<ExtensionWithDeveloper>(cacheKey);
+  if (cached) return cached;
+
   const result = await db
     .prepare(`
       SELECT 
@@ -50,6 +102,10 @@ export async function getExtensionBySlug(
     `)
     .bind(slug)
     .first<ExtensionWithDeveloper>();
+
+  if (result) {
+    setMemoryCached(cacheKey, result, 60_000);
+  }
   return result || null;
 }
 
@@ -556,14 +612,20 @@ export async function getLiveExtensionsCount(db: D1Database | null): Promise<num
 }
 
 /**
- * Fetch all live extensions for the store, mapping real D1 database rows
+ * Fetch all live extensions for the store, mapping real D1 database rows (L1 In-Memory Cached for 60s)
  */
 export async function getStoreExtensions(db: D1Database | null): Promise<Extension[]> {
   if (!db) return [];
+  const cacheKey = 'd1:store_all';
+  const cached = getMemoryCached<Extension[]>(cacheKey);
+  if (cached) return cached;
+
   try {
     const liveExtensions = await getLiveExtensions(db);
     if (liveExtensions) {
-      return liveExtensions.map(mapDbExtensionToStoreItem);
+      const mapped = liveExtensions.map(mapDbExtensionToStoreItem);
+      setMemoryCached(cacheKey, mapped, 60_000);
+      return mapped;
     }
   } catch (err) {
     console.warn('Failed to fetch extensions from D1:', err);
@@ -572,14 +634,20 @@ export async function getStoreExtensions(db: D1Database | null): Promise<Extensi
 }
 
 /**
- * Fetch live store extensions for a specific category
+ * Fetch live store extensions for a specific category (L1 In-Memory Cached for 60s)
  */
 export async function getStoreExtensionsByCategory(db: D1Database | null, category: string): Promise<Extension[]> {
   if (!db) return [];
+  const cacheKey = `d1:store_cat:${category}`;
+  const cached = getMemoryCached<Extension[]>(cacheKey);
+  if (cached) return cached;
+
   try {
     const liveCatExtensions = await getExtensionsByCategory(db, category);
     if (liveCatExtensions) {
-      return liveCatExtensions.map(mapDbExtensionToStoreItem);
+      const mapped = liveCatExtensions.map(mapDbExtensionToStoreItem);
+      setMemoryCached(cacheKey, mapped, 60_000);
+      return mapped;
     }
   } catch (err) {
     console.warn('Failed to fetch category extensions from D1:', err);

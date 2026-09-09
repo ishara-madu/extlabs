@@ -137,6 +137,10 @@ const jsonLdSchema = {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     
+    <!-- Resource Hints for Third-Party CDNs -->
+    <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
+    <link rel="preconnect" href="https://avatars.githubusercontent.com" crossorigin />
+
     <!-- Primary SEO Meta Tags -->
     <title>{ext.name} — Free Browser Extension | ExtLabs</title>
     <meta name="title" content={`${ext.name} — Free Browser Extension | ExtLabs`} />
@@ -190,6 +194,11 @@ const jsonLdSchema = {
             <img
               src={ext.iconUrl || "/icons/extension-placeholder.avif"}
               alt={ext.name}
+              width="80"
+              height="80"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
               class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-white border border-slate-200/90 shadow-2xs p-1.5 shrink-0"
             />
             <div class="space-y-3">
@@ -360,8 +369,11 @@ const jsonLdSchema = {
                   id="main-screenshot-img"
                   src={screenshotsList[0]}
                   alt={`${ext.name} Store Screenshot 1`}
+                  width="1280"
+                  height="720"
                   class="w-full h-full object-contain select-none"
                   loading="eager"
+                  decoding="async"
                 />
 
                 {screenshotsList.length > 1 && (
@@ -404,8 +416,11 @@ const jsonLdSchema = {
                       <img
                         src={shot}
                         alt={`Thumbnail ${idx + 1}`}
+                        width="96"
+                        height="54"
                         class="w-full h-full object-cover"
                         loading="lazy"
+                        decoding="async"
                       />
                     </button>
                   ))}

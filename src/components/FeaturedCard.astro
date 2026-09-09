@@ -48,6 +48,10 @@ const isNew = (() => {
           <img
             src={extension.iconUrl || "/icons/extension-placeholder.avif"}
             alt=""
+            width="20"
+            height="20"
+            loading="lazy"
+            decoding="async"
             class="w-5 h-5 rounded object-contain shrink-0"
           />
           <span class="truncate">{extension.name}</span>
