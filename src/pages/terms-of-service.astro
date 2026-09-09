@@ -1,0 +1,596 @@
+---
+// src/pages/terms-of-service.astro
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import { 
+  Scale, 
+  FileText, 
+  Check, 
+  ShieldCheck, 
+  AlertCircle, 
+  ChevronDown, 
+  ExternalLink, 
+  ArrowRight, 
+  Mail, 
+  HelpCircle, 
+  Lock, 
+  Code2
+} from '@lucide/astro';
+
+const siteUrl = "https://extlabs.io";
+const pageUrl = `${siteUrl}/terms-of-service`;
+const pageTitle = "Terms of Service — ExtLabs";
+const pageDescription = "Terms and conditions governing the use of ExtLabs browser extension directory, developer distribution console, and third-party monetization integrations.";
+
+const sections = [
+  {
+    id: "agreement",
+    num: "01",
+    title: "Acceptance of Terms",
+    content: "By accessing, browsing, downloading software from, or publishing extensions on ExtLabs, you enter into a binding agreement to adhere to these Terms of Service."
+  },
+  {
+    id: "store-policy",
+    num: "02",
+    title: "Open Distribution Policy & Permitted Software",
+    content: "ExtLabs champions developer freedom. We welcome open-source packages, indie utility extensions, workflow enhancers, scrapers, and bypass helpers provided they are 100% virus-free and transparent."
+  },
+  {
+    id: "prohibited",
+    num: "03",
+    title: "Prohibited Content & Security Baselines",
+    content: "To safeguard our users and community, ExtLabs enforces a zero-tolerance baseline against malicious software, spyware, and deceptive code."
+  },
+  {
+    id: "ip-ownership",
+    num: "04",
+    title: "Developer Ownership & Intellectual Property",
+    content: "Creators retain 100% ownership, copyright, and licensing rights over their browser extensions, source code, and associated trademarks."
+  },
+  {
+    id: "monetization",
+    num: "05",
+    title: "Direct Monetization & 0% Platform Cut",
+    content: "ExtLabs charges zero percent (0%) platform fees. Developers who attach Monetag Direct Links receive 100% of all ad revenues directly into their personal publisher accounts."
+  },
+  {
+    id: "sideloading",
+    num: "06",
+    title: "Unpacked (.zip) Sideloading & User Disclaimers",
+    content: "Extensions on ExtLabs are distributed as unpacked archives designed for Developer Mode installation. Users are responsible for inspecting manifests prior to installation."
+  },
+  {
+    id: "moderation-dmca",
+    num: "07",
+    title: "Automated Audits, Moderation & DMCA Takedowns",
+    content: "We maintain automated static code security pipelines and promptly honor legitimate Digital Millennium Copyright Act (DMCA) and security removal requests."
+  },
+  {
+    id: "disclaimers",
+    num: "08",
+    title: "Limitation of Liability & Warranty Disclaimers",
+    content: "ExtLabs is provided on an 'as is' and 'as available' basis without warranties of any kind regarding third-party software packages."
+  },
+  {
+    id: "contact",
+    num: "09",
+    title: "Modifications, Governing Law & Legal Contact",
+    content: "How these terms are updated, dispute resolution, and dedicated legal communication channels."
+  }
+];
+
+const termsFaqs = [
+  {
+    q: "Does ExtLabs own any rights to my uploaded browser extension code?",
+    a: "No. You retain complete ownership, copyright, and intellectual property rights over your software. When publishing on ExtLabs, you grant us only a non-exclusive license to host and distribute your package to visitors."
+  },
+  {
+    q: "Are bypass utilities and power scrapers allowed on ExtLabs?",
+    a: "Yes. Unlike corporate browser stores that impose vague policy restrictions, ExtLabs permits legitimate bypass tools, web scrapers, and developer power helpers as long as they contain zero viruses, spyware, or credential harvesting payloads."
+  },
+  {
+    q: "Does ExtLabs charge developers any hidden fees or cuts from earnings?",
+    a: "No. ExtLabs charges zero platform fees ($0.00). There are no account registration fees, no annual listing fees, and 0% commission on developer ad streams."
+  },
+  {
+    q: "What should I do if an extension infringes my copyright or trademark?",
+    a: "Submit a formal DMCA notice with proof of ownership to legal@extlabs.io. Our moderation team reviews and executes verified takedowns within 48 business hours."
+  },
+  {
+    q: "Can I delete or unpublish my extension at any time?",
+    a: "Yes. You can unpublish or remove your extension anytime directly from your ExtLabs Developer Console (/developers/dashboard)."
+  }
+];
+
+const jsonLdSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": siteUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Terms of Service",
+          "item": pageUrl
+        }
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "name": pageTitle,
+      "description": pageDescription,
+      "url": pageUrl
+    }
+  ]
+};
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{pageTitle}</title>
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content="extlabs terms of service, extension store terms, developer agreement, open software policy, manifest v3 terms" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={pageUrl} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:site_name" content="ExtLabs" />
+
+    <!-- Google Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Navigation -->
+    <Navbar />
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-6 sm:px-8 py-10 space-y-14">
+      
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900">Terms of Service</span>
+      </nav>
+
+      <!-- 1. Header Section (Clean & Typographic) -->
+      <header class="space-y-4 border-b border-slate-200 pb-10">
+        <div class="flex items-center gap-2 text-xs text-slate-600 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+          <span class="text-slate-900 font-semibold">Terms of Service</span>
+          <span class="text-slate-300">•</span>
+          <span>Effective Date: September 2026</span>
+          <span class="text-slate-300">•</span>
+          <span class="text-emerald-600 font-medium flex items-center gap-1">
+            <Scale class="w-3.5 h-3.5 text-emerald-600" />
+            0% Platform Fees
+          </span>
+        </div>
+
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Terms of Service
+        </h1>
+
+        <p class="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+          The legal and operational terms governing the ExtLabs extension directory, developer console, distribution pipelines, and creator monetization agreements.
+        </p>
+
+        <!-- Quick Summary Strip (Clean Light Cards) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Platform Cut</span>
+            <span class="font-medium text-slate-800">$0.00 (0% Fee)</span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Developer Rights</span>
+            <span class="font-medium text-slate-800">100% Creator Owned</span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Malware Policy</span>
+            <span class="font-medium text-emerald-600 flex items-center gap-1">
+              <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" /> Zero Tolerance
+            </span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Store Policy</span>
+            <span class="font-medium text-slate-800">Open & Unrestricted</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 2. Table of Contents Quick Links -->
+      <section class="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-2xs space-y-3">
+        <h2 class="text-xs uppercase font-bold text-slate-500 tracking-wider">
+          Table of Contents
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          {sections.map((sec) => (
+            <a 
+              href={`#${sec.id}`}
+              class="text-slate-600 hover:text-blue-600 hover:underline flex items-center gap-2 transition-colors py-0.5"
+            >
+              <span class="font-mono text-slate-400 text-[11px]">{sec.num}.</span>
+              <span>{sec.title}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <!-- 3. Terms Body Sections -->
+      <section class="space-y-12">
+        
+        <!-- Section 01: Acceptance of Terms -->
+        <article id="agreement" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">01</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Acceptance of Terms
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              The fundamental contract between visitors, developers, and ExtLabs.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            These Terms of Service ("Terms") constitute a legally binding agreement between you ("User", "Developer", or "Visitor") and ExtLabs ("ExtLabs", "we", "us", or "our"). By accessing our directory, downloading packages, submitting extensions, or utilizing developer APIs, you acknowledge that you have read, understood, and agreed to be bound by these Terms and our <a href="/privacy-policy" class="text-blue-600 font-semibold hover:underline">Privacy Policy</a>.
+          </p>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            If you do not agree with any part of these Terms, you must immediately discontinue using ExtLabs and refrain from downloading or distributing extensions through the platform.
+          </p>
+        </article>
+
+        <!-- Section 02: Open Distribution Policy -->
+        <article id="store-policy" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">02</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Open Distribution Policy & Permitted Software
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Promoting developer freedom while prioritizing user security.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            ExtLabs exists to eliminate arbitrary corporate censorship in software distribution. We permit, showcase, and distribute a wide variety of tools frequently restricted by commercial web stores, including:
+          </p>
+
+          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Power Utilities & Productivity Tools:</strong> Custom tab managers, advanced bookmarking, dev tools, and browser automation utilities.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Web Scrapers & Research Assistants:</strong> Client-side data extractors, DOM inspectors, and local AI summarizers.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Paywall & Link Redirect Bypasses:</strong> Research tools and link declutterers that do not damage third-party servers or steal credentials.</span>
+            </li>
+          </ul>
+
+          <!-- Dark Insight Note -->
+          <div class="p-5 bg-slate-900 rounded-xl text-white space-y-1.5 shadow-2xs max-w-3xl">
+            <span class="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+              <Code2 class="w-4 h-4 text-blue-400" />
+              <span>Our Open Developer Charter</span>
+            </span>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              We judge extensions strictly by their code safety and user transparency — never by political sensitivity or competitive threat to big-tech advertising models. If your code is clean and declared honestly, it belongs on ExtLabs.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 03: Prohibited Content & Security Baselines -->
+        <article id="prohibited" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">03</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Prohibited Content & Security Baselines
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Clear technical boundaries to safeguard all platform users.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            While ExtLabs maintains an open policy, we enforce an unbending zero-tolerance ban against any extension that poses security risks or violates user trust:
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+              <h4 class="text-xs font-bold text-rose-600">Strictly Forbidden:</h4>
+              <ul class="space-y-1 text-xs text-slate-600">
+                <li>• Keyloggers, credential scrapers, or session token hijackers.</li>
+                <li>• Obfuscated payloads, base64 eval scripts, or remote code execution.</li>
+                <li>• Silent cryptocurrency miners and unprompted background CPU drains.</li>
+                <li>• Adware injects that rewrite unrelated web pages without user consent.</li>
+              </ul>
+            </div>
+
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+              <h4 class="text-xs font-bold text-emerald-700">Mandatory Requirements:</h4>
+              <ul class="space-y-1 text-xs text-slate-600">
+                <li>• Conformance to modern Chromium Manifest V3 specifications.</li>
+                <li>• Truthful extension titles, descriptions, and functional claims.</li>
+                <li>• Explicit disclosure of all permissions declared in `manifest.json`.</li>
+                <li>• Accessible source code or clear developer origin identity.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Section 04: Developer Ownership & IP -->
+        <article id="ip-ownership" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">04</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Developer Ownership & Intellectual Property
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Your software remains 100% yours at all times.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            Publishing on ExtLabs never transfers ownership of your intellectual property. You retain all copyrights, patent rights, trademarks, and open-source licenses (MIT, Apache 2.0, GPL, BSD, etc.) governing your extension code.
+          </p>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            By uploading an extension to ExtLabs, you grant us only a worldwide, non-exclusive, royalty-free license to host, cache, index, and deliver your package and metadata to prospective users through our directory and CDN.
+          </p>
+        </article>
+
+        <!-- Section 05: Direct Monetization -->
+        <article id="monetization" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">05</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Direct Monetization & 0% Platform Cut
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Fair monetization mechanics built on transparency.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            ExtLabs supports creators with a direct ad-link monetization mechanism via partners such as Monetag:
+          </p>
+
+          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Zero Commission:</strong> ExtLabs deducts 0% platform cuts. All revenue generated from your direct link is credited directly to your personal publisher account.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Dual-Action Download Flow:</strong> When configured, downloading the extension package triggers a concurrent sponsor tab opening in the user's browser.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Third-Party Terms:</strong> Ad serving, CPM calculations, and payouts are handled exclusively by your ad network provider under their independent terms.</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Section 06: Sideloading Disclaimers -->
+        <article id="sideloading" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">06</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Unpacked (.zip) Sideloading & User Disclaimers
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Understanding the sideloading installation model in Chromium browsers.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            Packages distributed on ExtLabs are delivered as direct `.zip` archives to be installed via Developer Mode ("Load Unpacked") as documented in our <a href="/how-to-install" class="text-blue-600 font-semibold hover:underline">Installation Guide</a>.
+          </p>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            While ExtLabs performs automated static audits on every uploaded archive, users acknowledge that installing third-party browser extensions grants client-side execution privileges within their local browser profile. Users are advised to inspect source files before granting broad permissions.
+          </p>
+        </article>
+
+        <!-- Section 07: Moderation & DMCA -->
+        <article id="moderation-dmca" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">07</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Automated Audits, Moderation & DMCA Takedowns
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Fair enforcement and prompt resolution of copyright disputes.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            ExtLabs respects the intellectual property of developers and organizations worldwide. If you believe your copyrighted work or registered trademark is infringed by an extension on ExtLabs, please send a formal notice to <a href="mailto:legal@extlabs.io" class="text-blue-600 font-semibold hover:underline">legal@extlabs.io</a> containing:
+          </p>
+
+          <ul class="space-y-2 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span>Identification of the copyrighted work claimed to have been infringed.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span>Direct URL link to the allegedly infringing extension on ExtLabs.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span>Your contact information and a statement of good faith belief.</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Section 08: Liability Disclaimers -->
+        <article id="disclaimers" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">08</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Limitation of Liability & Warranty Disclaimers
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Standard open software disclaimers under applicable law.
+            </p>
+          </div>
+
+          <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 max-w-3xl text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <p>
+              EXTLABS AND ALL CONTENT, SERVICES, AND SOFTWARE EXTENSIONS ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. TO THE MAXIMUM EXTENT PERMITTED BY LAW, EXTLABS DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+            </p>
+            <p>
+              IN NO EVENT SHALL EXTLABS, ITS DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES RESULTING FROM YOUR USE OF OR INABILITY TO USE DOWNLOADED EXTENSIONS OR PLATFORM SERVICES.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 09: Contact & Updates -->
+        <article id="contact" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">09</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Modifications & Legal Inquiries
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              How updates are handled and contact channels for legal counsel.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            We reserve the right to revise these Terms to reflect changes in regulatory standards or platform capabilities. Material updates will be highlighted on this page with an updated revision date.
+          </p>
+
+          <div class="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 max-w-md shadow-2xs">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-900">
+              <Mail class="w-4 h-4 text-blue-600" />
+              <span>ExtLabs Legal & Operations Desk</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Email: <a href="mailto:legal@extlabs.io" class="text-blue-600 font-semibold hover:underline">legal@extlabs.io</a>
+            </p>
+            <p class="text-[11px] text-slate-400">
+              General inquiries, security disclosures, and DMCA notices.
+            </p>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- 4. Frequently Asked Questions (Accordion) -->
+      <section class="space-y-6 pt-2">
+        <div class="space-y-1">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Frequently Asked Terms Questions
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Answers to common legal, developer, and distribution questions.
+          </p>
+        </div>
+
+        <div class="divide-y divide-slate-200 border-y border-slate-200">
+          {termsFaqs.map((faq) => (
+            <details class="group py-4 text-xs sm:text-sm cursor-pointer select-none">
+              <summary class="flex items-center justify-between font-semibold text-slate-900 list-none group-hover:text-blue-600 transition-colors">
+                <span class="flex items-center gap-2">
+                  <HelpCircle class="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
+                  <span>{faq.q}</span>
+                </span>
+                <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200 shrink-0 ml-2" />
+              </summary>
+              <div class="pt-3 pl-6 text-slate-600 leading-relaxed text-xs sm:text-sm">
+                {faq.a}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <!-- 5. Dark CTA Strip (Matching Theme) -->
+      <section class="p-8 bg-slate-900 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left shadow-2xs">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-white tracking-tight">
+            Ready to publish with 0% platform fees?
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-300">
+            Submit your extension to the open store or read our monetization guide.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <a
+            href="/developers"
+            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-2xs transition-colors"
+          >
+            Developer Hub
+          </a>
+          <a
+            href="/developers/monetization-guide"
+            class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors"
+          >
+            Monetization Guide
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Footer -->
+    <Footer />
+
+  </body>
+</html>

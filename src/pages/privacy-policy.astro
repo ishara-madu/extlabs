@@ -1,0 +1,607 @@
+---
+// src/pages/privacy-policy.astro
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import { 
+  ShieldCheck, 
+  Lock, 
+  EyeOff, 
+  Server, 
+  Check, 
+  ChevronDown, 
+  ArrowRight, 
+  Mail, 
+  FileText, 
+  Globe, 
+  HelpCircle,
+  AlertCircle
+} from '@lucide/astro';
+
+const siteUrl = "https://extlabs.io";
+const pageUrl = `${siteUrl}/privacy-policy`;
+const pageTitle = "Privacy Policy — ExtLabs";
+const pageDescription = "Learn how ExtLabs protects your privacy. Transparent open-source policy, zero tracking telemetry, no sale of personal data, and strict extension security auditing.";
+
+const sections = [
+  {
+    id: "philosophy",
+    num: "01",
+    title: "Core Privacy Philosophy",
+    content: `ExtLabs is architected on radical privacy and developer sovereignty. Unlike traditional corporate app stores that harvest user analytics, track browsing history, or build demographic ad profiles, ExtLabs operates as a decentralized, privacy-first software directory. We collect only the bare minimum data necessary to serve extension downloads and enable developer console access.`
+  },
+  {
+    id: "data-collection",
+    num: "02",
+    title: "Information We Collect (And What We Never Collect)",
+    content: `We believe transparency starts with clear boundaries between operational telemetry and surveillance.`
+  },
+  {
+    id: "extension-audits",
+    num: "03",
+    title: "Extension Security & Static Code Audits",
+    content: `Every browser extension listed on ExtLabs is delivered in an unpacked (.zip) format and inspected through automated static code analysis to guarantee user safety and manifest transparency.`
+  },
+  {
+    id: "monetization",
+    num: "04",
+    title: "Developer Monetization & Ad Transparency",
+    content: `ExtLabs provides creators with direct monetization options via third-party direct links (e.g. Monetag). We want both users and developers to understand exactly how this data flow operates.`
+  },
+  {
+    id: "infrastructure",
+    num: "05",
+    title: "Cloud Infrastructure & Third-Party Processors",
+    content: `ExtLabs relies on modern, enterprise-grade edge hosting and authentication partners to ensure maximum security, minimal latency, and zero persistent user tracking.`
+  },
+  {
+    id: "retention-rights",
+    num: "06",
+    title: "Data Retention & Your Global Privacy Rights (GDPR / CCPA)",
+    content: `We honor international data protection regulations, including the European General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA).`
+  },
+  {
+    id: "contact",
+    num: "07",
+    title: "Inquiries & Data Protection Contact",
+    content: `If you have questions, feedback, or need to exercise your data deletion rights, our team is accessible directly.`
+  }
+];
+
+const privacyFaqs = [
+  {
+    q: "Does ExtLabs track the websites I visit or my browser activity?",
+    a: "No. ExtLabs has zero capability and zero interest in monitoring your browsing habits. Extensions installed from ExtLabs execute locally inside your Chromium browser sandbox and do not report browsing telemetry back to ExtLabs servers."
+  },
+  {
+    q: "Do you sell or monetize user email addresses or download telemetry?",
+    a: "Never. ExtLabs does not sell, rent, license, or monetize any user or developer information with third-party data brokers, aggregators, or marketing firms."
+  },
+  {
+    q: "What data is collected when I download an extension?",
+    a: "Only aggregate download counters are incremented on the database (e.g., 'Downloads: +1'). We do not log your IP address, device fingerprints, or tie downloads to personal user profiles."
+  },
+  {
+    q: "How does ExtLabs verify that extensions are safe and virus-free?",
+    a: "Every submission undergoes automated static analysis that verifies Manifest V3 conformance, checks for obfuscated scripts or crypto-miners, and inspects requested permissions to ensure zero malicious payload."
+  },
+  {
+    q: "How can I request complete deletion of my developer profile?",
+    a: "You can delete your developer tokens directly in Developer Settings (/developers/settings) or contact our privacy desk at privacy@extlabs.io to request complete removal of all associated metadata."
+  }
+];
+
+const jsonLdSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": siteUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Privacy Policy",
+          "item": pageUrl
+        }
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "name": pageTitle,
+      "description": pageDescription,
+      "url": pageUrl
+    }
+  ]
+};
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{pageTitle}</title>
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content="extlabs privacy policy, browser extension security, open source telemetry, manifest v3 privacy, developer data protection" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={pageUrl} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:site_name" content="ExtLabs" />
+
+    <!-- Google Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Navigation -->
+    <Navbar />
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-6 sm:px-8 py-10 space-y-14">
+      
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900">Privacy Policy</span>
+      </nav>
+
+      <!-- 1. Header Section (Clean & Typographic) -->
+      <header class="space-y-4 border-b border-slate-200 pb-10">
+        <div class="flex items-center gap-2 text-xs text-slate-600 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+          <span class="text-slate-900 font-semibold">Privacy Policy</span>
+          <span class="text-slate-300">•</span>
+          <span>Last Updated: September 2026</span>
+          <span class="text-slate-300">•</span>
+          <span class="text-emerald-600 font-medium flex items-center gap-1">
+            <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
+            Zero Surveillance Telemetry
+          </span>
+        </div>
+
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Privacy Policy
+        </h1>
+
+        <p class="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+          ExtLabs is built on transparency and radical privacy. We do not sell personal data, track your browsing history, or inject surveillance telemetry into browser extensions.
+        </p>
+
+        <!-- Quick Summary Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">User Tracking</span>
+            <span class="font-medium text-slate-800">Zero (0%)</span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Data Sales</span>
+            <span class="font-medium text-slate-800">Never Sold</span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Security Audits</span>
+            <span class="font-medium text-emerald-600 flex items-center gap-1">
+              <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" /> 100% Virus-Free
+            </span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Compliance</span>
+            <span class="font-medium text-slate-800">GDPR & CCPA</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 2. Table of Contents Quick Links -->
+      <section class="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-2xs space-y-3">
+        <h2 class="text-xs uppercase font-bold text-slate-500 tracking-wider">
+          Table of Contents
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          {sections.map((sec) => (
+            <a 
+              href={`#${sec.id}`}
+              class="text-slate-600 hover:text-blue-600 hover:underline flex items-center gap-2 transition-colors py-0.5"
+            >
+              <span class="font-mono text-slate-400 text-[11px]">{sec.num}.</span>
+              <span>{sec.title}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <!-- 3. Policy Body Sections -->
+      <section class="space-y-12">
+        
+        <!-- Section 01: Core Philosophy -->
+        <article id="philosophy" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">01</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Core Privacy Philosophy
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Open standards and user respect at the foundation of our architecture.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            ExtLabs was established to create a free, independent software ecosystem for browser tools without the surveillance and restrictive corporate gatekeeping seen in traditional extension stores. We operate under strict principles:
+          </p>
+
+          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Minimal Data Ingestion:</strong> We only collect data required for service stability and developer account authentication.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Client-Side Execution:</strong> Extensions distributed through ExtLabs run 100% locally in your browser sandbox.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>No Behavioral Tracking:</strong> We do not log IP addresses, fingerprint devices, or maintain behavioral analytics on our visitors.</span>
+            </li>
+          </ul>
+
+          <!-- Dark Insight Note -->
+          <div class="p-5 bg-slate-900 rounded-xl text-white space-y-1.5 shadow-2xs max-w-3xl">
+            <span class="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+              <ShieldCheck class="w-4 h-4 text-emerald-400" />
+              <span>Zero Surveillance Architecture</span>
+            </span>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              We believe that utility software should respect user boundaries. You can browse, discover, and download extensions on ExtLabs completely anonymously without creating an account.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 02: Information We Collect -->
+        <article id="data-collection" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">02</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Information We Collect & What We Never Collect
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Clear distinctions between public storefront users and verified developers.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <!-- What We NEVER Collect (Dark Card) -->
+            <div class="p-5 bg-slate-900 rounded-xl border border-slate-800 text-white space-y-3 shadow-2xs">
+              <div class="flex items-center gap-2">
+                <EyeOff class="w-4 h-4 text-emerald-400" />
+                <h3 class="text-xs font-bold text-slate-100 uppercase tracking-wider">
+                  What We NEVER Collect
+                </h3>
+              </div>
+              <ul class="space-y-2 text-xs text-slate-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 font-bold">•</span>
+                  <span>Browsing history or URLs visited</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 font-bold">•</span>
+                  <span>Keystrokes, search queries, or form inputs</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 font-bold">•</span>
+                  <span>Device hardware fingerprints or MAC addresses</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 font-bold">•</span>
+                  <span>Third-party tracking or advertising cookies</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- What We Legally Process -->
+            <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 shadow-2xs">
+              <div class="flex items-center gap-2">
+                <Server class="w-4 h-4 text-blue-600" />
+                <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Minimal Operational Data
+                </h3>
+              </div>
+              <ul class="space-y-2 text-xs text-slate-600">
+                <li class="flex items-start gap-2">
+                  <span class="text-blue-600 font-bold">•</span>
+                  <span><strong>Download Counters:</strong> Increment counts to display popularity.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-blue-600 font-bold">•</span>
+                  <span><strong>Developer Identity:</strong> GitHub public profile & ID for publishers.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-blue-600 font-bold">•</span>
+                  <span><strong>Extension Submissions:</strong> Package metadata, icon, and description.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-blue-600 font-bold">•</span>
+                  <span><strong>Server Request Logs:</strong> Ephemeral edge logs retained &lt; 24 hours.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Section 03: Extension Audits -->
+        <article id="extension-audits" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">03</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Extension Security & Static Code Audits
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Rigorous inspection standards protecting users from hidden exploits.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            Because ExtLabs distributes extensions directly as standard unpacked archives (.zip), you are never forced to run proprietary, black-box installer executables. Furthermore, our security pipeline enforces strict standards before an extension is published:
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-400">01. Static Analysis</span>
+              <h4 class="text-xs font-bold text-slate-100">No Obfuscated Code</h4>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                We forbid evaluated strings (`eval`), obfuscated payloads, or encrypted logic that conceals intent.
+              </p>
+            </div>
+
+            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-400">02. Zero Malicious APIs</span>
+              <h4 class="text-xs font-bold text-slate-100">Malware & Coin-Miners</h4>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                Automated scanners test against known signatures for crypto-jackers, adware injects, and credential scrapers.
+              </p>
+            </div>
+
+            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs space-y-1.5">
+              <span class="text-xs font-mono font-bold text-blue-400">03. Manifest Audits</span>
+              <h4 class="text-xs font-bold text-slate-100">Strict Permissions</h4>
+              <p class="text-[11px] text-slate-300 leading-relaxed">
+                Extensions must declare only the permissions directly necessary to deliver their stated functionality.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Section 04: Monetization -->
+        <article id="monetization" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">04</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Developer Monetization & Ad Transparency
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Honest disclosure regarding direct monetization links and sponsor tabs.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            ExtLabs supports open-source and independent creators by offering a 0% fee monetization option via Monetag Direct Links. Here is exactly how this affects you as a user:
+          </p>
+
+          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Dual-Action Download:</strong> When clicking 'Add to Browser' on a monetized extension, your package download begins immediately while a sponsor tab opens in a separate browser tab.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Zero In-App Injections:</strong> The extension code itself remains 100% clean. No popups, banner ads, or tracking pixels are ever injected into the extension popup interface.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Third-Party Ad Networks:</strong> Sponsor tabs are delivered by external partner networks (such as Monetag). Interactions in that sponsor tab are governed by Monetag's independent privacy policy.</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Section 05: Infrastructure -->
+        <article id="infrastructure" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">05</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Cloud Infrastructure & Data Processors
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Privacy-hardened providers powering ExtLabs edge computing.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            To provide instantaneous download speeds and resilient security worldwide, ExtLabs partners with leading privacy-certified infrastructure providers:
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-slate-900">Cloudflare Workers & D1</h4>
+                <span class="text-[10px] font-mono font-medium text-emerald-700">Encrypted at Rest</span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Global edge execution, DDoS mitigation, and serverless database storage compliant with ISO 27001 and SOC 2 standards.
+              </p>
+            </div>
+
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-slate-900">GitHub OAuth</h4>
+                <span class="text-[10px] font-mono font-medium text-blue-600">Authentication</span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Developer authentication is handled via GitHub's secure OAuth flow. We only request public profile data and never receive access to your passwords.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Section 06: Rights & Compliance -->
+        <article id="retention-rights" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">06</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Data Retention & Global Rights (GDPR / CCPA)
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Universal respect for your digital rights, regardless of geography.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            Under international privacy statutes (including GDPR Articles 15–22 and the California Consumer Privacy Act), you possess absolute rights concerning any data processed by ExtLabs:
+          </p>
+
+          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Right to Access & Portability:</strong> Developers can export full profiles and listing statistics anytime.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Right to Erasure ('Right to be Forgotten'):</strong> You can request immediate, permanent deletion of your developer account and published extension records.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Non-Discrimination:</strong> We do not limit features, charge fees, or provide reduced quality of service to users who exercise privacy rights.</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Section 07: Contact -->
+        <article id="contact" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">07</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Inquiries & Data Protection Contact
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Direct access to our security and privacy stewards.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            If you have questions regarding this Privacy Policy, wish to file a security vulnerability report, or would like to submit a data erasure request, please contact:
+          </p>
+
+          <div class="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 max-w-md shadow-2xs">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-900">
+              <Mail class="w-4 h-4 text-blue-600" />
+              <span>ExtLabs Privacy & Data Officer</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Email: <a href="mailto:privacy@extlabs.io" class="text-blue-600 font-semibold hover:underline">privacy@extlabs.io</a>
+            </p>
+            <p class="text-[11px] text-slate-400">
+              Response SLA: All requests are acknowledged and addressed within 48 business hours.
+            </p>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- 4. Frequently Asked Questions (Accordion) -->
+      <section class="space-y-6 pt-2">
+        <div class="space-y-1">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Frequently Asked Privacy Questions
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Quick answers to common privacy and data concerns.
+          </p>
+        </div>
+
+        <div class="divide-y divide-slate-200 border-y border-slate-200">
+          {privacyFaqs.map((faq) => (
+            <details class="group py-4 text-xs sm:text-sm cursor-pointer select-none">
+              <summary class="flex items-center justify-between font-semibold text-slate-900 list-none group-hover:text-blue-600 transition-colors">
+                <span class="flex items-center gap-2">
+                  <HelpCircle class="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
+                  <span>{faq.q}</span>
+                </span>
+                <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200 shrink-0 ml-2" />
+              </summary>
+              <div class="pt-3 pl-6 text-slate-600 leading-relaxed text-xs sm:text-sm">
+                {faq.a}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <!-- 5. Dark CTA Strip (Matching Theme) -->
+      <section class="p-8 bg-slate-900 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left shadow-2xs">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-white tracking-tight">
+            Have questions about our privacy architecture?
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-300">
+            Read our installation guide or explore the developer publishing console.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <a
+            href="/how-to-install"
+            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-2xs transition-colors"
+          >
+            How to Install (.zip)
+          </a>
+          <a
+            href="/developers"
+            class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors"
+          >
+            Developer Hub
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Footer -->
+    <Footer />
+
+  </body>
+</html>

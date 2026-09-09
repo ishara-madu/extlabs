@@ -1,0 +1,565 @@
+---
+// src/pages/security.astro
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import { 
+  ShieldCheck, 
+  Lock, 
+  Eye, 
+  Server, 
+  Check, 
+  ChevronDown, 
+  ExternalLink, 
+  ArrowRight, 
+  Mail, 
+  HelpCircle, 
+  AlertCircle,
+  FileCheck,
+  Terminal,
+  Cpu,
+  Search,
+  KeyRound,
+  FileCode
+} from '@lucide/astro';
+
+const siteUrl = "https://extlabs.io";
+const pageUrl = `${siteUrl}/security`;
+const pageTitle = "Security Verification & Audit Pipeline — ExtLabs";
+const pageDescription = "Comprehensive breakdown of the ExtLabs multi-tier security inspection pipeline, automated static AST analysis, Manifest V3 permission audits, and user self-verification guide.";
+
+const sections = [
+  {
+    id: "architecture",
+    num: "01",
+    title: "Security Architecture & Philosophy",
+    content: "Why transparent, unpacked open-source archives provide superior security compared to closed, compiled app stores."
+  },
+  {
+    id: "pipeline",
+    num: "02",
+    title: "5-Tier Automated Static Analysis Engine",
+    content: "Every extension archive is subjected to five layers of static code auditing before listing approval."
+  },
+  {
+    id: "sandboxing",
+    num: "03",
+    title: "Chromium Sandboxing & Permission Boundaries",
+    content: "How Chromium browser architecture restricts unpacked extensions and prevents system-level compromise."
+  },
+  {
+    id: "self-verify",
+    num: "04",
+    title: "How to Self-Verify Any ExtLabs Package",
+    content: "Step-by-step instructions for inspecting manifest permissions and validating file integrity before installation."
+  },
+  {
+    id: "reporting",
+    num: "05",
+    title: "Vulnerability Disclosure & Rapid Takedowns",
+    content: "Our coordinated vulnerability reporting protocol and 24-hour critical response SLA."
+  }
+];
+
+const auditTiers = [
+  {
+    tier: "Tier 01",
+    name: "Archive & File Tree Integrity",
+    summary: "Validation of package structure, extraction boundaries, and nested file safety.",
+    checks: [
+      "Rejection of executable binaries (.exe, .dll, .so, .bat, .cmd).",
+      "Archive zip-slip and directory traversal exploit detection.",
+      "Strict manifest.json root placement validation."
+    ]
+  },
+  {
+    tier: "Tier 02",
+    name: "Manifest V3 Permission Review",
+    summary: "Strict enforcement of the principle of least privilege across browser APIs.",
+    checks: [
+      "Analysis of declared permissions against stated extension features.",
+      "Scrutiny of broad host permissions ('<all_urls>' or '*://*/*').",
+      "Mandatory justification for sensitive access (cookies, webRequest, storage)."
+    ]
+  },
+  {
+    tier: "Tier 03",
+    name: "AST Static Code Scanning",
+    summary: "Abstract Syntax Tree inspection to detect prohibited runtime patterns.",
+    checks: [
+      "Zero-tolerance ban on `eval()`, `new Function()`, and base64 script execution.",
+      "Detection of remote code downloads (all scripts must be bundled locally).",
+      "Flagging of heavy JavaScript obfuscation and string packing."
+    ]
+  },
+  {
+    tier: "Tier 04",
+    name: "Signature & Heuristic Malware Detection",
+    summary: "Testing against known malicious patterns and unauthorized data egress.",
+    checks: [
+      "Signatures for in-browser cryptocurrency miners (Coinhive, CryptoLoot).",
+      "Detection of unauthorized session token and cookie exfiltration payloads.",
+      "Inspection of background service worker network connections."
+    ]
+  },
+  {
+    tier: "Tier 05",
+    name: "Developer Identity & Provenance",
+    summary: "Verifying origin and tracking developer reputation on public repositories.",
+    checks: [
+      "OAuth verification with established GitHub developer profiles.",
+      "Telemetry cross-referencing with open source GitHub releases.",
+      "Immediate automated flagging upon developer account changes."
+    ]
+  }
+];
+
+const securityFaqs = [
+  {
+    q: "Can an extension installed via Developer Mode access my computer files?",
+    a: "No. Chromium extensions execute inside a strictly isolated browser sandbox. They have zero access to your operating system, desktop files, or hardware outside the browser, and can only interact with web pages if granted explicit permissions in manifest.json."
+  },
+  {
+    q: "Why does Chrome display a warning when Developer Mode is enabled?",
+    a: "Google displays a standard caution dialog to notify users that an unpacked extension was not installed from the commercial Chrome Web Store. When installing verified packages from ExtLabs, this is completely normal and expected."
+  },
+  {
+    q: "Are ExtLabs packages obfuscated or compiled into binary code?",
+    a: "No. All ExtLabs packages are distributed as plain, unpacked .zip archives containing raw HTML, CSS, JavaScript, and JSON. You can open any file in a standard text editor (like VS Code or Notepad) to inspect the complete source code yourself."
+  },
+  {
+    q: "What happens if a developer pushes a malicious update?",
+    a: "Because updates on ExtLabs require downloading an updated package and replacing the directory, updates never occur silently without your knowledge. Furthermore, every updated version undergoes the exact same 5-tier static analysis pipeline before being released."
+  },
+  {
+    q: "How do I report a suspicious extension or potential exploit?",
+    a: "Email security@extlabs.io immediately with the extension URL and technical details. Our security engineers triage all submissions and enact immediate directory freezes within 24 hours if a vulnerability is confirmed."
+  }
+];
+
+const jsonLdSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": siteUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Security Verification",
+          "item": pageUrl
+        }
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "name": pageTitle,
+      "description": pageDescription,
+      "url": pageUrl
+    }
+  ]
+};
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{pageTitle}</title>
+    <meta name="title" content={pageTitle} />
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content="extlabs security verification, extension safety audit, manifest v3 security, chrome extension malware scan, sideloading safety" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={pageUrl} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:site_name" content="ExtLabs" />
+
+    <!-- Google Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
+  </head>
+
+  <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Navigation -->
+    <Navbar />
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-6 sm:px-8 py-10 space-y-14">
+      
+      <!-- Breadcrumb Navigation -->
+      <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900">Security Verification</span>
+      </nav>
+
+      <!-- 1. Header Section (Clean & Typographic) -->
+      <header class="space-y-4 border-b border-slate-200 pb-10">
+        <div class="flex items-center gap-2 text-xs text-slate-600 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span class="text-slate-900 font-semibold">Security Verification</span>
+          <span class="text-slate-300">•</span>
+          <span>Automated Audit Engine v3.2</span>
+          <span class="text-slate-300">•</span>
+          <span class="text-emerald-600 font-medium flex items-center gap-1">
+            <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
+            Zero-Malware Baseline
+          </span>
+        </div>
+
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Security Verification & Code Auditing
+        </h1>
+
+        <p class="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+          How ExtLabs safeguards your browser. Transparent open-source packages, 5-tier automated static AST analysis, Manifest V3 permission boundaries, and zero hidden telemetry.
+        </p>
+
+        <!-- Quick Summary Strip (Clean Light Cards) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Audit Engine</span>
+            <span class="font-medium text-slate-800">AST Static v3.2</span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Manifest Policy</span>
+            <span class="font-medium text-slate-800">Manifest V3 Only</span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Code Visibility</span>
+            <span class="font-medium text-emerald-600 flex items-center gap-1">
+              <Eye class="w-3.5 h-3.5 text-emerald-600" /> 100% Inspectable
+            </span>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Remote Code</span>
+            <span class="font-medium text-slate-800">Strictly Forbidden</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 2. Table of Contents Quick Links -->
+      <section class="p-5 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-2xs space-y-3">
+        <h2 class="text-xs uppercase font-bold text-slate-500 tracking-wider">
+          Table of Contents
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          {sections.map((sec) => (
+            <a 
+              href={`#${sec.id}`}
+              class="text-slate-600 hover:text-blue-600 hover:underline flex items-center gap-2 transition-colors py-0.5"
+            >
+              <span class="font-mono text-slate-400 text-[11px]">{sec.num}.</span>
+              <span>{sec.title}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <!-- 3. Security Body Sections -->
+      <section class="space-y-12">
+        
+        <!-- Section 01: Architecture & Philosophy -->
+        <article id="architecture" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">01</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Security Architecture & Philosophy
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Why plain unpacked source code provides unmatched auditability.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            In corporate browser stores, extension packages are bundled into compiled `.crx` archives, hosted behind opaque automated approval bots that regularly miss malware, and updated silently in the background without user consent.
+          </p>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            ExtLabs fundamentally flips this model by distributing <strong>unpacked (.zip) source archives</strong>:
+          </p>
+
+          <ul class="space-y-2.5 text-xs sm:text-sm text-slate-600 pl-1 max-w-3xl">
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Total Code Transparency:</strong> What you download is plain text JavaScript, HTML, and CSS. Nothing is encrypted or compiled into opaque machine code.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Zero Silent Background Updates:</strong> An extension on your computer cannot change behind your back. You remain in complete control over when to update.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <Check class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span class="leading-relaxed"><strong>Verifiable Provenance:</strong> Extensions link directly to their public GitHub repositories and commit releases for community peer review.</span>
+            </li>
+          </ul>
+
+          <!-- Dark Insight Note -->
+          <div class="p-5 bg-slate-900 rounded-xl text-white space-y-1.5 shadow-2xs max-w-3xl">
+            <span class="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+              <ShieldCheck class="w-4 h-4 text-emerald-400" />
+              <span>The ExtLabs Security Promise</span>
+            </span>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              We never host compiled installer binaries (.exe, .dmg, .pkg). If software cannot run purely inside the native Chromium extension sandbox, it is rejected automatically.
+            </p>
+          </div>
+        </article>
+
+        <!-- Section 02: 5-Tier Static Analysis Pipeline -->
+        <article id="pipeline" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">02</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                5-Tier Automated Static Analysis Engine
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              The multi-stage technical inspection executed on every submission.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            Before an extension appears in our public directory, our automated ingestion engine extracts the package and conducts a 5-tier security inspection:
+          </p>
+
+          <div class="space-y-4 pt-2">
+            {auditTiers.map((tier) => (
+              <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono font-bold text-blue-600">{tier.tier}</span>
+                    <span class="text-slate-300">/</span>
+                    <h3 class="text-sm font-bold text-slate-900">{tier.name}</h3>
+                  </div>
+                  <span class="text-[10px] font-mono text-emerald-700 font-semibold">Automated Test</span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                  {tier.summary}
+                </p>
+                <ul class="space-y-1.5 text-xs text-slate-600 pt-1 border-t border-slate-100">
+                  {tier.checks.map((check) => (
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span>{check}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <!-- Section 03: Chromium Sandboxing -->
+        <article id="sandboxing" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">03</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Chromium Sandboxing & Permission Boundaries
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              How the browser sandbox isolates extensions from your operating system.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            Modern Chromium browsers (Google Chrome, Brave, Microsoft Edge, Opera) run extensions inside an unprivileged process sandbox. This guarantees hardware-level protection:
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2 text-xs font-bold text-slate-100">
+                <Lock class="w-4 h-4 text-emerald-400" />
+                <span>Operating System Isolation</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Extensions cannot read local documents, install background services, access webcam/microphone without prompt, or execute desktop processes.
+              </p>
+            </div>
+
+            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-white shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2 text-xs font-bold text-slate-100">
+                <ShieldCheck class="w-4 h-4 text-emerald-400" />
+                <span>Isolated World Execution</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Content scripts run in an isolated JavaScript execution context, preventing web pages from modifying or tampering with extension variables.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Section 04: Self-Verification Guide -->
+        <article id="self-verify" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">04</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                How to Self-Verify Any ExtLabs Package
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              You do not have to take our word for it. Inspect the source yourself in 3 steps.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            Because ExtLabs packages are plain `.zip` files, any developer or privacy-conscious user can audit the package before loading it into the browser:
+          </p>
+
+          <div class="space-y-3 pt-2">
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold text-blue-600">Step 1:</span>
+                <h4 class="text-xs font-bold text-slate-900">Extract & Open Folder</h4>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Right-click the downloaded `.zip` and extract it. Notice there are no compiled binaries—only readable files (`manifest.json`, `.js`, `.html`, `.css`, icons).
+              </p>
+            </div>
+
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold text-blue-600">Step 2:</span>
+                <h4 class="text-xs font-bold text-slate-900">Read `manifest.json`</h4>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Open `manifest.json` in any text editor. Look at the `"permissions"` array. Verify that the extension only requests APIs appropriate for its stated purpose.
+              </p>
+            </div>
+
+            <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold text-blue-600">Step 3:</span>
+                <h4 class="text-xs font-bold text-slate-900">Check for eval() or Remote Scripts</h4>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Use your text editor's search tool (Ctrl+F or Cmd+F) across the folder. You will find zero `eval()`, zero external remote script tags, and no obfuscation.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Section 05: Vulnerability Reporting -->
+        <article id="reporting" class="space-y-4 pb-10 border-b border-slate-200 scroll-mt-20">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-blue-600">05</span>
+              <span class="text-slate-300">/</span>
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Vulnerability Disclosure & Rapid Takedowns
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Responsible security coordination and our 24-hour response SLA.
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl">
+            We operate an open vulnerability disclosure program. If you discover a security vulnerability in an extension or in the ExtLabs platform infrastructure, please report it immediately:
+          </p>
+
+          <div class="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 max-w-md shadow-2xs">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-900">
+              <Mail class="w-4 h-4 text-blue-600" />
+              <span>ExtLabs Security Response Desk</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Email: <a href="mailto:security@extlabs.io" class="text-blue-600 font-semibold hover:underline">security@extlabs.io</a>
+            </p>
+            <p class="text-[11px] text-slate-500">
+              Triage SLA: All vulnerability reports are acknowledged within 12 hours and triaged within 24 business hours. Confirmed malicious extensions are unlisted globally with immediate notice.
+            </p>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- 4. Frequently Asked Questions (Accordion) -->
+      <section class="space-y-6 pt-2">
+        <div class="space-y-1">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Frequently Asked Security Questions
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Answers to common questions regarding sideloading and extension safety.
+          </p>
+        </div>
+
+        <div class="divide-y divide-slate-200 border-y border-slate-200">
+          {securityFaqs.map((faq) => (
+            <details class="group py-4 text-xs sm:text-sm cursor-pointer select-none">
+              <summary class="flex items-center justify-between font-semibold text-slate-900 list-none group-hover:text-blue-600 transition-colors">
+                <span class="flex items-center gap-2">
+                  <HelpCircle class="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
+                  <span>{faq.q}</span>
+                </span>
+                <ChevronDown class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200 shrink-0 ml-2" />
+              </summary>
+              <div class="pt-3 pl-6 text-slate-600 leading-relaxed text-xs sm:text-sm">
+                {faq.a}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <!-- 5. Dark CTA Strip (Matching Theme) -->
+      <section class="p-8 bg-slate-900 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left shadow-2xs">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-white tracking-tight">
+            Ready to install your first verified extension?
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-300">
+            Learn the 4-step walkthrough to extract and load unpacked packages in under a minute.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <a
+            href="/how-to-install"
+            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-2xs transition-colors"
+          >
+            How to Install (.zip)
+          </a>
+          <a
+            href="/developers"
+            class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors"
+          >
+            Developer Hub
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Footer -->
+    <Footer />
+
+  </body>
+</html>
