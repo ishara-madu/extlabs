@@ -533,7 +533,35 @@ export const POST: APIRoute = async ({ request }) => {
       },
       {
         q: `Does this extension collect or share my personal data?`,
-        a: `No. All operations run locally within your browser sandbox, and no telemetry or personal usage statistics are harvested.`,
+        a: `No. All operations run locally within your browser sandbox, and strictly zero telemetry or personal usage statistics are harvested.`,
+      },
+      {
+        q: `Why does ${cleanName} request specific browser permissions?`,
+        a: `Permissions are requested solely to interact with active browser tabs and store your local settings offline without cloud round-trips.`,
+      },
+      {
+        q: `How does ${cleanName} impact browser speed and memory (RAM)?`,
+        a: `It is engineered with a lightweight, event-driven background service worker that sleeps when inactive, ensuring zero noticeable RAM impact.`,
+      },
+      {
+        q: `Can I customize keyboard shortcuts for ${cleanName}?`,
+        a: `Yes! You can configure custom hotkeys anytime by visiting chrome://extensions/shortcuts in your browser settings.`,
+      },
+      {
+        q: `Does this extension require creating an account or signing in?`,
+        a: `No account or registration is required. Simply install and pin the extension to begin using it immediately.`,
+      },
+      {
+        q: `Can I export or download my data from the extension?`,
+        a: `Yes, any locally saved configurations, notes, or history can be exported directly from the extension options page.`,
+      },
+      {
+        q: `Is ${cleanName} compliant with Google's Manifest V3 standard?`,
+        a: `Yes, it is fully compliant with the latest Manifest V3 specifications, guaranteeing modern security and long-term stability.`,
+      },
+      {
+        q: `Where can I report bugs or suggest new features?`,
+        a: `You can submit feedback, bug reports, or feature requests directly on the official GitHub repository issues page.`,
       },
     ];
 
@@ -578,7 +606,11 @@ export const POST: APIRoute = async ({ request }) => {
       });
 
       if (aiListing) {
-        if (aiListing.tagline) tagline = aiListing.tagline;
+        if (aiListing.metaDescription) {
+          tagline = aiListing.metaDescription;
+        } else if (aiListing.tagline) {
+          tagline = aiListing.tagline;
+        }
         if (aiListing.category) detectedCategory = aiListing.category;
         if (aiListing.description) description = aiListing.description;
         if (Array.isArray(aiListing.features) && aiListing.features.length >= 3) {
@@ -652,6 +684,7 @@ export const POST: APIRoute = async ({ request }) => {
           category: detectedCategory,
           version: cleanVersion,
           tagline,
+          metaDescription: tagline,
           githubUrl: repoInfo.html_url,
           downloadUrl,
           supportEmail,

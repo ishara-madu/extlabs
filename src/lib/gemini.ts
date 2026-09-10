@@ -202,7 +202,7 @@ async function runPositioningSubagent(
   workflow: Array<{ step: number; title: string; description: string }>;
 } | null> {
   const systemInstruction = `You are a World-Class Browser Extension Product Marketing Specialist.
-Your sole mission is to craft punchy, high-CTR positioning, category tagging, 5 to 6 rich benefit-driven feature cards, and a 4 to 5 step user workflow based on actual extension capabilities.
+Your sole mission is to craft punchy, high-CTR positioning, category tagging, exactly 6 rich benefit-driven feature cards (each with a comprehensive 150 to 200 character description), and a 4 to 5 step user workflow based on actual extension capabilities.
 Always return strictly valid JSON matching the schema. No markdown code blocks.`;
 
   const prompt = `
@@ -215,23 +215,27 @@ Analyze the codebase and metadata above. Produce a JSON object with this exact s
   "features": [
     {
       "title": "Action/Benefit Name (4 to 50 characters)",
-      "description": "Concrete outcome and how it works (35 to 175 characters)"
+      "description": "Concrete outcome and how it works. MUST be detailed and strictly between 150 and 200 characters long."
     },
     {
       "title": "Action/Benefit Name (4 to 50 characters)",
-      "description": "Concrete outcome and how it works (35 to 175 characters)"
+      "description": "Concrete outcome and how it works. MUST be detailed and strictly between 150 and 200 characters long."
     },
     {
       "title": "Action/Benefit Name (4 to 50 characters)",
-      "description": "Concrete outcome and how it works (35 to 175 characters)"
+      "description": "Concrete outcome and how it works. MUST be detailed and strictly between 150 and 200 characters long."
     },
     {
       "title": "Action/Benefit Name (4 to 50 characters)",
-      "description": "Concrete outcome and how it works (35 to 175 characters)"
+      "description": "Concrete outcome and how it works. MUST be detailed and strictly between 150 and 200 characters long."
     },
     {
       "title": "Action/Benefit Name (4 to 50 characters)",
-      "description": "Concrete outcome and how it works (35 to 175 characters)"
+      "description": "Concrete outcome and how it works. MUST be detailed and strictly between 150 and 200 characters long."
+    },
+    {
+      "title": "Action/Benefit Name (4 to 50 characters)",
+      "description": "Concrete outcome and how it works. MUST be detailed and strictly between 150 and 200 characters long."
     }
   ],
   "workflow": [
@@ -271,7 +275,7 @@ Analyze the codebase and metadata above. Produce a JSON object with this exact s
           : 'productivity',
         features: parsed.features.slice(0, 6).map((f: any) => ({
           title: (f.title || '').slice(0, 55),
-          description: (f.description || '').slice(0, 180),
+          description: (f.description || '').slice(0, 220),
         })),
         workflow: Array.isArray(parsed.workflow)
           ? parsed.workflow.slice(0, 5).map((w: any, idx: number) => ({
@@ -299,23 +303,29 @@ async function runDeepSeoSubagent(
   description: string;
 } | null> {
   const systemInstruction = `You are a World-Class Technical SEO Journalist & Long-form Content Copywriter.
-Your sole mission is to write an exhaustive, authoritative, deeply structured store guide (minimum 800 to 1,200+ words) in pristine GitHub Markdown, and a dedicated 150-160 character Google Meta Description snippet.
-Weave target keywords naturally into headings and the first 100 words. Never shorten or summarize. Write detailed paragraphs with authentic technical depth.
-Always return strictly valid JSON matching the schema. No markdown code blocks.`;
+Your sole mission is to write an exhaustive, authoritative, deeply structured store guide (minimum 800 to 1,200 words, ~2,500 to 3,800 characters) in pristine, production-ready GitHub Markdown, and a dedicated 150-160 character Google Meta Description snippet.
+CRITICAL FORMATTING REQUIREMENT:
+You MUST pre-format the description with rich Markdown so the developer never has to manually format text:
+- Use '### Level 3 Headings' for all major sections.
+- Embolden all primary and secondary search keywords with '**keyword**'.
+- Use clean bullet points with bold lead-ins for features and takeaways: '- **Feature Name**: detailed explanation'.
+- Write complete, informative paragraphs with zero filler or placeholders.
+Always return strictly valid JSON matching the schema. No markdown code blocks around the JSON.`;
 
   const prompt = `
 ${buildBaseContext(context)}
 
-Write an in-depth, long-form SEO store article (800 - 1,200+ words) and a Google Meta Description for this extension.
+Write an in-depth, production-ready SEO store article with rich Markdown formatting (### headings, **bold keywords**, - **bullet points**) and a Google Meta Description for this extension.
 Produce a JSON object with this exact structure:
 {
   "metaDescription": "Concise 150-160 character snippet with primary keyword and action call-to-action.",
-  "description": "Deep-dive GitHub Markdown article containing these exact headings:
-### Quick Feature Highlights
-(4 to 5 bullet points with bold keywords)
+  "description": "### Quick Feature Highlights
+- **Fast Local Execution**: Instant in-browser processing with zero latency.
+- **Privacy-First Architecture**: Strictly zero data leaves your local Chromium sandbox.
+- **1-Click Workflow**: Designed for effortless everyday tab interaction.
 
 ### What is ${context.name}?
-(2 comprehensive paragraphs explaining the core value proposition, who built it, and target keyword hook)
+(2 comprehensive paragraphs explaining the core value proposition, who built it, and target keyword hook with primary keywords in **bold**)
 
 ### Key Everyday Pain Points It Eliminates
 (Detailed explanation of the friction, slow workflows, or privacy issues users face without this extension)
@@ -327,7 +337,9 @@ Produce a JSON object with this exact structure:
 (Reassuring explanation justifying why permissions like storage or activeTab are requested, emphasizing zero tracking)
 
 ### Who Should Use ${context.name}?
-(Detailed breakdown of personas: Developers, Researchers, Students, or Power Users)
+- **Developers & Engineers**: How it accelerates technical workflows.
+- **Researchers & Students**: How it improves study, clipping, and reading efficiency.
+- **Power Users**: How it streamlines daily multitasking.
 
 ### Power-User Tips & Keyboard Shortcuts
 (Actionable tips on getting 10x value out of the extension)
@@ -353,7 +365,7 @@ Produce a JSON object with this exact structure:
 
 /**
  * ⚖️ Subagent 3: Competitive Intelligence & Long-Tail FAQ Specialist
- * Generates: 4 Competitor Comparison Rows (Alternative SEO) and 5-6 Long-Tail Search FAQs.
+ * Generates: 4 Competitor Comparison Rows (Alternative SEO) and exactly 10 Long-Tail Search FAQs.
  */
 async function runComparisonFaqSubagent(
   context: ExtensionContext
@@ -362,8 +374,8 @@ async function runComparisonFaqSubagent(
   faqs: Array<{ q: string; a: string }>;
 } | null> {
   const systemInstruction = `You are a World-Class Technical Product Reviewer & Search Query Analyst.
-Your sole mission is to craft a 4-row competitive comparison matrix (highlighting this extension's local advantages vs cloud/competing alternatives) and 5 to 6 in-depth FAQs addressing real Google search queries.
-Always return strictly valid JSON matching the schema. No markdown code blocks.`;
+Your sole mission is to craft a 4-row competitive comparison matrix (highlighting this extension's local advantages vs cloud/competing alternatives) and exactly 10 in-depth FAQs addressing real Google search queries.
+Always return strictly valid JSON matching the schema. No markdown code blocks around the JSON.`;
 
   const prompt = `
 ${buildBaseContext(context)}
@@ -398,6 +410,10 @@ Analyze the extension's privacy, performance, and architecture. Produce a JSON o
       "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
     },
     {
+      "q": "High-intent search question regarding zero telemetry & external servers (15 to 95 characters)",
+      "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
+    },
+    {
       "q": "High-intent search question regarding supported Chromium browsers (15 to 95 characters)",
       "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
     },
@@ -414,7 +430,19 @@ Analyze the extension's privacy, performance, and architecture. Produce a JSON o
       "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
     },
     {
-      "q": "High-intent search question regarding open-source license and updates (15 to 95 characters)",
+      "q": "High-intent search question regarding exporting or downloading data (15 to 95 characters)",
+      "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
+    },
+    {
+      "q": "High-intent search question regarding pricing, paywalls, and licenses (15 to 95 characters)",
+      "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
+    },
+    {
+      "q": "High-intent search question regarding Manifest V3 compliance and updates (15 to 95 characters)",
+      "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
+    },
+    {
+      "q": "High-intent search question regarding getting help, reporting bugs, or source code (15 to 95 characters)",
       "a": "Direct, authoritative, reassuring answer (35 to 280 characters)"
     }
   ]
@@ -435,7 +463,7 @@ Analyze the extension's privacy, performance, and architecture. Produce a JSON o
             }))
           : [],
         faqs: Array.isArray(parsed.faqs)
-          ? parsed.faqs.slice(0, 6).map((faq: any) => ({
+          ? parsed.faqs.slice(0, 10).map((faq: any) => ({
               q: (faq.q || '').slice(0, 95),
               a: (faq.a || '').slice(0, 280),
             }))
@@ -470,9 +498,9 @@ export async function generateSeoStoreListing(
     }
 
     return {
-      tagline: posResult?.tagline || '',
+      tagline: seoResult?.metaDescription || posResult?.tagline || '',
       category: posResult?.category || 'productivity',
-      metaDescription: seoResult?.metaDescription,
+      metaDescription: seoResult?.metaDescription || posResult?.tagline || '',
       description: seoResult?.description || '',
       features: posResult?.features || [],
       workflow: posResult?.workflow || [],

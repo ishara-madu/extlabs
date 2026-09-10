@@ -671,23 +671,23 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             <p id="err-ext-version" class="hidden text-[11px] font-medium text-red-600"></p>
           </div>
 
-          <!-- Tagline -->
+          <!-- Tagline & SEO Meta Description -->
           <div class="sm:col-span-2 space-y-1.5">
             <div class="flex items-center justify-between">
               <label for="ext-tagline-input" class="block text-xs font-semibold text-slate-700">
-                Catchy Tagline <span class="text-red-500">*</span>
+                Catchy Tagline & SEO Meta Description <span class="text-red-500">*</span>
               </label>
               <span id="tagline-char-counter" class="text-[10px] font-mono text-slate-400">
-                {data.tagline.length} / 120
+                {data.tagline.length} / 160
               </span>
             </div>
             <input
               id="ext-tagline-input"
               type="text"
               required
-              maxlength="120"
+              maxlength="160"
               value={data.tagline}
-              placeholder="e.g. Instant AI summaries for research papers, articles, and video transcripts."
+              placeholder="e.g. Instant AI summaries for research papers, articles, and videos. Local Chromium inference with zero cloud telemetry. Free."
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900"
             />
             <p id="err-ext-tagline" class="hidden text-[11px] font-medium text-red-600"></p>
@@ -1151,7 +1151,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               Markdown Overview Description <span class="text-red-500">*</span>
             </label>
             <span id="desc-char-counter" class="text-[11px] font-mono font-medium text-slate-500">
-              0 / 2,500 characters (Min: 100)
+              0 / 5,000 characters (Min: 100)
             </span>
           </div>
 
@@ -1234,10 +1234,10 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
           <textarea
             id="ext-desc-input"
-            rows="6"
+            rows="8"
             required
             minlength="100"
-            maxlength="2500"
+            maxlength="5000"
             placeholder="Describe what your extension does, who it is for, and how it improves their browsing workflow (Minimum 100 characters required)..."
             class="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-200 rounded-b-lg focus:border-blue-400 focus:outline-none text-slate-900 leading-relaxed font-normal shadow-2xs"
           >{data.description}</textarea>
@@ -1316,13 +1316,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                       Feature Description & Value <span class="text-red-500">*</span>
                     </label>
                     <span class="feature-desc-count text-[10px] font-mono text-slate-400">
-                      {feat.description.length} / 180
+                      {feat.description.length} / 220
                     </span>
                   </div>
                   <input
                     type="text"
                     required
-                    maxlength="180"
+                    maxlength="220"
                     minlength="15"
                     value={feat.description}
                     placeholder="e.g. Extract concise bullet summaries and key takeaways in under 2 seconds without leaving your current tab."
@@ -1760,7 +1760,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             </p>
           </div>
           <span id="faqs-count-badge" class="text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto">
-            {data.faqs.length} / 6 Questions (Min: 3)
+            {data.faqs.length} / 10 Questions (Min: 3)
           </span>
         </div>
 
@@ -1838,7 +1838,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors py-1 cursor-pointer"
           >
             <Plus class="w-3.5 h-3.5 text-blue-600" />
-            <span>Add another FAQ (Min: 3, Max: 6)</span>
+            <span>Add another FAQ (Min: 3, Max: 10)</span>
           </button>
         </div>
       </section>
@@ -2257,7 +2257,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
 
     const MIN_FAQS = 3;
-    const MAX_FAQS = 6;
+    const MAX_FAQS = 10;
     const faqsContainer = document.getElementById('faqs-list-container');
     const addFaqBtn = document.getElementById('add-faq-btn') as HTMLButtonElement | null;
     const faqsBadge = document.getElementById('faqs-count-badge');
@@ -2312,7 +2312,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       const verVal = (versionInput?.value || '').trim();
       const vVer = validateInput(versionInput, errVersion, verVal.length > 0 && /^\d+(\.\d+)*$/.test(verVal), 'Release version is required (e.g. 1.0.0).');
       
-      const vTagline = validateInput(taglineInput, errTagline, (taglineInput?.value.trim().length || 0) >= 10, 'Catchy tagline is required (min 10 characters).');
+      const vTagline = validateInput(taglineInput, errTagline, (taglineInput?.value.trim().length || 0) >= 10, 'Catchy tagline & SEO meta description is required (min 10 characters).');
       
       const ghVal = (githubInput?.value || '').trim();
       const isGhUrl = ghVal.length >= 10 && ghVal.startsWith('http');
@@ -2528,7 +2528,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           const tVal = (titleInput?.value || '').trim();
           const dVal = (descInput?.value || '').trim();
           const isTitleValid = tVal.length >= 4 && tVal.length <= 60;
-          const isDescValValid = dVal.length >= 15 && dVal.length <= 180;
+          const isDescValValid = dVal.length >= 15 && dVal.length <= 220;
 
           if (titleInput) {
             if (!isTitleValid) {
@@ -2547,7 +2547,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               descInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               descInput.classList.remove('border-slate-200', 'focus:border-blue-400');
               if (!firstInvalidFeatureInput) firstInvalidFeatureInput = descInput;
-              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} description must be between 15 and 180 characters.`;
+              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} description must be between 15 and 220 characters.`;
             } else {
               descInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               descInput.classList.add('border-slate-200', 'focus:border-blue-400');
@@ -4250,8 +4250,8 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           versionInput.value = d.version;
           versionInput.dispatchEvent(new Event('input'));
         }
-        if (taglineInput && d.tagline) {
-          taglineInput.value = d.tagline;
+        if (taglineInput && (d.metaDescription || d.tagline)) {
+          taglineInput.value = d.metaDescription || d.tagline;
           taglineInput.dispatchEvent(new Event('input'));
         }
         if (githubInput && d.githubUrl) {
@@ -4406,11 +4406,11 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           privacyInput.dispatchEvent(new Event('input'));
         }
 
-        // Auto-fill FAQs (up to 6)
+        // Auto-fill FAQs (up to 10)
         if (Array.isArray(d.faqs)) {
           const addFaqBtn = document.getElementById('add-faq-btn') as HTMLButtonElement | null;
           let faqCards = document.querySelectorAll('#faqs-list-container .faq-card');
-          while (faqCards.length < d.faqs.length && faqCards.length < 6 && addFaqBtn) {
+          while (faqCards.length < d.faqs.length && faqCards.length < 10 && addFaqBtn) {
             addFaqBtn.click();
             faqCards = document.querySelectorAll('#faqs-list-container .faq-card');
           }
@@ -4433,7 +4433,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         magicBtn.innerHTML = `<span>✓ Auto-Filled!</span>`;
         if (magicStatus) {
           if (d.isAiGenerated) {
-            magicStatus.textContent = '✓ Multi-Subagent Pipeline: 6 Features, 5 Steps, 4 Comparisons, 6 FAQs + SEO Guide';
+            magicStatus.textContent = '✓ Multi-Subagent Pipeline: 6 Features, 5 Steps, 4 Comparisons, 10 FAQs + SEO Guide';
           } else {
             const syncSource = d.hasManifest && d.hasReadme ? 'Manifest & README' : d.hasManifest ? 'Manifest V3' : 'GitHub Repository';
             magicStatus.textContent = `✓ Synced with ${syncSource}`;
@@ -4469,7 +4469,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
     taglineInput?.addEventListener('input', () => {
       if (taglineCounter && taglineInput) {
-        taglineCounter.textContent = `${taglineInput.value.length} / 120`;
+        taglineCounter.textContent = `${taglineInput.value.length} / 160`;
       }
     });
 
@@ -4573,7 +4573,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     function updateCharCount() {
       if (!descTextarea || !charCounter || !statusBadge) return;
       const len = descTextarea.value.length;
-      charCounter.textContent = `${len.toLocaleString()} / 2,500 characters (Min: 100)`;
+      charCounter.textContent = `${len.toLocaleString()} / 5,000 characters (Min: 100)`;
 
       if (len === 0) {
         charCounter.className = 'text-[11px] font-mono font-medium text-slate-500';
@@ -4583,9 +4583,9 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         charCounter.className = 'text-[11px] font-mono font-medium text-amber-600';
         statusBadge.textContent = `Need ${100 - len} more chars`;
         statusBadge.className = 'font-medium text-amber-600';
-      } else if (len > 2500) {
+      } else if (len > 5000) {
         charCounter.className = 'text-[11px] font-mono font-bold text-red-600';
-        statusBadge.textContent = `Exceeded by ${len - 2500} chars`;
+        statusBadge.textContent = `Exceeded by ${len - 5000} chars`;
         statusBadge.className = 'font-bold text-red-600';
       } else {
         charCounter.className = 'text-[11px] font-mono font-medium text-emerald-600';
@@ -4654,8 +4654,8 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       }
 
       if (descInput && descCount) {
-        descCount.textContent = `${descInput.value.length} / 180`;
-        descCount.className = descInput.value.length >= 165 ? 'feature-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-desc-count text-[10px] font-mono text-slate-400';
+        descCount.textContent = `${descInput.value.length} / 220`;
+        descCount.className = descInput.value.length >= 210 ? 'feature-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-desc-count text-[10px] font-mono text-slate-400';
       }
     }
 
@@ -4784,12 +4784,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Feature Description & Value <span class="text-red-500">*</span>
               </label>
-              <span class="feature-desc-count text-[10px] font-mono text-slate-400">0 / 180</span>
+              <span class="feature-desc-count text-[10px] font-mono text-slate-400">0 / 220</span>
             </div>
             <input
               type="text"
               required
-              maxlength="180"
+              maxlength="220"
               minlength="15"
               placeholder="e.g. Describe the clear workflow improvement or capability provided to the user."
               class="feature-desc-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"

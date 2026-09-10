@@ -92,6 +92,29 @@ const supportedBrowsersList = (Array.isArray(ext.supportedBrowsers) && ext.suppo
       { id: 'opera', name: 'Opera' },
     ];
 
+// Clean markdown for meta description
+function stripMarkdown(md: string): string {
+  if (!md) return '';
+  return md
+    .replace(/^#+\s+/gm, '')
+    .replace(/(\*\*|__)(.*?)\1/g, '$2')
+    .replace(/(\*|_)(.*?)\1/g, '$2')
+    .replace(/`{1,3}[^`\n]+`{1,3}/g, '')
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const cleanedOverview = stripMarkdown(ext.description || '');
+const metaDescription = (ext.tagline && ext.tagline.length >= 25)
+  ? ext.tagline
+  : (ext.tagline && cleanedOverview.toLowerCase().startsWith(ext.tagline.toLowerCase()))
+    ? (cleanedOverview.slice(0, 155) + (cleanedOverview.length > 155 ? '...' : ''))
+    : `${ext.tagline ? ext.tagline + ' — ' : ''}${cleanedOverview}`.slice(0, 155) + (cleanedOverview.length > 120 ? '...' : '');
+
+const ogImageUrl = screenshotsList[0] || ext.iconUrl || 'https://extlabs.io/favicon.svg';
+
 // JSON-LD Schema.org Structured Data for SEO
 const jsonLdGraph: any[] = [
   {
@@ -121,7 +144,30 @@ const jsonLdGraph: any[] = [
     "softwareVersion": ext.version,
     "fileSize": ext.size,
     "dateModified": ext.updatedDate,
-    "description": ext.description
+    "description": cleanedOverview.slice(0, 300) || ext.tagline
+  },
+  {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://extlabs.io"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": ext.categoryLabel || "Extensions",
+        "item": `https://extlabs.io/category/${ext.category || 'tools'}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": ext.name,
+        "item": `https://extlabs.io/extension/${ext.id}`
+      }
+    ]
   }
 ];
 
@@ -176,7 +222,7 @@ const jsonLdSchema = {
     <!-- Primary SEO Meta Tags -->
     <title>{ext.name} — Free Browser Extension | ExtLabs</title>
     <meta name="title" content={`${ext.name} — Free Browser Extension | ExtLabs`} />
-    <meta name="description" content={`${ext.tagline}. ${ext.description.slice(0, 140)}...`} />
+    <meta name="description" content={metaDescription} />
     <meta name="keywords" content={`${ext.tags.join(', ')}, ${ext.categoryLabel}, browser extension, chrome extension`} />
     <meta name="author" content={ext.developer} />
     <link rel="canonical" href={`https://extlabs.io/extension/${ext.id}`} />
@@ -185,14 +231,16 @@ const jsonLdSchema = {
     <meta property="og:type" content="website" />
     <meta property="og:url" content={`https://extlabs.io/extension/${ext.id}`} />
     <meta property="og:title" content={`${ext.name} — ExtLabs Extension`} />
-    <meta property="og:description" content={ext.tagline} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:image" content={ogImageUrl} />
     <meta property="og:site_name" content="ExtLabs" />
 
     <!-- Twitter Card -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={`https://extlabs.io/extension/${ext.id}`} />
     <meta property="twitter:title" content={`${ext.name} — ExtLabs`} />
-    <meta property="twitter:description" content={ext.tagline} />
+    <meta property="twitter:description" content={metaDescription} />
+    <meta property="twitter:image" content={ogImageUrl} />
 
     <!-- JSON-LD Structured Data Schema -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
