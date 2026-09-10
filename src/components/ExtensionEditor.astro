@@ -782,9 +782,10 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           <button
             type="button"
             id="tab1-save-btn"
-            class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <span>{isEdit ? "Save Basic Details" : "Save Draft"}</span>
+            <Save class="w-3.5 h-3.5 text-slate-500" />
+            <span>Save Basic Draft</span>
           </button>
           <button
             type="button"
@@ -1082,9 +1083,10 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           <button
             type="button"
             id="tab2-save-btn"
-            class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <span>{isEdit ? "Save Visual Media" : "Save Draft"}</span>
+            <Save class="w-3.5 h-3.5 text-slate-500" />
+            <span>Save Media Draft</span>
           </button>
           <button
             type="button"
@@ -1551,9 +1553,10 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           <button
             type="button"
             id="tab3-save-btn"
-            class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <span>{isEdit ? "Save Story & SEO" : "Save Draft"}</span>
+            <Save class="w-3.5 h-3.5 text-slate-500" />
+            <span>Save Story Draft</span>
           </button>
           <button
             type="button"
@@ -3233,10 +3236,18 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       }
 
       const originalSaveHtml = topSaveBtn ? topSaveBtn.innerHTML : '';
+      const originalTab1SaveHtml = tab1SaveBtn ? tab1SaveBtn.innerHTML : '';
       if (topSaveBtn && !silent) {
         topSaveBtn.setAttribute('disabled', 'true');
         topSaveBtn.innerHTML = `
           <svg class="animate-spin w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Saving...</span>
+        `;
+      }
+      if (tab1SaveBtn && !silent) {
+        tab1SaveBtn.setAttribute('disabled', 'true');
+        tab1SaveBtn.innerHTML = `
+          <svg class="animate-spin w-3.5 h-3.5 text-slate-700 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           <span>Saving...</span>
         `;
       }
@@ -3280,12 +3291,21 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           tab1Status.className = 'text-xs text-emerald-600 font-mono';
         }
 
-        if (!silent && topSaveBtn) {
-          topSaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
-          setTimeout(() => {
-            topSaveBtn.innerHTML = originalSaveHtml;
-            topSaveBtn.removeAttribute('disabled');
-          }, 2000);
+        if (!silent) {
+          if (topSaveBtn) {
+            topSaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              topSaveBtn.innerHTML = originalSaveHtml;
+              topSaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
+          if (tab1SaveBtn) {
+            tab1SaveBtn.innerHTML = `<span>✓ Saved to Database!</span>`;
+            setTimeout(() => {
+              tab1SaveBtn.innerHTML = originalTab1SaveHtml;
+              tab1SaveBtn.removeAttribute('disabled');
+            }, 2000);
+          }
         }
 
         // If newly created and manually saved, update location to the edit URL
@@ -3308,6 +3328,10 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         if (topSaveBtn && !silent && topSaveBtn.hasAttribute('disabled')) {
           topSaveBtn.removeAttribute('disabled');
           topSaveBtn.innerHTML = originalSaveHtml;
+        }
+        if (tab1SaveBtn && !silent && tab1SaveBtn.hasAttribute('disabled')) {
+          tab1SaveBtn.removeAttribute('disabled');
+          tab1SaveBtn.innerHTML = originalTab1SaveHtml;
         }
       }
     }
