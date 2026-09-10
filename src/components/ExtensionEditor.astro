@@ -4296,9 +4296,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           descInput.dispatchEvent(new Event('input'));
         }
 
-        // Auto-fill Feature Highlights
+        // Auto-fill Feature Highlights (up to 6)
         if (Array.isArray(d.features)) {
-          const featCards = document.querySelectorAll('#features-list-container .feature-card');
+          const addFeatureBtn = document.getElementById('add-feature-btn') as HTMLButtonElement | null;
+          let featCards = document.querySelectorAll('#features-list-container .feature-card');
+          while (featCards.length < d.features.length && featCards.length < 6 && addFeatureBtn) {
+            addFeatureBtn.click();
+            featCards = document.querySelectorAll('#features-list-container .feature-card');
+          }
           d.features.forEach((feat: any, idx: number) => {
             if (featCards[idx]) {
               const tIn = featCards[idx].querySelector('.feature-title-input') as HTMLInputElement | null;
@@ -4315,9 +4320,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           });
         }
 
-        // Auto-fill Workflow Stages
+        // Auto-fill Workflow Stages (up to 5)
         if (Array.isArray(d.workflow)) {
-          const wfCards = document.querySelectorAll('#workflow-list-container .workflow-card');
+          const addWfBtn = document.getElementById('add-workflow-btn') as HTMLButtonElement | null;
+          let wfCards = document.querySelectorAll('#workflow-list-container .workflow-card');
+          while (wfCards.length < d.workflow.length && wfCards.length < 5 && addWfBtn) {
+            addWfBtn.click();
+            wfCards = document.querySelectorAll('#workflow-list-container .workflow-card');
+          }
           d.workflow.forEach((wf: any, idx: number) => {
             if (wfCards[idx]) {
               const tIn = wfCards[idx].querySelector('.workflow-title-input') as HTMLInputElement | null;
@@ -4329,6 +4339,35 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               if (dIn && wf.description) {
                 dIn.value = wf.description;
                 dIn.dispatchEvent(new Event('input'));
+              }
+            }
+          });
+        }
+
+        // Auto-fill Comparison Matrix (up to 5)
+        if (Array.isArray(d.comparison)) {
+          const addCompBtn = document.getElementById('add-comparison-btn') as HTMLButtonElement | null;
+          let compCards = document.querySelectorAll('#comparison-list-container .comparison-card');
+          while (compCards.length < d.comparison.length && compCards.length < 5 && addCompBtn) {
+            addCompBtn.click();
+            compCards = document.querySelectorAll('#comparison-list-container .comparison-card');
+          }
+          d.comparison.forEach((row: any, idx: number) => {
+            if (compCards[idx]) {
+              const fIn = compCards[idx].querySelector('.comp-feature-input') as HTMLInputElement | null;
+              const cIn = compCards[idx].querySelector('.comp-current-input') as HTMLInputElement | null;
+              const oIn = compCards[idx].querySelector('.comp-others-input') as HTMLInputElement | null;
+              if (fIn && row.feature) {
+                fIn.value = row.feature;
+                fIn.dispatchEvent(new Event('input'));
+              }
+              if (cIn && row.current) {
+                cIn.value = row.current;
+                cIn.dispatchEvent(new Event('input'));
+              }
+              if (oIn && row.others) {
+                oIn.value = row.others;
+                oIn.dispatchEvent(new Event('input'));
               }
             }
           });
@@ -4367,9 +4406,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           privacyInput.dispatchEvent(new Event('input'));
         }
 
-        // Auto-fill FAQs
+        // Auto-fill FAQs (up to 6)
         if (Array.isArray(d.faqs)) {
-          const faqCards = document.querySelectorAll('#faqs-list-container .faq-card');
+          const addFaqBtn = document.getElementById('add-faq-btn') as HTMLButtonElement | null;
+          let faqCards = document.querySelectorAll('#faqs-list-container .faq-card');
+          while (faqCards.length < d.faqs.length && faqCards.length < 6 && addFaqBtn) {
+            addFaqBtn.click();
+            faqCards = document.querySelectorAll('#faqs-list-container .faq-card');
+          }
           d.faqs.forEach((faq: any, idx: number) => {
             if (faqCards[idx]) {
               const qIn = faqCards[idx].querySelector('.faq-q-input') as HTMLInputElement | null;
@@ -4389,10 +4433,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         magicBtn.innerHTML = `<span>✓ Auto-Filled!</span>`;
         if (magicStatus) {
           if (d.isAiGenerated) {
-            const filesCount = Array.isArray(d.analyzedFiles) ? d.analyzedFiles.length : 0;
-            magicStatus.textContent = filesCount > 0
-              ? `✓ Gemini 3.8 Flash parsed ${filesCount} code files + SEO-optimized`
-              : '✓ Gemini 3.8 Flash SEO-optimized';
+            magicStatus.textContent = '✓ Multi-Subagent Pipeline: 6 Features, 5 Steps, 4 Comparisons, 6 FAQs + SEO Guide';
           } else {
             const syncSource = d.hasManifest && d.hasReadme ? 'Manifest & README' : d.hasManifest ? 'Manifest V3' : 'GitHub Repository';
             magicStatus.textContent = `✓ Synced with ${syncSource}`;

@@ -139,6 +139,22 @@ if (hasFaqs && ext.faqs) {
   });
 }
 
+if (Array.isArray(ext.howItWorks) && ext.howItWorks.length > 0) {
+  jsonLdGraph.push({
+    "@type": "HowTo",
+    "name": `How to install and use ${ext.name}`,
+    "step": ext.howItWorks.map((w: any, idx: number) => ({
+      "@type": "HowToStep",
+      "position": idx + 1,
+      "name": w.title || `Step ${idx + 1}`,
+      "itemListElement": [{
+        "@type": "HowToDirection",
+        "text": w.description || ''
+      }]
+    }))
+  });
+}
+
 const jsonLdSchema = {
   "@context": "https://schema.org",
   "@graph": jsonLdGraph

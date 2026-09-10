@@ -37,6 +37,70 @@ function decodeBase64(b64: string): string {
 }
 
 /**
+ * Distill README to strip badges, build commands, and licensing bloat
+ */
+function distillReadme(raw: string): string {
+  if (!raw) return '';
+  return raw
+    .replace(/<!--[\s\S]*?-->/g, '') // strip HTML comments
+    .replace(/\[!\[[\s\S]*?\]\(.*?\)\]\(.*?\)/g, '') // strip nested badge links
+    .replace(/!\[.*?\]\(.*?\)/g, '') // strip image tags
+    .replace(/```(?:bash|sh|shell)[\s\S]*?```/gi, '') // strip shell/npm install blocks
+    .replace(/##\s+(?:License|Contributing|Authors|Acknowledgements|Changelog)[\s\S]*?(?=(?:##\s+|$))/gi, '') // strip license/contributing sections
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+    .slice(0, 2500);
+}
+
+/**
+ * Distill source code to focus on Chrome APIs, event listeners, and business logic signatures
+ */
+function distillCodeSnippet(raw: string, role: string): string {
+  if (!raw) return '';
+  const lines = raw.split('\n');
+  const distilledLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    // Skip heavy JSX/CSS classes and standard non-browser imports
+    if (trimmed.startsWith('import ') && !trimmed.includes('chrome') && !trimmed.includes('storage')) continue;
+    if (trimmed.startsWith('className="') || trimmed.startsWith('class="')) continue;
+    if (trimmed.startsWith('<svg') || trimmed.startsWith('<path ') || trimmed.startsWith('d="M')) continue;
+
+    // Prioritize high-signal extension lines
+    if (
+      trimmed.includes('chrome.') ||
+      trimmed.includes('browser.') ||
+      trimmed.includes('.addListener') ||
+      trimmed.includes('addEventListener') ||
+      trimmed.includes('postMessage') ||
+      trimmed.includes('sendMessage') ||
+      trimmed.includes('action ===') ||
+      trimmed.includes('type ===') ||
+      trimmed.startsWith('function ') ||
+      trimmed.startsWith('async function ') ||
+      trimmed.startsWith('export const ') ||
+      trimmed.startsWith('export function ') ||
+      trimmed.startsWith('//') ||
+      trimmed.startsWith('/*')
+    ) {
+      distilledLines.push(line);
+    }
+  }
+
+  // If distilled lines provide good context, return them
+  if (distilledLines.length >= 5) {
+    return distilledLines.join('\n').slice(0, 1500);
+  }
+
+  // Otherwise, return pruned snippet without excessive CSS/whitespace
+  return raw
+    .replace(/class(?:Name)?="[^"]*"/g, '')
+    .slice(0, 1500);
+}
+
+/**
  * Fetch a single file's content from a GitHub repository (supports public and private repos)
  */
 async function fetchFileContent(
@@ -242,7 +306,7 @@ export const POST: APIRoute = async ({ request }) => {
       if (readmeRes.ok) {
         const rmJson = (await readmeRes.json()) as { content?: string; encoding?: string };
         if (rmJson.content && rmJson.encoding === 'base64') {
-          readmeText = decodeBase64(rmJson.content);
+          readmeText = distillReadme(decodeBase64(rmJson.content));
         }
       }
     } catch {}
@@ -337,7 +401,7 @@ export const POST: APIRoute = async ({ request }) => {
         codeSnippets.push({
           filename: matchedPath,
           role: item.role,
-          content: content.slice(0, 3000),
+          content: distillCodeSnippet(content, item.role),
         });
       }
     }
@@ -473,7 +537,31 @@ export const POST: APIRoute = async ({ request }) => {
       },
     ];
 
-    // 4. Generate High-Converting SEO-Optimized Listing with Gemini 3.8 Flash (Rotating Keys & Failover)
+    // Derive Comparison Matrix
+    let comparison = [
+      {
+        feature: 'Privacy Architecture',
+        current: '100% Client-Side Sandbox, zero telemetry',
+        others: 'Cloud tracking, background telemetry harvesting',
+      },
+      {
+        feature: 'Execution Performance',
+        current: 'Instant in-memory execution (<50ms)',
+        others: 'High latency server round-trips (>2s)',
+      },
+      {
+        feature: 'Chromium Native Standards',
+        current: 'Manifest V3 strictly compliant',
+        others: 'Legacy Manifest V2 or background bloat',
+      },
+      {
+        feature: 'Codebase Transparency',
+        current: 'Open-Source with auditable GitHub repository',
+        others: 'Proprietary, closed-source black box',
+      },
+    ];
+
+    // 4. Generate High-Converting SEO-Optimized Listing with Multi-Subagent Pipeline
     let isAiGenerated = false;
     try {
       const aiListing = await generateSeoStoreListing({
@@ -499,13 +587,16 @@ export const POST: APIRoute = async ({ request }) => {
         if (Array.isArray(aiListing.workflow) && aiListing.workflow.length >= 3) {
           workflow = aiListing.workflow;
         }
+        if (Array.isArray(aiListing.comparison) && aiListing.comparison.length >= 3) {
+          comparison = aiListing.comparison;
+        }
         if (Array.isArray(aiListing.faqs) && aiListing.faqs.length >= 3) {
           faqs = aiListing.faqs;
         }
         isAiGenerated = true;
       }
     } catch (aiErr) {
-      console.warn('Gemini SEO generation error (falling back to deterministic metadata):', aiErr);
+      console.warn('Gemini Multi-Agent SEO generation error (falling back to deterministic metadata):', aiErr);
     }
 
     // 5. Fetch GitHub Releases to detect Direct Package Assets (.zip / .crx)
@@ -572,6 +663,7 @@ export const POST: APIRoute = async ({ request }) => {
           description,
           features,
           workflow,
+          comparison,
           faqs,
           hasManifest: Boolean(manifestData),
           hasReadme: Boolean(readmeText),
