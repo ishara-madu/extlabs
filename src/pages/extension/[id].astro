@@ -2002,51 +2002,64 @@ const jsonLdSchema = {
     </script>
 
     <style is:global>
-      /* Crisp typography for Markdown Overview */
+      /* Crisp, generous editorial typography for Markdown Overview */
       .overview-markdown-content h1 {
-        font-size: 1.125rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: #0f172a;
-        margin-top: 1.5rem;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.015em;
+        margin-top: 2.25rem;
+        margin-bottom: 0.875rem;
+        letter-spacing: -0.02em;
+        line-height: 1.35;
       }
       .overview-markdown-content h1:first-child {
         margin-top: 0;
       }
       .overview-markdown-content h2 {
-        font-size: 1rem;
+        font-size: 1.125rem;
         font-weight: 700;
         color: #0f172a;
-        margin-top: 1.25rem;
-        margin-bottom: 0.5rem;
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
         letter-spacing: -0.015em;
+        line-height: 1.4;
       }
       .overview-markdown-content h2:first-child {
         margin-top: 0;
       }
       .overview-markdown-content h3 {
-        font-size: 0.875rem;
+        font-size: 1rem;
         font-weight: 700;
         color: #0f172a;
-        margin-top: 1.25rem;
-        margin-bottom: 0.375rem;
+        margin-top: 1.75rem;
+        margin-bottom: 0.625rem;
         letter-spacing: -0.01em;
+        line-height: 1.4;
       }
       .overview-markdown-content h3:first-child {
         margin-top: 0;
       }
       .overview-markdown-content h4 {
-        font-size: 0.8125rem;
+        font-size: 0.875rem;
         font-weight: 600;
         color: #1e293b;
-        margin-top: 0.75rem;
-        margin-bottom: 0.25rem;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
       }
       .overview-markdown-content p {
-        margin-bottom: 0.875rem;
-        line-height: 1.68;
-        color: #475569;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        line-height: 1.8;
+        color: #334155;
+        font-size: 0.875rem;
+      }
+      @media (min-width: 640px) {
+        .overview-markdown-content p {
+          font-size: 0.9375rem;
+        }
+      }
+      .overview-markdown-content p:last-child {
+        margin-bottom: 0;
       }
       .overview-markdown-content strong,
       .overview-markdown-content b {
@@ -2056,20 +2069,29 @@ const jsonLdSchema = {
       .overview-markdown-content ul {
         list-style-type: disc;
         margin-left: 1.25rem;
-        margin-top: 0.375rem;
-        margin-bottom: 0.875rem;
-        color: #475569;
+        margin-top: 0.75rem;
+        margin-bottom: 1.5rem;
+        color: #334155;
       }
       .overview-markdown-content ol {
         list-style-type: decimal;
         margin-left: 1.25rem;
-        margin-top: 0.375rem;
-        margin-bottom: 0.875rem;
-        color: #475569;
+        margin-top: 0.75rem;
+        margin-bottom: 1.5rem;
+        color: #334155;
       }
       .overview-markdown-content li {
-        line-height: 1.6;
-        margin-bottom: 0.35rem;
+        line-height: 1.75;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+      @media (min-width: 640px) {
+        .overview-markdown-content li {
+          font-size: 0.9375rem;
+        }
+      }
+      .overview-markdown-content li:last-child {
+        margin-bottom: 0;
       }
       .overview-markdown-content code {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -2083,12 +2105,13 @@ const jsonLdSchema = {
       .overview-markdown-content pre {
         background-color: #0f172a;
         color: #f8fafc;
-        padding: 0.875rem 1rem;
+        padding: 1rem 1.25rem;
         border-radius: 0.75rem;
         overflow-x: auto;
-        margin-top: 0.75rem;
-        margin-bottom: 0.875rem;
-        font-size: 0.8em;
+        margin-top: 1.25rem;
+        margin-bottom: 1.75rem;
+        font-size: 0.8125rem;
+        line-height: 1.6;
       }
       .overview-markdown-content pre code {
         background: transparent;
@@ -2098,11 +2121,19 @@ const jsonLdSchema = {
       }
       .overview-markdown-content blockquote {
         border-left: 3px solid #cbd5e1;
-        padding-left: 0.875rem;
-        margin-top: 0.5rem;
-        margin-bottom: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        margin-top: 1.25rem;
+        margin-bottom: 1.5rem;
         font-style: italic;
-        color: #64748b;
+        color: #475569;
+        background-color: #f8fafc;
+        border-radius: 0 0.5rem 0.5rem 0;
+      }
+      .overview-markdown-content blockquote p {
+        margin-bottom: 0.5rem;
+      }
+      .overview-markdown-content blockquote p:last-child {
+        margin-bottom: 0;
       }
       .overview-markdown-content a {
         color: #2563eb;
@@ -2115,18 +2146,24 @@ const jsonLdSchema = {
       .overview-markdown-content hr {
         border: 0;
         border-top: 1px solid #e2e8f0;
-        margin: 1.25rem 0;
+        margin: 2rem 0;
       }
       .overview-markdown-content table {
         width: 100%;
         border-collapse: collapse;
-        margin: 0.75rem 0;
-        font-size: 0.8em;
+        margin-top: 1.25rem;
+        margin-bottom: 1.75rem;
+        font-size: 0.8125rem;
       }
       .overview-markdown-content th,
       .overview-markdown-content td {
-        padding: 0.5rem 0.75rem;
+        padding: 0.625rem 0.875rem;
         border: 1px solid #e2e8f0;
+      }
+      .overview-markdown-content th {
+        background-color: #f8fafc;
+        font-weight: 600;
+        color: #0f172a;
       }
       .overview-markdown-content th {
         background-color: #f8fafc;
