@@ -44,6 +44,7 @@ export interface ExtensionContext {
   readme?: string;
   license?: string;
   codeSnippets?: CodeSnippet[];
+  targetKeywords?: string[];
 }
 
 export interface GeminiStoreListing {
@@ -169,6 +170,14 @@ ${s.content.slice(0, 2500)}
 `
     : '';
 
+  const keywordsSection = Array.isArray(context.targetKeywords) && context.targetKeywords.length > 0
+    ? `
+### CRITICAL DEVELOPER-TARGETED SEO KEYWORDS:
+The developer has specifically researched and provided the following high-intent target search keywords. You MUST weave these exact keywords and search intents naturally into the Tagline, the Description (including the Overview, Headings, and early text), Features, and FAQs:
+${context.targetKeywords.map((k) => `- "${k}"`).join('\n')}
+`
+    : '';
+
   const userPrompt = `
 Analyze the following browser extension metadata and ACTUAL CODEBASE to craft an SEO-optimized, highly authentic store listing in English:
 
@@ -181,6 +190,7 @@ Permissions: ${permissions}
 License: ${context.license || 'MIT'}
 README Content (if available):
 ${context.readme ? context.readme.slice(0, 3000) : 'No README provided.'}
+${keywordsSection}
 ${codeSection}
 
 Generate a JSON object with this exact structure:

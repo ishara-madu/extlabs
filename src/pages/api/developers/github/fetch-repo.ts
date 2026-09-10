@@ -89,8 +89,15 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const body = (await request.json()) as { repoUrl?: string };
+    const body = (await request.json()) as { repoUrl?: string; targetKeywords?: string };
     const rawUrl = body.repoUrl?.trim() || '';
+    const rawKeywords = typeof body.targetKeywords === 'string' ? body.targetKeywords.trim() : '';
+    const targetKeywords: string[] = rawKeywords
+      ? rawKeywords
+          .split(',')
+          .map((k) => k.trim())
+          .filter((k) => k.length > 0)
+      : [];
 
     if (!rawUrl) {
       return new Response(JSON.stringify({ success: false, error: 'Repository URL is required.' }), {
@@ -479,6 +486,7 @@ export const POST: APIRoute = async ({ request }) => {
         readme: readmeText,
         license: cleanLicense,
         codeSnippets,
+        targetKeywords,
       });
 
       if (aiListing) {

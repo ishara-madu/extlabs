@@ -41,7 +41,8 @@ import {
   ChevronDown,
   Info,
   FolderRoot,
-  FolderSync
+  FolderSync,
+  ChevronRight
 } from '@lucide/astro';
 import { CATEGORIES } from '../data/extensions';
 
@@ -358,6 +359,34 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         <span>Fetch & Auto-Fill</span>
       </button>
     </div>
+
+    <!-- Advanced Expandable Section: Target SEO Keywords -->
+    <details class="group pt-0.5" id="magic-advanced-accordion">
+      <summary class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 cursor-pointer select-none transition-colors">
+        <ChevronRight class="w-3.5 h-3.5 text-slate-400 group-open:rotate-90 transition-transform" />
+        <span>Advanced SEO & Target Keywords</span>
+      </summary>
+      
+      <div class="mt-2.5 pt-2.5 border-t border-slate-200/70 space-y-2">
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+          <label for="magic-target-keywords" class="text-xs font-semibold text-slate-700">
+            Target Search Keywords
+          </label>
+          <span class="text-[11px] text-slate-400">
+            Comma-separated (e.g. <span class="font-mono text-slate-600">youtube transcript, caption extractor, video notes</span>)
+          </span>
+        </div>
+        <input
+          type="text"
+          id="magic-target-keywords"
+          placeholder="e.g. youtube transcript, caption extractor, video notes, export markdown"
+          class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none text-slate-900 placeholder:text-slate-400 shadow-2xs transition-colors font-mono"
+        />
+        <p class="text-[11px] text-slate-500">
+          The AI will prioritize these specific high-intent keywords across the generated Tagline, Description headings, Features, and FAQs for maximum search visibility.
+        </p>
+      </div>
+    </details>
   </div>
 
   <!-- 📑 4-TAB MINIMALIST NAVIGATION HEADER -->
@@ -4174,10 +4203,16 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       }
 
       try {
+        const targetKeywordsInput = document.getElementById('magic-target-keywords') as HTMLInputElement | null;
+        const targetKeywords = targetKeywordsInput?.value?.trim() || '';
+
         const res = await fetch('/api/developers/github/fetch-repo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ repoUrl: url }),
+          body: JSON.stringify({ 
+            repoUrl: url,
+            targetKeywords,
+          }),
         });
 
         const json = await res.json();
