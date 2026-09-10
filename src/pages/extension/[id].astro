@@ -9,7 +9,7 @@ import BrowserIcon from "../../components/BrowserIcon.astro";
 import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension, getDeveloperByUserIdOrSlug } from "../../lib/db";
 import { getReviewerUser, getSessionUser } from "../../lib/auth";
-import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2 } from '@lucide/astro';
+import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2, Terminal, Copy } from '@lucide/astro';
 import { marked } from 'marked';
 
 const requestedId = Astro.params.id || '';
@@ -386,7 +386,7 @@ const jsonLdSchema = {
             <button
               type="button"
               id="detail-download-btn"
-              data-ext-id={ext.id}
+              data-ext-id={ext.dbId || ext.id}
               data-ext-name={ext.name}
               data-ext-version={ext.version}
               data-ext-developer={ext.developer}
@@ -1340,133 +1340,143 @@ const jsonLdSchema = {
       </form>
     </dialog>
 
-    <!-- Post-Download Quick Install Modal (Hybrid Flow) -->
+    <!-- Post-Download Quick Install Modal (Clean Hybrid Architecture) -->
     <dialog id="post-download-modal" class="modal">
-      <div class="modal-box max-w-lg p-0 bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xl">
+      <div class="modal-box max-w-lg p-0 bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xl">
         
-        <!-- Modal Top Header in Soft #f0f4f9 Palette -->
-        <div class="p-5 bg-[#f0f4f9] border-b border-slate-200/80 flex items-start justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-white border border-slate-200/80 flex items-center justify-center text-emerald-600 shadow-2xs shrink-0">
-              <CheckCircle2 class="w-5 h-5" />
+        <!-- Modal Top Header: Clean, Typographic, No Boxed Pills -->
+        <div class="p-5 bg-white border-b border-slate-100 flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 text-xs font-semibold text-emerald-600">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Download Initiated (.zip)</span>
             </div>
-            <div>
-              <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full px-2.5 py-0.5 shadow-2xs mb-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span class="text-[11px] font-semibold text-slate-700">Download Started</span>
-              </div>
-              <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">
-                How to Install {ext.name}
-              </h3>
-            </div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug">
+              Install in 3 Quick Steps
+            </h3>
+            <p class="text-xs text-slate-500 leading-normal">
+              Activate <span class="font-medium text-slate-800">{ext.name}</span> in Chrome, Brave, Edge, or Opera
+            </p>
           </div>
 
           <button
             type="button"
             id="close-post-download-modal"
-            class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white/80 transition-colors cursor-pointer"
+            class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer shrink-0 mt-0.5"
             aria-label="Close dialog"
           >
             <X class="w-4 h-4" />
           </button>
         </div>
 
-        <!-- Modal Body: 3 Quick Steps -->
-        <div class="p-5 space-y-4">
-          <p class="text-xs text-slate-600 leading-relaxed">
-            Follow these 3 quick steps to activate your extension in Chrome, Brave, Edge, or Opera:
-          </p>
+        <!-- Modal Body: High-Contrast Step Flow -->
+        <div class="p-5 space-y-3 bg-[#fbfbfc]">
 
-          <div class="space-y-2.5">
-            <!-- Step 1: Unzip -->
-            <div class="p-3.5 bg-[#f0f4f9] border border-slate-200/90 rounded-xl flex items-start gap-3">
-              <span class="w-6 h-6 rounded-full bg-white border border-slate-200 text-blue-600 font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                1
+          <!-- Step 1: Extract Downloaded .ZIP (Crisp Light Card) -->
+          <div class="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs space-y-1.5">
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
+                01
               </span>
-              <div class="space-y-0.5 flex-1">
-                <h4 class="text-xs font-bold text-slate-900">Extract Downloaded .ZIP</h4>
-                <p class="text-[11px] text-slate-600 leading-relaxed">
-                  Open your Downloads folder and extract the zip file to a permanent folder.
-                </p>
-              </div>
+              <h4 class="text-xs font-bold text-slate-900">
+                Extract the Downloaded .ZIP
+              </h4>
             </div>
+            <p class="text-xs text-slate-600 pl-7.5 leading-relaxed">
+              Open your Downloads folder and extract the zip archive into a permanent folder (e.g. Documents).
+            </p>
+          </div>
 
-            <!-- Step 2: Open Extensions & Enable Developer Mode -->
-            <div class="p-3.5 bg-[#f0f4f9] border border-slate-200/90 rounded-xl space-y-2">
-              <div class="flex items-start gap-3">
-                <span class="w-6 h-6 rounded-full bg-white border border-slate-200 text-blue-600 font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                  2
+          <!-- Step 2: Open Extensions & Enable Developer Mode (Sleek Dark Slate-900 Hero Card from /how-to-install) -->
+          <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-white shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-5 h-5 rounded-md bg-slate-800 border border-slate-700 text-blue-400 font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
+                  02
                 </span>
-                <div class="space-y-0.5 flex-1">
-                  <h4 class="text-xs font-bold text-slate-900">Open Extensions & Enable Developer Mode</h4>
-                  <p class="text-[11px] text-slate-600 leading-relaxed">
-                    Paste the URL below into your address bar and turn ON the <strong>Developer mode</strong> toggle at the top right.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Quick URL Copy row inside step 2 -->
-              <div class="ml-9 p-2 bg-white border border-slate-200 rounded-lg flex items-center justify-between gap-2 shadow-2xs">
-                <span class="text-xs font-mono text-blue-700 font-semibold truncate select-all" id="modal-ext-url">chrome://extensions</span>
-                <button
-                  type="button"
-                  id="modal-copy-ext-url-btn"
-                  class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded border border-slate-200 cursor-pointer shrink-0 transition-colors"
-                >
-                  Copy
-                </button>
+                <h4 class="text-xs font-bold text-white">
+                  Open Extensions & Turn On Developer Mode
+                </h4>
               </div>
             </div>
 
-            <!-- Step 3: Load Unpacked -->
-            <div class="p-3.5 bg-[#f0f4f9] border border-slate-200/90 rounded-xl flex items-start gap-3">
-              <span class="w-6 h-6 rounded-full bg-white border border-slate-200 text-blue-600 font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                3
-              </span>
-              <div class="space-y-0.5 flex-1">
-                <h4 class="text-xs font-bold text-slate-900">Click 'Load Unpacked'</h4>
-                <p class="text-[11px] text-slate-600 leading-relaxed">
-                  Click the <strong>Load unpacked</strong> button and choose your extracted folder. The extension is now active!
-                </p>
+            <p class="text-xs text-slate-300 pl-7.5 leading-relaxed">
+              Paste this internal address into your browser address bar:
+            </p>
+
+            <!-- Address Bar Utility Box from /how-to-install -->
+            <div class="ml-7.5 p-2 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-between gap-2 shadow-2xs">
+              <div class="flex items-center gap-2 text-xs font-mono text-blue-400 font-semibold px-1.5 select-all truncate">
+                <Terminal class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span id="modal-ext-url">chrome://extensions</span>
               </div>
+              <button
+                type="button"
+                id="modal-copy-ext-url-btn"
+                class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-md border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              >
+                <Copy class="w-3 h-3 text-slate-400" id="modal-copy-icon" />
+                <span id="modal-copy-btn-text">Copy URL</span>
+              </button>
+            </div>
+
+            <!-- Action Highlight -->
+            <div class="ml-7.5 pt-1 border-t border-slate-800/80 flex items-start gap-2 text-[11px] text-slate-300 leading-normal">
+              <span class="text-emerald-400 font-bold shrink-0">Action:</span>
+              <span>Toggle the <strong class="text-white">Developer mode</strong> switch in the top-right corner to reveal the action buttons.</span>
             </div>
           </div>
 
-          <!-- Direct Download Fallback -->
+          <!-- Step 3: Click 'Load Unpacked' (Crisp Light Card) -->
+          <div class="p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs space-y-1.5">
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
+                03
+              </span>
+              <h4 class="text-xs font-bold text-slate-900">
+                Click 'Load Unpacked' & Select Folder
+              </h4>
+            </div>
+            <p class="text-xs text-slate-600 pl-7.5 leading-relaxed">
+              Click the <strong class="text-slate-900 font-semibold">Load unpacked</strong> button on the extensions bar, select your unzipped folder (the one with <code class="text-[11px] px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-800 font-mono">manifest.json</code>), and you're done!
+            </p>
+          </div>
+
+          <!-- Direct Download Fallback Bar -->
           {ext.downloadUrl && ext.downloadUrl !== '#' && (
-            <div class="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
-              <span class="text-slate-600">Download didn't start automatically?</span>
+            <div class="px-3.5 py-2 bg-slate-100/70 border border-slate-200/80 rounded-xl flex items-center justify-between text-xs">
+              <span class="text-slate-600 text-[11px]">Didn't start downloading?</span>
               <a
                 id="modal-fallback-download-btn"
-                data-ext-id={ext.id}
+                data-ext-id={ext.dbId || ext.id}
                 href={ext.downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-blue-600 hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer"
+                class="text-blue-600 hover:text-blue-700 hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer text-[11px]"
               >
-                <span>Download package directly</span>
+                <span>Download .zip directly</span>
                 <Download class="w-3 h-3" />
               </a>
             </div>
           )}
 
-          <!-- Footer action & link to full guide -->
-          <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <!-- Footer Action & Guide Link -->
+          <div class="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <a
               href="/how-to-install"
               target="_blank"
-              class="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+              class="text-slate-600 hover:text-blue-600 font-medium inline-flex items-center gap-1 transition-colors"
             >
-              <span>Need screenshots & step-by-step visuals?</span>
+              <span>View full guide with visual screenshots</span>
               <ArrowRight class="w-3.5 h-3.5" />
             </a>
 
             <button
               type="button"
               id="modal-got-it-btn"
-              class="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-black text-white font-medium rounded-lg shadow-2xs cursor-pointer transition-colors"
+              class="w-full sm:w-auto px-5 py-2 bg-slate-900 hover:bg-black text-white font-medium rounded-lg shadow-2xs cursor-pointer transition-colors"
             >
-              Got it!
+              Done, I Got It
             </button>
           </div>
 
@@ -1676,8 +1686,23 @@ const jsonLdSchema = {
         const closePostModalBtn = document.getElementById('close-post-download-modal');
         const gotItPostModalBtn = document.getElementById('modal-got-it-btn');
         const modalCopyBtn = document.getElementById('modal-copy-ext-url-btn');
+        const modalCopyBtnText = document.getElementById('modal-copy-btn-text');
         const modalUrlEl = document.getElementById('modal-ext-url');
         const modalFallbackBtn = document.getElementById('modal-fallback-download-btn');
+
+        // Auto-detect browser for modal-ext-url (Edge, Brave, Opera, Chrome)
+        if (modalUrlEl) {
+          try {
+            const ua = navigator.userAgent;
+            if (ua.includes('Edg/')) {
+              modalUrlEl.textContent = 'edge://extensions';
+            } else if (ua.includes('OPR/') || ua.includes('Opera/')) {
+              modalUrlEl.textContent = 'opera://extensions';
+            } else if ((navigator as any).brave && typeof (navigator as any).brave.isBrave === 'function') {
+              modalUrlEl.textContent = 'brave://extensions';
+            }
+          } catch {}
+        }
 
         if (modalFallbackBtn) {
           modalFallbackBtn.addEventListener('click', () => {
@@ -1694,17 +1719,33 @@ const jsonLdSchema = {
         }
         if (modalCopyBtn && modalUrlEl) {
           modalCopyBtn.addEventListener('click', async () => {
-            const url = modalUrlEl.textContent || 'chrome://extensions';
+            const url = modalUrlEl.textContent?.trim() || 'chrome://extensions';
             try {
               await navigator.clipboard.writeText(url);
-              modalCopyBtn.textContent = 'Copied!';
+              if (modalCopyBtnText) {
+                modalCopyBtnText.textContent = 'Copied!';
+              } else {
+                modalCopyBtn.textContent = 'Copied!';
+              }
               setTimeout(() => {
-                modalCopyBtn.textContent = 'Copy';
+                if (modalCopyBtnText) {
+                  modalCopyBtnText.textContent = 'Copy URL';
+                } else {
+                  modalCopyBtn.textContent = 'Copy URL';
+                }
               }, 2000);
             } catch {
-              modalCopyBtn.textContent = 'Copied!';
+              if (modalCopyBtnText) {
+                modalCopyBtnText.textContent = 'Copied!';
+              } else {
+                modalCopyBtn.textContent = 'Copied!';
+              }
               setTimeout(() => {
-                modalCopyBtn.textContent = 'Copy';
+                if (modalCopyBtnText) {
+                  modalCopyBtnText.textContent = 'Copy URL';
+                } else {
+                  modalCopyBtn.textContent = 'Copy URL';
+                }
               }, 2000);
             }
           });

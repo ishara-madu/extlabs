@@ -19,6 +19,7 @@ import {
   getExtensionsTopGeographies 
 } from "../../lib/db";
 import { getSessionUser } from "../../lib/auth";
+import { forceFlushTelemetry } from "../../lib/telemetry-buffer";
 
 const db = getDb();
 let user = (Astro.locals as any)?.user;
@@ -57,6 +58,9 @@ let bookmarkedExtensions: DashboardExtension[] = [];
 
 if (db && user) {
   try {
+    // 0. Flush any pending buffered telemetry events so dashboard always shows real-time live stats
+    await forceFlushTelemetry(db);
+
     // 1. Fetch developer profile for the user
     developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
 

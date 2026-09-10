@@ -71,8 +71,22 @@ export const POST: APIRoute = async ({ request }) => {
   // 5. Geographic location from Cloudflare edge header
   const countryCode = request.headers.get('cf-ipcountry') || 'GLOBAL';
 
-  // 6. Ingest into in-memory buffer (flushes to D1 once every 5 minutes)
-  const result = await recordTelemetryEvent(db, extensionId, eventType, countryCode);
+  // 6. Resolve extensionId (slug or primary key ID) to actual extensions.id
+  let resolvedExtensionId = extensionId;
+  if (db && extensionId) {
+    try {
+      const extRow = await db
+        .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+        .bind(extensionId, extensionId)
+        .first<{ id: string }>();
+      if (extRow?.id) {
+        resolvedExtensionId = extRow.id;
+      }
+    } catch {}
+  }
+
+  // 7. Ingest into in-memory buffer (flushes to D1 once every 5 minutes)
+  const result = await recordTelemetryEvent(db, resolvedExtensionId, eventType, countryCode);
 
   return new Response(JSON.stringify({ success: true, ...result }), {
     status: 200,

@@ -1455,9 +1455,39 @@ export async function flushTelemetryBatch(
 ): Promise<boolean> {
   if (!items || items.length === 0) return true;
 
+  // 0. Resolve any slugs or unconfirmed IDs to valid extensions.id
+  const resolvedIds = new Map<string, string>();
+  for (const item of items) {
+    if (!resolvedIds.has(item.extensionId)) {
+      try {
+        const ext = await db
+          .prepare('SELECT id FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+          .bind(item.extensionId, item.extensionId)
+          .first<{ id: string }>();
+        if (ext?.id) {
+          resolvedIds.set(item.extensionId, ext.id);
+        }
+      } catch {}
+    }
+  }
+
+  // Filter to items that map to an existing extension in D1
+  const validItems: TelemetryBatchItem[] = [];
+  for (const item of items) {
+    const validId = resolvedIds.get(item.extensionId);
+    if (validId) {
+      validItems.push({
+        ...item,
+        extensionId: validId
+      });
+    }
+  }
+
+  if (validItems.length === 0) return true;
+
   // 1. Group downloads by extensionId for the extensions table increment
   const downloadIncrements = new Map<string, number>();
-  for (const item of items) {
+  for (const item of validItems) {
     if (item.downloads > 0) {
       downloadIncrements.set(
         item.extensionId,
@@ -1483,7 +1513,7 @@ export async function flushTelemetryBatch(
   }
 
   // 3. Prepare telemetry_daily upsert statements
-  for (const item of items) {
+  for (const item of validItems) {
     const cleanCountry = (item.countryCode || 'GLOBAL').toUpperCase().slice(0, 8);
     const telemetryId = `tel_${item.extensionId}_${item.date}_${cleanCountry}`;
 
