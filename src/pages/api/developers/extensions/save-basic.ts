@@ -3,8 +3,6 @@ import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug, saveExtensionBasic } from '../../../../lib/db';
 
-import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
-
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
@@ -149,16 +147,7 @@ export const POST: APIRoute = async ({ request }) => {
       isEdit: Boolean(isEdit),
     });
 
-    // Invalidate Edge CDN cache so updated details appear immediately globally
-    try {
-      await purgeExtensionStoreCache(request, {
-        extensionId: result.id,
-        extensionSlug: result.slug,
-        category: category ? category.trim().toLowerCase() : undefined,
-      });
-    } catch (purgeErr) {
-      console.warn('Cache purge after save-basic failed non-critically:', purgeErr);
-    }
+    // Note: CDN cache purge is deferred until final publication to protect live store visitors
 
     return new Response(JSON.stringify({
       success: true,

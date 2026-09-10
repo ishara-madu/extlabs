@@ -51,56 +51,72 @@ if (!dbExtension) {
   return Astro.redirect('/developers/dashboard', 302);
 }
 
-// Normalize extension detail
-let parsedScreenshots: string[] = [];
-if (dbExtension.screenshots) {
+// Parse and merge any pending staged draft_data so developer edits their latest draft
+let stagedDraft: any = null;
+if (dbExtension.draft_data) {
   try {
-    const s = typeof dbExtension.screenshots === 'string' ? JSON.parse(dbExtension.screenshots) : dbExtension.screenshots;
+    stagedDraft = typeof dbExtension.draft_data === 'string' ? JSON.parse(dbExtension.draft_data) : dbExtension.draft_data;
+  } catch {}
+}
+
+const hasUnpublishedDraft = Boolean(stagedDraft && dbExtension.status === 'published');
+
+// Normalize extension detail
+const rawScreenshots = stagedDraft?.screenshots !== undefined ? stagedDraft.screenshots : dbExtension.screenshots;
+let parsedScreenshots: string[] = [];
+if (rawScreenshots) {
+  try {
+    const s = typeof rawScreenshots === 'string' ? JSON.parse(rawScreenshots) : rawScreenshots;
     if (Array.isArray(s)) parsedScreenshots = s;
   } catch {}
 }
 
 // Normalize features
+const rawFeatures = stagedDraft?.features !== undefined ? stagedDraft.features : dbExtension.features;
 let parsedFeatures = undefined;
-if (dbExtension.features) {
+if (rawFeatures) {
   try {
-    const f = typeof dbExtension.features === 'string' ? JSON.parse(dbExtension.features) : dbExtension.features;
+    const f = typeof rawFeatures === 'string' ? JSON.parse(rawFeatures) : rawFeatures;
     if (Array.isArray(f) && f.length > 0) parsedFeatures = f;
   } catch {}
 }
 
 // Normalize workflow
+const rawWorkflow = stagedDraft?.workflow !== undefined ? stagedDraft.workflow : dbExtension.workflow;
 let parsedWorkflow = undefined;
-if (dbExtension.workflow) {
+if (rawWorkflow) {
   try {
-    const w = typeof dbExtension.workflow === 'string' ? JSON.parse(dbExtension.workflow) : dbExtension.workflow;
+    const w = typeof rawWorkflow === 'string' ? JSON.parse(rawWorkflow) : rawWorkflow;
     if (Array.isArray(w) && w.length > 0) parsedWorkflow = w;
   } catch {}
 }
 
 // Normalize comparison
+const rawComparison = stagedDraft?.comparison !== undefined ? stagedDraft.comparison : dbExtension.comparison;
 let parsedComparison = undefined;
-if (dbExtension.comparison) {
+if (rawComparison) {
   try {
-    const c = typeof dbExtension.comparison === 'string' ? JSON.parse(dbExtension.comparison) : dbExtension.comparison;
+    const c = typeof rawComparison === 'string' ? JSON.parse(rawComparison) : rawComparison;
     if (Array.isArray(c) && c.length > 0) parsedComparison = c;
   } catch {}
 }
 
 // Normalize faqs
+const rawFaqs = stagedDraft?.faqs !== undefined ? stagedDraft.faqs : dbExtension.faqs;
 let parsedFaqs = undefined;
-if (dbExtension.faqs) {
+if (rawFaqs) {
   try {
-    const f = typeof dbExtension.faqs === 'string' ? JSON.parse(dbExtension.faqs) : dbExtension.faqs;
+    const f = typeof rawFaqs === 'string' ? JSON.parse(rawFaqs) : rawFaqs;
     if (Array.isArray(f) && f.length > 0) parsedFaqs = f;
   } catch {}
 }
 
 // Normalize supported browsers
+const rawBrowsers = stagedDraft?.supported_browsers !== undefined ? stagedDraft.supported_browsers : dbExtension.supported_browsers;
 let parsedBrowsers = undefined;
-if (dbExtension.supported_browsers) {
+if (rawBrowsers) {
   try {
-    const b = typeof dbExtension.supported_browsers === 'string' ? JSON.parse(dbExtension.supported_browsers) : dbExtension.supported_browsers;
+    const b = typeof rawBrowsers === 'string' ? JSON.parse(rawBrowsers) : rawBrowsers;
     if (Array.isArray(b) && b.length > 0) parsedBrowsers = b;
   } catch {}
 }
@@ -108,31 +124,31 @@ if (dbExtension.supported_browsers) {
 const ext = {
   id: dbExtension.id || id,
   slug: dbExtension.slug || id,
-  name: dbExtension.name || 'Untitled Extension',
-  version: dbExtension.version_name || dbExtension.current_version || '1.0.0',
-  category: dbExtension.category || 'Productivity',
-  tagline: dbExtension.short_description || '',
-  description: dbExtension.full_description || '',
-  githubUrl: dbExtension.source_repo_url || '',
-  downloadUrl: dbExtension.zip_download_url || dbExtension.crx_download_url || '',
-  supportEmail: dbExtension.support_email || user?.email || '',
-  developerWebsite: dbExtension.developer_website || developer?.website || '',
-  docsUrl: dbExtension.docs_url || '',
-  monetagUrl: dbExtension.monetag_direct_link || developer?.default_monetag_url || '',
-  frequency: dbExtension.ad_frequency || developer?.default_frequency || "24h",
-  manifestVersion: dbExtension.manifest_version || "v3",
-  license: dbExtension.license || "MIT",
+  name: stagedDraft?.name ?? dbExtension.name ?? 'Untitled Extension',
+  version: stagedDraft?.current_version ?? dbExtension.version_name ?? dbExtension.current_version ?? '1.0.0',
+  category: stagedDraft?.category ?? dbExtension.category ?? 'Productivity',
+  tagline: stagedDraft?.short_description ?? dbExtension.short_description ?? '',
+  description: stagedDraft?.full_description ?? dbExtension.full_description ?? '',
+  githubUrl: stagedDraft?.source_repo_url ?? dbExtension.source_repo_url ?? '',
+  downloadUrl: stagedDraft?.zip_download_url !== undefined ? stagedDraft.zip_download_url : (dbExtension.zip_download_url || dbExtension.crx_download_url || ''),
+  supportEmail: stagedDraft?.support_email ?? dbExtension.support_email ?? user?.email ?? '',
+  developerWebsite: stagedDraft?.developer_website ?? dbExtension.developer_website ?? developer?.website ?? '',
+  docsUrl: stagedDraft?.docs_url !== undefined ? stagedDraft.docs_url : (dbExtension.docs_url || ''),
+  monetagUrl: stagedDraft?.monetag_direct_link ?? dbExtension.monetag_direct_link ?? developer?.default_monetag_url ?? '',
+  frequency: stagedDraft?.ad_frequency ?? dbExtension.ad_frequency ?? developer?.default_frequency ?? "24h",
+  manifestVersion: stagedDraft?.manifest_version ?? dbExtension.manifest_version ?? "v3",
+  license: stagedDraft?.license ?? dbExtension.license ?? "MIT",
   supportedBrowsers: parsedBrowsers,
-  privacyPolicyUrl: dbExtension.privacy_policy_url || '',
+  privacyPolicyUrl: stagedDraft?.privacy_policy_url !== undefined ? stagedDraft.privacy_policy_url : (dbExtension.privacy_policy_url || ''),
   faqs: parsedFaqs,
-  iconUrl: dbExtension.icon_url || '',
-  promoTileUrl: dbExtension.header_image_url || '',
+  iconUrl: stagedDraft?.icon_url ?? dbExtension.icon_url ?? '',
+  promoTileUrl: stagedDraft?.header_image_url ?? dbExtension.header_image_url ?? '',
   screenshots: parsedScreenshots.length > 0 ? parsedScreenshots : undefined,
-  youtubeVideoUrl: dbExtension.youtube_video_url || '',
+  youtubeVideoUrl: stagedDraft?.youtube_video_url !== undefined ? stagedDraft.youtube_video_url : (dbExtension.youtube_video_url || ''),
   features: parsedFeatures,
   workflow: parsedWorkflow,
   comparison: parsedComparison,
-  status: dbExtension.status || 'Production'
+  status: dbExtension.status === 'draft' ? 'Draft' : 'Production',
 };
 ---
 
@@ -172,7 +188,7 @@ const ext = {
     <DeveloperNavbar />
 
     <!-- Main Edit Workspace -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-8">
+    <main class="flex-1 max-w-6xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-6">
       
       <!-- Top Breadcrumb -->
       <div class="flex items-center gap-2 text-xs text-slate-500">
@@ -187,6 +203,19 @@ const ext = {
         <span class="text-slate-300">/</span>
         <span class="text-slate-900 font-medium">Edit Details</span>
       </div>
+
+      <!-- Unpublished Draft Staging Indicator -->
+      {hasUnpublishedDraft && (
+        <div class="p-3.5 bg-blue-50/60 border border-blue-200/80 rounded-lg text-xs text-blue-900 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+            <span><strong>Unpublished draft edits active.</strong> Store visitors see your live published listing until you click "Save & Publish Changes".</span>
+          </div>
+          <a href={`/extension/${ext.slug || ext.id}`} target="_blank" class="text-blue-700 hover:text-blue-900 font-medium underline shrink-0">
+            View Live Listing &rarr;
+          </a>
+        </div>
+      )}
 
       <!-- Unified Editor Component (Prefilled with extension data) -->
       <ExtensionEditor 

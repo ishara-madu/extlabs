@@ -68,7 +68,7 @@ export async function getLiveExtensions(db: D1Database): Promise<ExtensionWithDe
       d.website AS developer_website
     FROM extensions e
     LEFT JOIN developers d ON e.developer_id = d.id
-    WHERE e.is_active = 1 AND e.is_suspended = 0
+    WHERE e.is_active = 1 AND e.is_suspended = 0 AND e.status = 'published'
     ORDER BY e.is_featured DESC, e.rating DESC, e.weekly_active_users DESC
   `;
   const { results } = await db.prepare(query).all<ExtensionWithDeveloper>();
@@ -82,26 +82,28 @@ export async function getLiveExtensions(db: D1Database): Promise<ExtensionWithDe
  */
 export async function getExtensionBySlug(
   db: D1Database,
-  slug: string
+  slug: string,
+  options?: { allowDraft?: boolean }
 ): Promise<ExtensionWithDeveloper | null> {
-  const cacheKey = `d1:ext_slug:${slug}`;
+  const cacheKey = `d1:ext_slug:${slug}:${options?.allowDraft ? 'draft' : 'live'}`;
   const cached = getMemoryCached<ExtensionWithDeveloper>(cacheKey);
   if (cached) return cached;
 
-  const result = await db
-    .prepare(`
-      SELECT 
-        e.*, 
-        COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
-        COALESCE(d.slug, 'developer') AS developer_slug, 
-        COALESCE(d.is_verified, 1) AS developer_verified,
-        d.website AS developer_website
-      FROM extensions e
-      LEFT JOIN developers d ON e.developer_id = d.id
-      WHERE e.slug = ?
-    `)
-    .bind(slug)
-    .first<ExtensionWithDeveloper>();
+  const draftClause = options?.allowDraft ? '' : "AND e.is_active = 1 AND e.is_suspended = 0 AND e.status = 'published'";
+  const query = `
+    SELECT 
+      e.*, 
+      COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
+      COALESCE(d.slug, 'developer') AS developer_slug, 
+      COALESCE(d.is_verified, 1) AS developer_verified,
+      d.website AS developer_website
+    FROM extensions e
+    LEFT JOIN developers d ON e.developer_id = d.id
+    WHERE e.slug = ?
+    ${draftClause}
+  `;
+
+  const result = await db.prepare(query).bind(slug).first<ExtensionWithDeveloper>();
 
   if (result) {
     setMemoryCached(cacheKey, result, 60_000);
@@ -114,22 +116,24 @@ export async function getExtensionBySlug(
  */
 export async function getExtensionById(
   db: D1Database,
-  id: string
+  id: string,
+  options?: { allowDraft?: boolean }
 ): Promise<ExtensionWithDeveloper | null> {
-  const result = await db
-    .prepare(`
-      SELECT 
-        e.*, 
-        COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
-        COALESCE(d.slug, 'developer') AS developer_slug, 
-        COALESCE(d.is_verified, 1) AS developer_verified,
-        d.website AS developer_website
-      FROM extensions e
-      LEFT JOIN developers d ON e.developer_id = d.id
-      WHERE e.id = ?
-    `)
-    .bind(id)
-    .first<ExtensionWithDeveloper>();
+  const draftClause = options?.allowDraft ? '' : "AND e.is_active = 1 AND e.is_suspended = 0 AND e.status = 'published'";
+  const query = `
+    SELECT 
+      e.*, 
+      COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name, 
+      COALESCE(d.slug, 'developer') AS developer_slug, 
+      COALESCE(d.is_verified, 1) AS developer_verified,
+      d.website AS developer_website
+    FROM extensions e
+    LEFT JOIN developers d ON e.developer_id = d.id
+    WHERE e.id = ?
+    ${draftClause}
+  `;
+
+  const result = await db.prepare(query).bind(id).first<ExtensionWithDeveloper>();
   return result || null;
 }
 
@@ -149,7 +153,7 @@ export async function getExtensionsByCategory(
       d.website AS developer_website
     FROM extensions e
     LEFT JOIN developers d ON e.developer_id = d.id
-    WHERE e.category = ? AND e.is_active = 1 AND e.is_suspended = 0
+    WHERE e.category = ? AND e.is_active = 1 AND e.is_suspended = 0 AND e.status = 'published'
     ORDER BY e.is_featured DESC, e.rating DESC, e.weekly_active_users DESC
   `;
   const { results } = await db.prepare(query).bind(category).all<ExtensionWithDeveloper>();
@@ -592,6 +596,8 @@ export function mapDbExtensionToStoreItem(
     license: dbExt.license || 'MIT',
     manifestVersion: dbExt.manifest_version || 'v3',
     supportedBrowsers,
+    status: dbExt.status || 'published',
+    isDraft: dbExt.status === 'draft' || dbExt.is_active === 0,
   };
 }
 
@@ -602,7 +608,7 @@ export async function getLiveExtensionsCount(db: D1Database | null): Promise<num
   if (!db) return 0;
   try {
     const result = await db
-      .prepare('SELECT COUNT(*) as count FROM extensions WHERE is_active = 1 AND is_suspended = 0')
+      .prepare("SELECT COUNT(*) as count FROM extensions WHERE is_active = 1 AND is_suspended = 0 AND status = 'published'")
       .first<{ count: number }>();
     return result?.count ?? 0;
   } catch (err) {
@@ -658,24 +664,32 @@ export async function getStoreExtensionsByCategory(db: D1Database | null, catego
 /**
  * Fetch a single store extension by slug or ID from D1
  */
-export async function getStoreExtensionByIdOrSlug(db: D1Database | null, idOrSlug: string): Promise<Extension | null> {
+export async function getStoreExtensionByIdOrSlug(
+  db: D1Database | null, 
+  idOrSlug: string,
+  options?: { allowDraftForDeveloperId?: string }
+): Promise<Extension | null> {
   if (!db) return null;
   try {
-    const ext = await getExtensionBySlug(db, idOrSlug);
+    const allowDraft = Boolean(options?.allowDraftForDeveloperId);
+    let ext = await getExtensionBySlug(db, idOrSlug, { allowDraft });
+    if (!ext) {
+      ext = await getExtensionById(db, idOrSlug, { allowDraft });
+    }
+
     if (ext) {
+      // If extension is not published or inactive, only permit preview if viewed by its developer author
+      if (ext.status !== 'published' || ext.is_active !== 1 || ext.is_suspended === 1) {
+        if (!options?.allowDraftForDeveloperId || options.allowDraftForDeveloperId !== ext.developer_id) {
+          return null; // Block public visitors from accessing drafts
+        }
+      }
+
       const [reviews, ratingBreakdown] = await Promise.all([
         getExtensionReviews(db, ext.id),
         getExtensionRatingBreakdown(db, ext.id),
       ]);
       return mapDbExtensionToStoreItem(ext, reviews, ratingBreakdown);
-    }
-    const extById = await getExtensionById(db, idOrSlug);
-    if (extById) {
-      const [reviews, ratingBreakdown] = await Promise.all([
-        getExtensionReviews(db, extById.id),
-        getExtensionRatingBreakdown(db, extById.id),
-      ]);
-      return mapDbExtensionToStoreItem(extById, reviews, ratingBreakdown);
     }
   } catch (err) {
     console.warn('Failed to fetch extension by slug from D1:', err);
@@ -692,6 +706,7 @@ export interface ManageExtensionDetail extends DbExtension {
   review_status?: string;
   package_size_bytes?: number;
   manifest_json?: string;
+  has_pending_draft?: boolean;
 }
 
 /**
@@ -727,6 +742,9 @@ export async function getDeveloperExtensionDetail(
 
   const bindings = developerId ? [idOrSlug, idOrSlug, developerId] : [idOrSlug, idOrSlug];
   const row = await db.prepare(query).bind(...bindings).first<ManageExtensionDetail>();
+  if (row) {
+    row.has_pending_draft = Boolean(row.draft_data);
+  }
   return row || null;
 }
 
@@ -816,6 +834,34 @@ function normalizeStoreCategory(cat: string): string {
   return lower || 'productivity';
 }
 
+export interface ExtensionDraftData {
+  name?: string;
+  category?: string;
+  current_version?: string;
+  manifest_version?: string;
+  short_description?: string;
+  source_repo_url?: string;
+  zip_download_url?: string | null;
+  support_email?: string;
+  developer_website?: string | null;
+  docs_url?: string | null;
+  icon_url?: string;
+  header_image_url?: string | null;
+  screenshots?: string; // JSON string
+  youtube_video_url?: string | null;
+  full_description?: string;
+  features?: string; // JSON string
+  workflow?: string; // JSON string
+  comparison?: string; // JSON string
+  monetag_direct_link?: string;
+  ad_frequency?: string;
+  faqs?: string; // JSON string
+  license?: string;
+  supported_browsers?: string; // JSON string
+  privacy_policy_url?: string | null;
+  updated_at?: string;
+}
+
 /**
  * Save or insert basic extension details (Tab 1) in Cloudflare D1
  */
@@ -839,15 +885,50 @@ export async function saveExtensionBasic(
   // If editing an existing extension
   if (data.isEdit && data.id) {
     const existing = await db
-      .prepare('SELECT id, slug FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+      .prepare('SELECT id, slug, status, draft_data FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
       .bind(data.id, cleanSlug)
-      .first<{ id: string; slug: string }>();
+      .first<{ id: string; slug: string; status?: string; draft_data?: string | null }>();
 
     if (existing) {
-      // Preserve permanent slug if already created
       const permanentSlug = existing.slug || cleanSlug;
 
-      // Update record
+      if (existing.status === 'published') {
+        // Stage changes into draft_data so live store listing remains unaffected until publication
+        let draft: ExtensionDraftData = {};
+        if (existing.draft_data) {
+          try {
+            draft = JSON.parse(existing.draft_data);
+          } catch {}
+        }
+
+        draft.name = data.name.trim();
+        draft.category = normalizedCategory;
+        draft.current_version = data.version.trim();
+        draft.manifest_version = data.manifestVersion?.trim() || draft.manifest_version;
+        draft.short_description = data.tagline.trim();
+        draft.source_repo_url = data.githubUrl.trim();
+        draft.zip_download_url = data.downloadUrl?.trim() || null;
+        draft.support_email = data.supportEmail.trim();
+        draft.developer_website = data.developerWebsite?.trim() || null;
+        draft.docs_url = data.docsUrl?.trim() || null;
+        draft.updated_at = new Date().toISOString();
+
+        await db
+          .prepare("UPDATE extensions SET draft_data = ?, updated_at = DATETIME('now') WHERE id = ? AND developer_id = ?")
+          .bind(JSON.stringify(draft), existing.id, data.developerId)
+          .run();
+
+        if (data.developerWebsite?.trim()) {
+          await db
+            .prepare('UPDATE developers SET website = ? WHERE id = ?')
+            .bind(data.developerWebsite.trim(), data.developerId)
+            .run();
+        }
+
+        return { id: existing.id, slug: permanentSlug };
+      }
+
+      // Extension is in draft status: update record directly
       await db
         .prepare(`
           UPDATE extensions
@@ -896,14 +977,15 @@ export async function saveExtensionBasic(
   // If new extension or inserting an unseeded fallback extension
   const newId = data.id || `ext_${Date.now().toString(36)}_${cleanSlug.slice(0, 12).replace(/-/g, '_')}`;
 
+  // Default new extensions to is_active = 0 and status = 'draft' so they never leak into the store
   await db
     .prepare(`
       INSERT INTO extensions (
         id, slug, name, category, current_version, manifest_version, short_description,
         source_repo_url, zip_download_url, support_email, docs_url,
-        developer_id, icon_url, is_active, pricing_type, created_at, updated_at
+        developer_id, icon_url, is_active, status, pricing_type, created_at, updated_at
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '/icons/extension-placeholder.avif', 1, 'free', DATETIME('now'), DATETIME('now')
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '/icons/extension-placeholder.avif', 0, 'draft', 'free', DATETIME('now'), DATETIME('now')
       )
     `)
     .bind(
@@ -977,9 +1059,9 @@ export async function saveExtensionMedia(
 
   // Find extension belonging to this developer
   const existing = await db
-    .prepare('SELECT id FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
+    .prepare('SELECT id, status, draft_data FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
     .bind(cleanId || cleanSlug, cleanSlug || cleanId, data.developerId)
-    .first<{ id: string }>();
+    .first<{ id: string; status?: string; draft_data?: string | null }>();
 
   if (!existing) {
     throw new Error('Extension not found or permission denied.');
@@ -991,6 +1073,28 @@ export async function saveExtensionMedia(
   }
 
   const screenshotsJson = JSON.stringify(data.screenshots || []);
+
+  if (existing.status === 'published') {
+    let draft: ExtensionDraftData = {};
+    if (existing.draft_data) {
+      try {
+        draft = JSON.parse(existing.draft_data);
+      } catch {}
+    }
+
+    draft.icon_url = data.iconUrl.trim();
+    draft.header_image_url = data.headerImageUrl?.trim() || null;
+    draft.screenshots = screenshotsJson;
+    draft.youtube_video_url = data.youtubeVideoUrl?.trim() || null;
+    draft.updated_at = new Date().toISOString();
+
+    await db
+      .prepare("UPDATE extensions SET draft_data = ?, updated_at = DATETIME('now') WHERE id = ? AND developer_id = ?")
+      .bind(JSON.stringify(draft), existing.id, data.developerId)
+      .run();
+
+    return { id: existing.id, success: true };
+  }
 
   await db
     .prepare(`
@@ -1059,9 +1163,9 @@ export async function saveExtensionStory(
 
   // Find extension belonging to this developer
   const existing = await db
-    .prepare('SELECT id FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
+    .prepare('SELECT id, status, draft_data FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
     .bind(cleanId || cleanSlug, cleanSlug || cleanId, data.developerId)
-    .first<{ id: string }>();
+    .first<{ id: string; status?: string; draft_data?: string | null }>();
 
   if (!existing) {
     throw new Error('Extension not found or permission denied.');
@@ -1070,6 +1174,28 @@ export async function saveExtensionStory(
   const featuresJson = JSON.stringify(data.features || []);
   const workflowJson = JSON.stringify(data.workflow || []);
   const comparisonJson = JSON.stringify(data.comparison || []);
+
+  if (existing.status === 'published') {
+    let draft: ExtensionDraftData = {};
+    if (existing.draft_data) {
+      try {
+        draft = JSON.parse(existing.draft_data);
+      } catch {}
+    }
+
+    draft.full_description = data.description.trim();
+    draft.features = featuresJson;
+    draft.workflow = workflowJson;
+    draft.comparison = comparisonJson;
+    draft.updated_at = new Date().toISOString();
+
+    await db
+      .prepare("UPDATE extensions SET draft_data = ?, updated_at = DATETIME('now') WHERE id = ? AND developer_id = ?")
+      .bind(JSON.stringify(draft), existing.id, data.developerId)
+      .run();
+
+    return { id: existing.id, success: true };
+  }
 
   await db
     .prepare(`
@@ -1130,9 +1256,9 @@ export async function saveExtensionSpecs(
 
   // Find extension belonging to this developer
   const existing = await db
-    .prepare('SELECT id FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
+    .prepare('SELECT * FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
     .bind(cleanId || cleanSlug, cleanSlug || cleanId, data.developerId)
-    .first<{ id: string }>();
+    .first<DbExtension>();
 
   if (!existing) {
     throw new Error('Extension not found or permission denied.');
@@ -1141,25 +1267,143 @@ export async function saveExtensionSpecs(
   const faqsJson = JSON.stringify(data.faqs || []);
   const browsersJson = JSON.stringify(data.supportedBrowsers || []);
 
+  let draft: ExtensionDraftData = {};
+  if (existing.draft_data) {
+    try {
+      draft = JSON.parse(existing.draft_data);
+    } catch {}
+  }
+
+  // If not publishing, treat as draft save
+  if (!data.publish) {
+    if (existing.status === 'published') {
+      draft.monetag_direct_link = data.monetagUrl.trim();
+      draft.ad_frequency = data.frequency || '24h';
+      draft.faqs = faqsJson;
+      draft.manifest_version = data.manifestVersion || 'v3';
+      draft.license = data.license || 'MIT';
+      draft.supported_browsers = browsersJson;
+      draft.privacy_policy_url = data.privacyPolicyUrl?.trim() || null;
+      draft.updated_at = new Date().toISOString();
+
+      await db
+        .prepare("UPDATE extensions SET draft_data = ?, updated_at = DATETIME('now') WHERE id = ? AND developer_id = ?")
+        .bind(JSON.stringify(draft), existing.id, data.developerId)
+        .run();
+
+      return { id: existing.id, success: true };
+    }
+
+    // Still in draft status, update columns directly
+    await db
+      .prepare(`
+        UPDATE extensions
+        SET 
+          monetag_direct_link = ?,
+          ad_frequency = ?,
+          faqs = ?,
+          manifest_version = ?,
+          license = ?,
+          supported_browsers = ?,
+          privacy_policy_url = ?,
+          updated_at = DATETIME('now')
+        WHERE id = ? AND developer_id = ?
+      `)
+      .bind(
+        data.monetagUrl.trim(),
+        data.frequency || '24h',
+        faqsJson,
+        data.manifestVersion || 'v3',
+        data.license || 'MIT',
+        browsersJson,
+        data.privacyPolicyUrl?.trim() || null,
+        existing.id,
+        data.developerId
+      )
+      .run();
+
+    return { id: existing.id, success: true };
+  }
+
+  // ----------------------------------------------------
+  // PUBLISH ACTION (publish === true)
+  // Promote all draft fields + current specs into live columns!
+  // ----------------------------------------------------
+  const finalName = draft.name ?? existing.name;
+  const finalCategory = draft.category ?? existing.category;
+  const finalVersion = draft.current_version ?? existing.current_version;
+  const finalManifest = data.manifestVersion || draft.manifest_version || existing.manifest_version || 'v3';
+  const finalTagline = draft.short_description ?? existing.short_description;
+  const finalGithub = draft.source_repo_url ?? existing.source_repo_url;
+  const finalDownload = draft.zip_download_url !== undefined ? draft.zip_download_url : (existing.zip_download_url || existing.crx_download_url);
+  const finalEmail = draft.support_email ?? existing.support_email;
+  const finalDocs = draft.docs_url !== undefined ? draft.docs_url : existing.docs_url;
+
+  const finalIcon = draft.icon_url ?? existing.icon_url;
+  const finalHeader = draft.header_image_url !== undefined ? draft.header_image_url : existing.header_image_url;
+  const finalScreenshots = draft.screenshots ?? existing.screenshots;
+  const finalYoutube = draft.youtube_video_url !== undefined ? draft.youtube_video_url : existing.youtube_video_url;
+
+  const finalDesc = draft.full_description ?? existing.full_description;
+  const finalFeatures = draft.features ?? existing.features;
+  const finalWorkflow = draft.workflow ?? existing.workflow;
+  const finalComparison = draft.comparison ?? existing.comparison;
+
   await db
     .prepare(`
       UPDATE extensions
       SET 
+        name = ?,
+        category = ?,
+        current_version = ?,
+        manifest_version = ?,
+        short_description = ?,
+        source_repo_url = ?,
+        zip_download_url = ?,
+        support_email = ?,
+        docs_url = ?,
+        icon_url = ?,
+        header_image_url = ?,
+        screenshots = ?,
+        youtube_video_url = ?,
+        full_description = ?,
+        features = ?,
+        workflow = ?,
+        comparison = ?,
         monetag_direct_link = ?,
         ad_frequency = ?,
         faqs = ?,
-        manifest_version = ?,
         license = ?,
         supported_browsers = ?,
         privacy_policy_url = ?,
+        is_active = 1,
+        status = 'published',
+        draft_data = NULL,
+        published_at = COALESCE(published_at, DATETIME('now')),
         updated_at = DATETIME('now')
       WHERE id = ? AND developer_id = ?
     `)
     .bind(
+      finalName,
+      finalCategory,
+      finalVersion,
+      finalManifest,
+      finalTagline,
+      finalGithub,
+      finalDownload,
+      finalEmail,
+      finalDocs,
+      finalIcon,
+      finalHeader,
+      finalScreenshots,
+      finalYoutube,
+      finalDesc,
+      finalFeatures,
+      finalWorkflow,
+      finalComparison,
       data.monetagUrl.trim(),
       data.frequency || '24h',
       faqsJson,
-      data.manifestVersion || 'v3',
       data.license || 'MIT',
       browsersJson,
       data.privacyPolicyUrl?.trim() || null,
@@ -1168,16 +1412,23 @@ export async function saveExtensionSpecs(
     )
     .run();
 
-  if (data.publish) {
+  // Update developer website if provided in draft
+  if (draft.developer_website?.trim()) {
     await db
-      .prepare(`
-        UPDATE extension_versions
-        SET review_status = 'pending', submitted_at = DATETIME('now')
-        WHERE extension_id = ?
-      `)
-      .bind(existing.id)
+      .prepare('UPDATE developers SET website = ? WHERE id = ?')
+      .bind(draft.developer_website.trim(), data.developerId)
       .run();
   }
+
+  // Update extension version record in review queue
+  await db
+    .prepare(`
+      UPDATE extension_versions
+      SET version = ?, review_status = 'pending', submitted_at = DATETIME('now')
+      WHERE extension_id = ?
+    `)
+    .bind(finalVersion, existing.id)
+    .run();
 
   return { id: existing.id, success: true };
 }
@@ -1339,7 +1590,7 @@ export async function searchStoreExtensions(
         d.website AS developer_website
       FROM extensions e
       LEFT JOIN developers d ON e.developer_id = d.id
-      WHERE e.is_active = 1 AND e.is_suspended = 0
+      WHERE e.is_active = 1 AND e.is_suspended = 0 AND e.status = 'published'
     `;
 
     const bindings: any[] = [];

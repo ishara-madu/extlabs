@@ -84,6 +84,8 @@ export interface Extension {
   license?: string;
   manifestVersion?: string;
   supportedBrowsers?: string[];
+  status?: string;
+  isDraft?: boolean;
 }
 
 export interface CategoryInfo {

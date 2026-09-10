@@ -10,6 +10,8 @@ export interface DeveloperExtensionRow {
   icon_url: string;
   current_version: string;
   is_active: number;
+  status?: string;
+  has_pending_draft?: number;
   is_featured: number;
   is_suspended: number;
   rating: number;
@@ -53,6 +55,8 @@ export async function getDeveloperExtensions(
         e.icon_url,
         e.current_version,
         e.is_active,
+        e.status,
+        (e.draft_data IS NOT NULL) AS has_pending_draft,
         e.is_featured,
         e.is_suspended,
         e.rating,

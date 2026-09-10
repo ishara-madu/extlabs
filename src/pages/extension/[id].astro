@@ -7,19 +7,34 @@ import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import BrowserIcon from "../../components/BrowserIcon.astro";
 import VerifiedBadge from "../../components/VerifiedBadge.astro";
-import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension } from "../../lib/db";
-import { getReviewerUser } from "../../lib/auth";
+import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension, getDeveloperByUserIdOrSlug } from "../../lib/db";
+import { getReviewerUser, getSessionUser } from "../../lib/auth";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2 } from '@lucide/astro';
 
 const requestedId = Astro.params.id || '';
 const db = getDb();
-const rawExtension = await getStoreExtensionByIdOrSlug(db, requestedId);
+
+// Check if visiting user is the developer author (to permit previewing their own draft extensions)
+let currentDeveloper = null;
+if (db) {
+  try {
+    const devUser = await getSessionUser(db, Astro.request);
+    if (devUser) {
+      currentDeveloper = await getDeveloperByUserIdOrSlug(db, devUser.id, devUser.username);
+    }
+  } catch {}
+}
+
+const rawExtension = await getStoreExtensionByIdOrSlug(db, requestedId, {
+  allowDraftForDeveloperId: currentDeveloper?.id,
+});
 
 if (!rawExtension) {
   return Astro.redirect('/');
 }
 
 const ext = rawExtension;
+const isDraftPreview = Boolean(ext.isDraft);
 
 // Optimize: Only query DB for reviewer session if session cookie is present
 const hasSessionCookie = Boolean(Astro.request.headers.get('Cookie')?.includes('extlabs_user_session='));
@@ -27,7 +42,8 @@ const currentUser = (db && hasSessionCookie) ? await getReviewerUser(db, Astro.r
 const userReview = currentUser && db ? await getUserReviewForExtension(db, ext.id, currentUser.id) : null;
 
 // Edge CDN Caching: Unauthenticated traffic served directly from Cloudflare Edge for 7 days (0 DB queries)
-if (!currentUser) {
+// Note: Draft previews are never cached by edge CDN
+if (!currentUser && !isDraftPreview) {
   Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=604800, stale-while-revalidate=86400');
   Astro.response.headers.set('Vary', 'Cookie');
 } else {
@@ -170,6 +186,21 @@ const jsonLdSchema = {
     
     <!-- Top Navigation -->
     <Navbar />
+
+    {isDraftPreview && (
+      <div class="bg-amber-50/90 border-b border-amber-200/80 px-6 py-2.5 text-xs text-amber-900">
+        <div class="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span class="font-semibold">Draft Preview</span>
+            <span class="text-amber-700 hidden sm:inline">— This extension is currently in draft status and is not visible to public store visitors.</span>
+          </div>
+          <a href={`/developers/manage/${ext.id}/edit`} class="font-medium text-amber-900 hover:text-amber-950 underline shrink-0">
+            Return to Editor &rarr;
+          </a>
+        </div>
+      </div>
+    )}
 
     <!-- Main Content Area (Minimalist HyperUI & daisyUI Structure) -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-8 space-y-12">

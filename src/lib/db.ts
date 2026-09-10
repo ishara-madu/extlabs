@@ -71,6 +71,9 @@ export interface DbExtension {
   license?: string | null;
   supported_browsers?: string | null;
   privacy_policy_url?: string | null;
+  status?: 'draft' | 'published' | 'archived';
+  draft_data?: string | null;
+  published_at?: string | null;
   created_at: string;
   updated_at: string;
 }

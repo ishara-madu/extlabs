@@ -3670,7 +3670,8 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       }
 
       if (publish) {
-        // Persist visual media & story to database before final publishing
+        // Persist basic details, visual media & story to database before final publishing
+        await saveBasicToDb(true);
         await saveMediaToDb(true);
         await saveStoryToDb(true);
       }

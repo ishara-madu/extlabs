@@ -99,7 +99,8 @@ const ext = {
     : 0,
   category: dbExtension.category || 'productivity',
   tagline: dbExtension.tagline || dbExtension.short_description || 'No description available',
-  status: dbExtension.status || 'Production',
+  status: dbExtension.status === 'draft' ? 'Draft' : 'Production',
+  hasPendingDraft: Boolean(dbExtension.has_pending_draft || dbExtension.draft_data),
   reviewStatus: dbExtension.review_status || 'approved',
   monetagUrl: dbExtension.monetag_direct_link || '',
   githubRepo: dbExtension.source_repo_url || '',
@@ -294,10 +295,17 @@ try {
                 <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight" id="display-ext-name">
                   {ext.name}
                 </h1>
-                <span class="px-2 py-0.5 text-[10px] font-semibold text-slate-700 bg-white/80 rounded-full shadow-2xs">
-                  {ext.status}
+                <span class="text-slate-600 font-medium text-xs inline-flex items-center gap-1.5">
+                  <span class={`w-1.5 h-1.5 rounded-full ${ext.status === 'Production' ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                  <span>{ext.status}</span>
                 </span>
-                <span class="font-mono text-[11px] text-slate-600 bg-white/80 px-2 py-0.5 rounded-full shadow-2xs">
+                {ext.hasPendingDraft && (
+                  <span class="text-blue-600 font-medium text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                    <span>Draft edits pending</span>
+                  </span>
+                )}
+                <span class="font-mono text-xs text-slate-500">
                   v{ext.version}
                 </span>
               </div>

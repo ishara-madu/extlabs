@@ -69,9 +69,17 @@ if (db && user) {
         const topGeos = await getExtensionsTopGeographies(db, extIds);
 
         allExtensions = results.map((row) => {
-          const isProd = row.is_active === 1 && !row.is_suspended;
-          const status = isProd ? 'Production' : (row.review_status === 'pending' ? 'In Review' : 'Draft');
-          const updateStatus = isProd ? 'Live on Directory' : (row.review_status === 'pending' ? 'Pending security audit' : 'Not yet sent for review');
+          const isProd = row.is_active === 1 && !row.is_suspended && row.status === 'published';
+          const isDraft = row.status === 'draft' || row.is_active === 0;
+          const status = isProd ? 'Production' : (isDraft ? 'Draft' : (row.review_status === 'pending' ? 'In Review' : 'Draft'));
+          const hasPendingDraft = Boolean(row.has_pending_draft);
+
+          let updateStatus = 'Draft (not published)';
+          if (isProd) {
+            updateStatus = hasPendingDraft ? 'Draft edits pending' : 'Live on Directory';
+          } else if (row.review_status === 'pending') {
+            updateStatus = 'Pending security audit';
+          }
           const dl = row.download_count || 0;
           const formattedDownloads = dl >= 1000000 ? `${(dl / 1000000).toFixed(1)}M` : dl >= 1000 ? `${(dl / 1000).toFixed(1)}K` : dl.toString();
           

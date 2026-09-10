@@ -156,21 +156,23 @@ export const POST: APIRoute = async ({ request }) => {
       publish: Boolean(publish),
     });
 
-    // Invalidate Edge CDN cache so updated specs appear immediately globally
-    try {
-      const ext = await db
-        .prepare('SELECT id, slug, category FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
-        .bind(result.id, result.id)
-        .first<{ id: string; slug: string; category: string }>();
-      if (ext) {
-        await purgeExtensionStoreCache(request, {
-          extensionId: ext.id,
-          extensionSlug: ext.slug,
-          category: ext.category,
-        });
+    // Invalidate Edge CDN cache only when publishing to live store
+    if (publish) {
+      try {
+        const ext = await db
+          .prepare('SELECT id, slug, category FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+          .bind(result.id, result.id)
+          .first<{ id: string; slug: string; category: string }>();
+        if (ext) {
+          await purgeExtensionStoreCache(request, {
+            extensionId: ext.id,
+            extensionSlug: ext.slug,
+            category: ext.category,
+          });
+        }
+      } catch (purgeErr) {
+        console.warn('Cache purge after publish failed non-critically:', purgeErr);
       }
-    } catch (purgeErr) {
-      console.warn('Cache purge after save-specs failed non-critically:', purgeErr);
     }
 
     return new Response(JSON.stringify({
