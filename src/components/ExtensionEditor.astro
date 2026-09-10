@@ -703,7 +703,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               id="ext-tagline-input"
               type="text"
               required
-              maxlength="160"
+              maxlength="250"
               value={data.tagline}
               placeholder="e.g. Instant AI summaries for research papers, articles, and videos. Local Chromium inference with zero cloud telemetry. Free."
               class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none text-slate-900"
@@ -1169,7 +1169,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               Markdown Overview Description <span class="text-red-500">*</span>
             </label>
             <span id="desc-char-counter" class="text-[11px] font-mono font-medium text-slate-500">
-              0 / 5,000 characters (Min: 100)
+              0 chars (0 words) / 30,000 max (Min: 100)
             </span>
           </div>
 
@@ -1255,8 +1255,8 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             rows="8"
             required
             minlength="100"
-            maxlength="5000"
-            placeholder="Describe what your extension does, who it is for, and how it improves their browsing workflow (Minimum 100 characters required)..."
+            maxlength="30000"
+            placeholder="Describe what your extension does, who it is for, and how it improves their browsing workflow (Minimum 100 characters required, ~1,200+ words recommended for SEO)..."
             class="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-200 rounded-b-lg focus:border-blue-400 focus:outline-none text-slate-900 leading-relaxed font-normal shadow-2xs"
           >{data.description}</textarea>
 
@@ -1320,7 +1320,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                   <input
                     type="text"
                     required
-                    maxlength="60"
+                    maxlength="100"
                     minlength="4"
                     value={feat.title}
                     placeholder="e.g. Instant 1-Click AI Summaries"
@@ -1334,13 +1334,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                       Feature Description & Value <span class="text-red-500">*</span>
                     </label>
                     <span class="feature-desc-count text-[10px] font-mono text-slate-400">
-                      {feat.description.length} / 220
+                      {feat.description.length} / 400
                     </span>
                   </div>
                   <input
                     type="text"
                     required
-                    maxlength="220"
+                    maxlength="400"
                     minlength="15"
                     value={feat.description}
                     placeholder="e.g. Extract concise bullet summaries and key takeaways in under 2 seconds without leaving your current tab."
@@ -1417,7 +1417,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                   <input
                     type="text"
                     required
-                    maxlength="60"
+                    maxlength="100"
                     minlength="4"
                     value={wf.title}
                     placeholder="e.g. Client-Side DOM Ingestion"
@@ -1431,13 +1431,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                       Execution Details <span class="text-red-500">*</span>
                     </label>
                     <span class="workflow-desc-count text-[10px] font-mono text-slate-400">
-                      {wf.description.length} / 200
+                      {wf.description.length} / 400
                     </span>
                   </div>
                   <input
                     type="text"
                     required
-                    maxlength="200"
+                    maxlength="400"
                     minlength="20"
                     value={wf.description}
                     placeholder="e.g. Content script parses the active webpage, strips boilerplates, and passes clean payload to service worker."
@@ -1514,7 +1514,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                   <input
                     type="text"
                     required
-                    maxlength="40"
+                    maxlength="80"
                     minlength="3"
                     value={row.feature}
                     placeholder="e.g. Privacy Architecture"
@@ -1530,13 +1530,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                       <span class="text-red-500">*</span>
                     </label>
                     <span class="comp-current-count text-[10px] font-mono text-slate-400">
-                      {row.current.length} / 100
+                      {row.current.length} / 250
                     </span>
                   </div>
                   <input
                     type="text"
                     required
-                    maxlength="100"
+                    maxlength="250"
                     minlength="10"
                     value={row.current}
                     placeholder="e.g. 100% Client-side RAM execution, zero telemetry"
@@ -1552,13 +1552,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                       <span class="text-red-500">*</span>
                     </label>
                     <span class="comp-others-count text-[10px] font-mono text-slate-400">
-                      {row.others.length} / 100
+                      {row.others.length} / 250
                     </span>
                   </div>
                   <input
                     type="text"
                     required
-                    maxlength="100"
+                    maxlength="250"
                     minlength="10"
                     value={row.others}
                     placeholder="e.g. Third-party cloud storage with marketing trackers"
@@ -1810,13 +1810,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                       Question <span class="text-red-500">*</span>
                     </label>
                     <span class="faq-q-count text-[10px] font-mono text-slate-400">
-                      {faq.q.length} / 100
+                      {faq.q.length} / 200
                     </span>
                   </div>
                   <input
                     type="text"
                     required
-                    maxlength="100"
+                    maxlength="200"
                     minlength="10"
                     value={faq.q}
                     placeholder="e.g. Is Deep Summarize AI completely free to use?"
@@ -1830,13 +1830,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                       Answer & Explanation <span class="text-red-500">*</span>
                     </label>
                     <span class="faq-a-count text-[10px] font-mono text-slate-400">
-                      {faq.a.length} / 300
+                      {faq.a.length} / 1000
                     </span>
                   </div>
                   <textarea
                     rows="2"
                     required
-                    maxlength="300"
+                    maxlength="1000"
                     minlength="20"
                     placeholder="e.g. Yes, the core extension is 100% open-source and free forever with zero hidden paywalls."
                     class="faq-a-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400 leading-relaxed font-normal"
@@ -1856,7 +1856,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors py-1 cursor-pointer"
           >
             <Plus class="w-3.5 h-3.5 text-blue-600" />
-            <span>Add another FAQ (Min: 3, Max: 10)</span>
+            <span>Add another FAQ (Min: 3, Max: 15)</span>
           </button>
         </div>
       </section>
@@ -2275,7 +2275,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
 
     const MIN_FAQS = 3;
-    const MAX_FAQS = 10;
+    const MAX_FAQS = 15;
     const faqsContainer = document.getElementById('faqs-list-container');
     const addFaqBtn = document.getElementById('add-faq-btn') as HTMLButtonElement | null;
     const faqsBadge = document.getElementById('faqs-count-badge');
@@ -2545,15 +2545,15 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           const descInput = card.querySelector('.feature-desc-input') as HTMLInputElement | null;
           const tVal = (titleInput?.value || '').trim();
           const dVal = (descInput?.value || '').trim();
-          const isTitleValid = tVal.length >= 4 && tVal.length <= 60;
-          const isDescValValid = dVal.length >= 15 && dVal.length <= 220;
+          const isTitleValid = tVal.length >= 4 && tVal.length <= 100;
+          const isDescValValid = dVal.length >= 15 && dVal.length <= 400;
 
           if (titleInput) {
             if (!isTitleValid) {
               titleInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               titleInput.classList.remove('border-slate-200', 'focus:border-blue-400');
               if (!firstInvalidFeatureInput) firstInvalidFeatureInput = titleInput;
-              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} title must be between 4 and 60 characters.`;
+              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} title must be between 4 and 100 characters.`;
             } else {
               titleInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               titleInput.classList.add('border-slate-200', 'focus:border-blue-400');
@@ -2565,7 +2565,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               descInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               descInput.classList.remove('border-slate-200', 'focus:border-blue-400');
               if (!firstInvalidFeatureInput) firstInvalidFeatureInput = descInput;
-              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} description must be between 15 and 220 characters.`;
+              if (!featureErrMsg) featureErrMsg = `Feature #${idx + 1} description must be between 15 and 400 characters.`;
             } else {
               descInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               descInput.classList.add('border-slate-200', 'focus:border-blue-400');
@@ -2604,15 +2604,15 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           const descInput = card.querySelector('.workflow-desc-input') as HTMLInputElement | null;
           const tVal = (titleInput?.value || '').trim();
           const dVal = (descInput?.value || '').trim();
-          const isTitleValid = tVal.length >= 4 && tVal.length <= 60;
-          const isDescValValid = dVal.length >= 20 && dVal.length <= 200;
+          const isTitleValid = tVal.length >= 4 && tVal.length <= 100;
+          const isDescValValid = dVal.length >= 20 && dVal.length <= 400;
 
           if (titleInput) {
             if (!isTitleValid) {
               titleInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               titleInput.classList.remove('border-slate-200', 'focus:border-blue-400');
               if (!firstInvalidWorkflowInput) firstInvalidWorkflowInput = titleInput;
-              if (!workflowErrMsg) workflowErrMsg = `Workflow stage #${idx + 1} headline must be between 4 and 60 characters.`;
+              if (!workflowErrMsg) workflowErrMsg = `Workflow stage #${idx + 1} headline must be between 4 and 100 characters.`;
             } else {
               titleInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               titleInput.classList.add('border-slate-200', 'focus:border-blue-400');
@@ -2624,7 +2624,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               descInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               descInput.classList.remove('border-slate-200', 'focus:border-blue-400');
               if (!firstInvalidWorkflowInput) firstInvalidWorkflowInput = descInput;
-              if (!workflowErrMsg) workflowErrMsg = `Workflow stage #${idx + 1} details must be between 20 and 200 characters.`;
+              if (!workflowErrMsg) workflowErrMsg = `Workflow stage #${idx + 1} details must be between 20 and 400 characters.`;
             } else {
               descInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               descInput.classList.add('border-slate-200', 'focus:border-blue-400');
@@ -2665,14 +2665,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           const fVal = (featInput?.value || '').trim();
           const cVal = (currInput?.value || '').trim();
           const oVal = (otherInput?.value || '').trim();
-          const isFeatValid = fVal.length >= 3 && fVal.length <= 40;
-          const isCurrValid = cVal.length >= 10 && cVal.length <= 100;
-          const isOtherValid = oVal.length >= 10 && oVal.length <= 100;
+          const isFeatValid = fVal.length >= 3 && fVal.length <= 80;
+          const isCurrValid = cVal.length >= 10 && cVal.length <= 250;
+          const isOtherValid = oVal.length >= 10 && oVal.length <= 250;
 
           [
-            { el: featInput, ok: isFeatValid, msg: `Comparison row #${idx + 1} metric name must be 3-40 characters.` },
-            { el: currInput, ok: isCurrValid, msg: `Comparison row #${idx + 1} advantage details must be 10-100 characters.` },
-            { el: otherInput, ok: isOtherValid, msg: `Comparison row #${idx + 1} alternative details must be 10-100 characters.` },
+            { el: featInput, ok: isFeatValid, msg: `Comparison row #${idx + 1} metric name must be 3-80 characters.` },
+            { el: currInput, ok: isCurrValid, msg: `Comparison row #${idx + 1} advantage details must be 10-250 characters.` },
+            { el: otherInput, ok: isOtherValid, msg: `Comparison row #${idx + 1} alternative details must be 10-250 characters.` },
           ].forEach(item => {
             if (item.el) {
               if (!item.ok) {
@@ -2762,15 +2762,15 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           const aInput = card.querySelector('.faq-a-input') as HTMLTextAreaElement | null;
           const qVal = (qInput?.value || '').trim();
           const aVal = (aInput?.value || '').trim();
-          const isQValid = qVal.length >= 10 && qVal.length <= 100;
-          const isAValid = aVal.length >= 20 && aVal.length <= 300;
+          const isQValid = qVal.length >= 10 && qVal.length <= 200;
+          const isAValid = aVal.length >= 20 && aVal.length <= 1000;
 
           if (qInput) {
             if (!isQValid) {
               qInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               qInput.classList.remove('border-slate-200', 'focus:border-blue-400');
               if (!firstInvalidFaqInput) firstInvalidFaqInput = qInput;
-              if (!faqErrMsg) faqErrMsg = `FAQ #${idx + 1} question must be between 10 and 100 characters.`;
+              if (!faqErrMsg) faqErrMsg = `FAQ #${idx + 1} question must be between 10 and 200 characters.`;
             } else {
               qInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               qInput.classList.add('border-slate-200', 'focus:border-blue-400');
@@ -2782,7 +2782,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               aInput.classList.add('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               aInput.classList.remove('border-slate-200', 'focus:border-blue-400');
               if (!firstInvalidFaqInput) firstInvalidFaqInput = aInput;
-              if (!faqErrMsg) faqErrMsg = `FAQ #${idx + 1} answer must be between 20 and 300 characters.`;
+              if (!faqErrMsg) faqErrMsg = `FAQ #${idx + 1} answer must be between 20 and 1000 characters.`;
             } else {
               aInput.classList.remove('border-red-400', 'focus:border-red-500', 'bg-red-50/20');
               aInput.classList.add('border-slate-200', 'focus:border-blue-400');
@@ -4686,24 +4686,34 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     // 4. Overview Description & Markdown Toolbar
     function updateCharCount() {
       if (!descTextarea || !charCounter || !statusBadge) return;
+      const text = descTextarea.value.trim();
       const len = descTextarea.value.length;
-      charCounter.textContent = `${len.toLocaleString()} / 5,000 characters (Min: 100)`;
+      const words = text.length === 0 ? 0 : text.split(/\s+/).filter(Boolean).length;
+      charCounter.textContent = `${len.toLocaleString()} chars (~${words.toLocaleString()} words) / 30,000 max (Min: 100)`;
 
       if (len === 0) {
         charCounter.className = 'text-[11px] font-mono font-medium text-slate-500';
-        statusBadge.textContent = 'Min 100 characters needed';
+        statusBadge.textContent = 'Min 100 characters needed (1,200+ words recommended for SEO)';
         statusBadge.className = 'font-medium text-amber-600';
       } else if (len < 100) {
         charCounter.className = 'text-[11px] font-mono font-medium text-amber-600';
-        statusBadge.textContent = `Need ${100 - len} more chars`;
+        statusBadge.textContent = `Need ${100 - len} more chars for minimum`;
         statusBadge.className = 'font-medium text-amber-600';
-      } else if (len > 5000) {
+      } else if (len > 30000) {
         charCounter.className = 'text-[11px] font-mono font-bold text-red-600';
-        statusBadge.textContent = `Exceeded by ${len - 5000} chars`;
+        statusBadge.textContent = `Exceeded by ${len - 30000} chars`;
         statusBadge.className = 'font-bold text-red-600';
+      } else if (words < 400) {
+        charCounter.className = 'text-[11px] font-mono font-medium text-slate-600';
+        statusBadge.textContent = `Valid (${words} words) · Recommend ~1,200 words for top SEO ranking`;
+        statusBadge.className = 'font-medium text-slate-600';
+      } else if (words < 1000) {
+        charCounter.className = 'text-[11px] font-mono font-medium text-blue-600';
+        statusBadge.textContent = `Good length (${words} words) · Approaching deep SEO target (1,200 words)`;
+        statusBadge.className = 'font-medium text-blue-600';
       } else {
         charCounter.className = 'text-[11px] font-mono font-medium text-emerald-600';
-        statusBadge.textContent = '✓ Optimal length for SEO';
+        statusBadge.textContent = `✓ Authoritative Deep SEO Guide (${words} words)`;
         statusBadge.className = 'font-medium text-emerald-600';
       }
     }
@@ -4763,13 +4773,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       const descCount = card.querySelector('.feature-desc-count');
 
       if (titleInput && titleCount) {
-        titleCount.textContent = `${titleInput.value.length} / 60`;
-        titleCount.className = titleInput.value.length >= 55 ? 'feature-title-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-title-count text-[10px] font-mono text-slate-400';
+        titleCount.textContent = `${titleInput.value.length} / 100`;
+        titleCount.className = titleInput.value.length >= 95 ? 'feature-title-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-title-count text-[10px] font-mono text-slate-400';
       }
 
       if (descInput && descCount) {
-        descCount.textContent = `${descInput.value.length} / 220`;
-        descCount.className = descInput.value.length >= 210 ? 'feature-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-desc-count text-[10px] font-mono text-slate-400';
+        descCount.textContent = `${descInput.value.length} / 400`;
+        descCount.className = descInput.value.length >= 380 ? 'feature-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'feature-desc-count text-[10px] font-mono text-slate-400';
       }
     }
 
@@ -4881,12 +4891,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Feature Title <span class="text-red-500">*</span>
               </label>
-              <span class="feature-title-count text-[10px] font-mono text-slate-400">0 / 60</span>
+              <span class="feature-title-count text-[10px] font-mono text-slate-400">0 / 100</span>
             </div>
             <input
               type="text"
               required
-              maxlength="60"
+              maxlength="100"
               minlength="4"
               placeholder="e.g. New Feature Title"
               class="feature-title-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
@@ -4898,12 +4908,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Feature Description & Value <span class="text-red-500">*</span>
               </label>
-              <span class="feature-desc-count text-[10px] font-mono text-slate-400">0 / 220</span>
+              <span class="feature-desc-count text-[10px] font-mono text-slate-400">0 / 400</span>
             </div>
             <input
               type="text"
               required
-              maxlength="220"
+              maxlength="400"
               minlength="15"
               placeholder="e.g. Describe the clear workflow improvement or capability provided to the user."
               class="feature-desc-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
@@ -4931,13 +4941,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       const descCount = card.querySelector('.workflow-desc-count');
 
       if (titleInput && titleCount) {
-        titleCount.textContent = `${titleInput.value.length} / 60`;
-        titleCount.className = titleInput.value.length >= 55 ? 'workflow-title-count text-[10px] font-mono text-amber-600 font-semibold' : 'workflow-title-count text-[10px] font-mono text-slate-400';
+        titleCount.textContent = `${titleInput.value.length} / 100`;
+        titleCount.className = titleInput.value.length >= 95 ? 'workflow-title-count text-[10px] font-mono text-amber-600 font-semibold' : 'workflow-title-count text-[10px] font-mono text-slate-400';
       }
 
       if (descInput && descCount) {
-        descCount.textContent = `${descInput.value.length} / 200`;
-        descCount.className = descInput.value.length >= 185 ? 'workflow-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'workflow-desc-count text-[10px] font-mono text-slate-400';
+        descCount.textContent = `${descInput.value.length} / 400`;
+        descCount.className = descInput.value.length >= 380 ? 'workflow-desc-count text-[10px] font-mono text-amber-600 font-semibold' : 'workflow-desc-count text-[10px] font-mono text-slate-400';
       }
     }
 
@@ -5049,12 +5059,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Stage Headline <span class="text-red-500">*</span>
               </label>
-              <span class="workflow-title-count text-[10px] font-mono text-slate-400">0 / 60</span>
+              <span class="workflow-title-count text-[10px] font-mono text-slate-400">0 / 100</span>
             </div>
             <input
               type="text"
               required
-              maxlength="60"
+              maxlength="100"
               minlength="4"
               placeholder="e.g. Next Execution Step"
               class="workflow-title-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
@@ -5066,12 +5076,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Execution Details <span class="text-red-500">*</span>
               </label>
-              <span class="workflow-desc-count text-[10px] font-mono text-slate-400">0 / 200</span>
+              <span class="workflow-desc-count text-[10px] font-mono text-slate-400">0 / 400</span>
             </div>
             <input
               type="text"
               required
-              maxlength="200"
+              maxlength="400"
               minlength="20"
               placeholder="e.g. Describe the technical or functional operations executed during this phase."
               class="workflow-desc-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
@@ -5101,18 +5111,18 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       const otherCount = card.querySelector('.comp-others-count');
 
       if (featInput && featCount) {
-        featCount.textContent = `${featInput.value.length} / 40`;
-        featCount.className = featInput.value.length >= 35 ? 'comp-feature-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-feature-count text-[10px] font-mono text-slate-400';
+        featCount.textContent = `${featInput.value.length} / 80`;
+        featCount.className = featInput.value.length >= 75 ? 'comp-feature-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-feature-count text-[10px] font-mono text-slate-400';
       }
 
       if (currInput && currCount) {
-        currCount.textContent = `${currInput.value.length} / 100`;
-        currCount.className = currInput.value.length >= 90 ? 'comp-current-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-current-count text-[10px] font-mono text-slate-400';
+        currCount.textContent = `${currInput.value.length} / 250`;
+        currCount.className = currInput.value.length >= 230 ? 'comp-current-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-current-count text-[10px] font-mono text-slate-400';
       }
 
       if (otherInput && otherCount) {
-        otherCount.textContent = `${otherInput.value.length} / 100`;
-        otherCount.className = otherInput.value.length >= 90 ? 'comp-others-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-others-count text-[10px] font-mono text-slate-400';
+        otherCount.textContent = `${otherInput.value.length} / 250`;
+        otherCount.className = otherInput.value.length >= 230 ? 'comp-others-count text-[10px] font-mono text-amber-600 font-semibold' : 'comp-others-count text-[10px] font-mono text-slate-400';
       }
     }
 
@@ -5229,12 +5239,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Capability / Metric <span class="text-red-500">*</span>
               </label>
-              <span class="comp-feature-count text-[10px] font-mono text-slate-400">0 / 40</span>
+              <span class="comp-feature-count text-[10px] font-mono text-slate-400">0 / 80</span>
             </div>
             <input
               type="text"
               required
-              maxlength="40"
+              maxlength="80"
               minlength="3"
               placeholder="e.g. Offline Execution"
               class="comp-feature-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
@@ -5248,12 +5258,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                 <span class="text-emerald-600 font-semibold text-[11px]">✓ Advantage</span>
                 <span class="text-red-500">*</span>
               </label>
-              <span class="comp-current-count text-[10px] font-mono text-slate-400">0 / 100</span>
+              <span class="comp-current-count text-[10px] font-mono text-slate-400">0 / 250</span>
             </div>
             <input
               type="text"
               required
-              maxlength="100"
+              maxlength="250"
               minlength="10"
               placeholder="e.g. Fully functional offline with local cache"
               class="comp-current-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
@@ -5267,14 +5277,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
                 <span class="text-slate-400 font-medium text-[11px]">✕ Alternative</span>
                 <span class="text-red-500">*</span>
               </label>
-              <span class="comp-others-count text-[10px] font-mono text-slate-400">0 / 100</span>
+              <span class="comp-others-count text-[10px] font-mono text-slate-400">0 / 250</span>
             </div>
             <input
               type="text"
               required
-              maxlength="100"
+              maxlength="250"
               minlength="10"
-              placeholder="e.g. Completely fails when network disconnects"
+              placeholder="e.g. Third-party cloud storage with marketing trackers"
               class="comp-others-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400"
             />
           </div>
@@ -5300,13 +5310,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       const aCount = card.querySelector('.faq-a-count');
 
       if (qInput && qCount) {
-        qCount.textContent = `${qInput.value.length} / 100`;
-        qCount.className = qInput.value.length >= 90 ? 'faq-q-count text-[10px] font-mono text-amber-600 font-semibold' : 'faq-q-count text-[10px] font-mono text-slate-400';
+        qCount.textContent = `${qInput.value.length} / 200`;
+        qCount.className = qInput.value.length >= 180 ? 'faq-q-count text-[10px] font-mono text-amber-600 font-semibold' : 'faq-q-count text-[10px] font-mono text-slate-400';
       }
 
       if (aInput && aCount) {
-        aCount.textContent = `${aInput.value.length} / 300`;
-        aCount.className = aInput.value.length >= 280 ? 'faq-a-count text-[10px] font-mono text-amber-600 font-semibold' : 'faq-a-count text-[10px] font-mono text-slate-400';
+        aCount.textContent = `${aInput.value.length} / 1000`;
+        aCount.className = aInput.value.length >= 950 ? 'faq-a-count text-[10px] font-mono text-amber-600 font-semibold' : 'faq-a-count text-[10px] font-mono text-slate-400';
       }
     }
 
@@ -5418,12 +5428,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Question <span class="text-red-500">*</span>
               </label>
-              <span class="faq-q-count text-[10px] font-mono text-slate-400">0 / 100</span>
+              <span class="faq-q-count text-[10px] font-mono text-slate-400">0 / 200</span>
             </div>
             <input
               type="text"
               required
-              maxlength="100"
+              maxlength="200"
               minlength="10"
               placeholder="e.g. Does this extension store any user browsing data?"
               class="faq-q-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none font-medium placeholder-slate-400"
@@ -5435,12 +5445,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <label class="block text-[11px] font-semibold text-slate-700">
                 Answer & Explanation <span class="text-red-500">*</span>
               </label>
-              <span class="faq-a-count text-[10px] font-mono text-slate-400">0 / 300</span>
+              <span class="faq-a-count text-[10px] font-mono text-slate-400">0 / 1000</span>
             </div>
             <textarea
               rows="2"
               required
-              maxlength="300"
+              maxlength="1000"
               minlength="20"
               placeholder="e.g. No, all processing occurs locally in memory with zero cloud telemetry or data retention."
               class="faq-a-input w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none placeholder-slate-400 leading-relaxed font-normal"

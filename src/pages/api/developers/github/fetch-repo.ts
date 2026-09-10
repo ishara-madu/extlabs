@@ -1,5 +1,6 @@
 // src/pages/api/developers/github/fetch-repo.ts
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb } from '../../../../lib/db';
 import { generateSeoStoreListing, type CodeSnippet } from '../../../../lib/gemini';
@@ -101,7 +102,8 @@ function distillCodeSnippet(raw: string, role: string): string {
 }
 
 /**
- * Fetch a single file's content from a GitHub repository (supports public and private repos)
+ * Fetch a single file's content from a GitHub repository.
+ * Prioritizes raw.githubusercontent.com CDN (0 API rate limit calls), with fallback to GitHub REST API.
  */
 async function fetchFileContent(
   owner: string,
@@ -110,29 +112,36 @@ async function fetchFileContent(
   branch: string,
   headers: Record<string, string>
 ): Promise<string | null> {
+  const cleanPath = filePath.replace(/^\.?\/+/, '');
+
+  // 1. Fast, unmetered public CDN fetch (consumes 0 GitHub API rate limit points)
   try {
-    const cleanPath = filePath.replace(/^\.?\/+/, '');
-    let res = await fetch(
-      `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${cleanPath}?ref=${encodeURIComponent(branch)}`,
-      { headers }
+    const rawRes = await fetch(
+      `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(branch)}/${cleanPath}`,
+      { headers: { 'User-Agent': 'ExtLabs-Directory' } }
     );
-    if (res.status === 401 && headers['Authorization']) {
-      const publicHeaders = { ...headers };
-      delete publicHeaders['Authorization'];
-      res = await fetch(
+    if (rawRes.ok) {
+      return await rawRes.text();
+    }
+  } catch {}
+
+  // 2. If private repo or raw CDN missed, fallback to authenticated GitHub REST API
+  if (headers['Authorization']) {
+    try {
+      const res = await fetch(
         `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${cleanPath}?ref=${encodeURIComponent(branch)}`,
-        { headers: publicHeaders }
+        { headers }
       );
-    }
-    if (!res.ok) return null;
-    const json = (await res.json()) as { content?: string; encoding?: string };
-    if (json.content && json.encoding === 'base64') {
-      return decodeBase64(json.content);
-    }
-    return null;
-  } catch {
-    return null;
+      if (res.ok) {
+        const json = (await res.json()) as { content?: string; encoding?: string };
+        if (json.content && json.encoding === 'base64') {
+          return decodeBase64(json.content);
+        }
+      }
+    } catch {}
   }
+
+  return null;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -207,7 +216,9 @@ export const POST: APIRoute = async ({ request }) => {
         }
       );
     }
-    const token = user?.github_access_token;
+    const cf = env as any;
+    const serverToken = cf?.GITHUB_TOKEN || cf?.GITHUB_PAT || process.env.GITHUB_TOKEN || process.env.GITHUB_PAT;
+    const token = user?.github_access_token || serverToken;
 
     const headers: Record<string, string> = {
       Accept: 'application/vnd.github+json',
@@ -227,17 +238,60 @@ export const POST: APIRoute = async ({ request }) => {
       delete headers['Authorization'];
 
       // Clear invalid token from database
-      try {
-        await db.prepare('UPDATE users SET github_access_token = NULL WHERE id = ?').bind(user.id).run();
-      } catch (dbErr) {
-        console.error('Failed to clear invalid github_access_token:', dbErr);
+      if (user?.github_access_token) {
+        try {
+          await db.prepare('UPDATE users SET github_access_token = NULL WHERE id = ?').bind(user.id).run();
+        } catch (dbErr) {
+          console.error('Failed to clear invalid github_access_token:', dbErr);
+        }
       }
 
       // Retry as public fetch
       repoRes = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, { headers });
     }
 
-    if (!repoRes.ok) {
+    let repoInfo: GitHubRepoInfo;
+    let defaultBranch = 'main';
+
+    if (repoRes.ok) {
+      repoInfo = (await repoRes.json()) as GitHubRepoInfo;
+      defaultBranch = repoInfo.default_branch || 'main';
+    } else if (repoRes.status === 403) {
+      console.warn(`[GitHub API] Rate limit reached on metadata API (HTTP 403). Falling back to direct raw.githubusercontent.com CDN for ${owner}/${repo}...`);
+
+      // Attempt to probe default branch on unmetered raw CDN
+      let detectedBranch = 'main';
+      for (const b of ['main', 'master']) {
+        const probeRes = await fetch(
+          `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(b)}/manifest.json`,
+          { headers: { 'User-Agent': 'ExtLabs-Directory' } }
+        );
+        if (probeRes.ok) {
+          detectedBranch = b;
+          break;
+        }
+        const probeReadme = await fetch(
+          `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(b)}/README.md`,
+          { headers: { 'User-Agent': 'ExtLabs-Directory' } }
+        );
+        if (probeReadme.ok) {
+          detectedBranch = b;
+          break;
+        }
+      }
+
+      defaultBranch = detectedBranch;
+      repoInfo = {
+        name: repo,
+        full_name: `${owner}/${repo}`,
+        description: '',
+        html_url: `https://github.com/${owner}/${repo}`,
+        default_branch: defaultBranch,
+        homepage: null,
+        topics: [],
+        license: null,
+      };
+    } else {
       if (repoRes.status === 404) {
         return new Response(
           JSON.stringify({
@@ -256,26 +310,11 @@ export const POST: APIRoute = async ({ request }) => {
           { status: 401, headers: { 'Content-Type': 'application/json' } }
         );
       }
-      if (repoRes.status === 403) {
-        const rateLimitRemaining = repoRes.headers.get('x-ratelimit-remaining');
-        if (rateLimitRemaining === '0') {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'GitHub API rate limit exceeded. Please wait a few minutes before trying again.',
-            }),
-            { status: 429, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
-      }
       return new Response(
         JSON.stringify({ success: false, error: `GitHub API error: HTTP ${repoRes.status}` }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
-
-    const repoInfo = (await repoRes.json()) as GitHubRepoInfo;
-    const defaultBranch = repoInfo.default_branch || 'main';
 
     // 2. Fetch manifest.json (try root, src/, public/, extension/)
     let manifestData: any = null;
@@ -441,8 +480,8 @@ export const POST: APIRoute = async ({ request }) => {
     let tagline = manifestData?.description || repoInfo.description || '';
     if (!tagline || tagline.length < 10) {
       tagline = `High-performance, privacy-conscious Chromium extension for modern web productivity.`;
-    } else if (tagline.length > 120) {
-      tagline = tagline.slice(0, 117) + '...';
+    } else if (tagline.length > 160) {
+      tagline = tagline.slice(0, 157) + '...';
     }
 
     // Derive License
@@ -473,9 +512,9 @@ export const POST: APIRoute = async ({ request }) => {
       
       const paragraphs = strippedReadme.split(/\n\n+/).filter(p => p.trim().length > 30);
       if (paragraphs.length >= 2) {
-        description = paragraphs.slice(0, 4).join('\n\n');
+        description = paragraphs.slice(0, 8).join('\n\n');
       } else {
-        description = strippedReadme.slice(0, 800);
+        description = strippedReadme.slice(0, 3000);
       }
     }
 

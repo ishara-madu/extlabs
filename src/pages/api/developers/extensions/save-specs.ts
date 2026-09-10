@@ -80,7 +80,7 @@ export const POST: APIRoute = async ({ request }) => {
     const validFreqs = ['24h', 'download', '12h', 'session'];
     const cleanFrequency = (frequency && validFreqs.includes(frequency)) ? frequency : '24h';
 
-    // Validate FAQs (Min 3, Max 6)
+    // Validate FAQs (Min 3, Max 15)
     if (!Array.isArray(faqs) || faqs.length < 3) {
       return new Response(JSON.stringify({
         success: false,
@@ -91,26 +91,26 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const cleanFaqs = faqs.slice(0, 6).map((item: any) => ({
+    const cleanFaqs = faqs.slice(0, 15).map((item: any) => ({
       q: (item?.q || '').trim(),
       a: (item?.a || '').trim(),
     }));
 
     for (let i = 0; i < cleanFaqs.length; i++) {
       const f = cleanFaqs[i];
-      if (!f.q || f.q.length < 10 || f.q.length > 100) {
+      if (!f.q || f.q.length < 10 || f.q.length > 200) {
         return new Response(JSON.stringify({
           success: false,
-          error: `FAQ #${i + 1} question must be between 10 and 100 characters.`,
+          error: `FAQ #${i + 1} question must be between 10 and 200 characters.`,
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (!f.a || f.a.length < 20 || f.a.length > 300) {
+      if (!f.a || f.a.length < 20 || f.a.length > 1000) {
         return new Response(JSON.stringify({
           success: false,
-          error: `FAQ #${i + 1} answer must be between 20 and 300 characters.`,
+          error: `FAQ #${i + 1} answer must be between 20 and 1000 characters.`,
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },

@@ -84,19 +84,19 @@ export const POST: APIRoute = async ({ request }) => {
 
     for (let i = 0; i < cleanFeatures.length; i++) {
       const f = cleanFeatures[i];
-      if (!f.title || f.title.length < 4 || f.title.length > 60) {
+      if (!f.title || f.title.length < 4 || f.title.length > 100) {
         return new Response(JSON.stringify({ 
           success: false, 
-          error: `Feature #${i + 1} title must be between 4 and 60 characters.` 
+          error: `Feature #${i + 1} title must be between 4 and 100 characters.` 
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (!f.description || f.description.length < 15 || f.description.length > 180) {
+      if (!f.description || f.description.length < 15 || f.description.length > 400) {
         return new Response(JSON.stringify({ 
           success: false, 
-          error: `Feature #${i + 1} description must be between 15 and 180 characters.` 
+          error: `Feature #${i + 1} description must be between 15 and 400 characters.` 
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -123,19 +123,19 @@ export const POST: APIRoute = async ({ request }) => {
 
     for (let i = 0; i < cleanWorkflow.length; i++) {
       const w = cleanWorkflow[i];
-      if (!w.title || w.title.length < 4 || w.title.length > 60) {
+      if (!w.title || w.title.length < 4 || w.title.length > 100) {
         return new Response(JSON.stringify({ 
           success: false, 
-          error: `Workflow stage #${i + 1} headline must be between 4 and 60 characters.` 
+          error: `Workflow stage #${i + 1} headline must be between 4 and 100 characters.` 
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (!w.description || w.description.length < 20 || w.description.length > 200) {
+      if (!w.description || w.description.length < 20 || w.description.length > 400) {
         return new Response(JSON.stringify({ 
           success: false, 
-          error: `Workflow stage #${i + 1} execution details must be between 20 and 200 characters.` 
+          error: `Workflow stage #${i + 1} execution details must be between 20 and 400 characters.` 
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -162,28 +162,28 @@ export const POST: APIRoute = async ({ request }) => {
 
     for (let i = 0; i < cleanComparison.length; i++) {
       const c = cleanComparison[i];
-      if (!c.feature || c.feature.length < 3 || c.feature.length > 40) {
+      if (!c.feature || c.feature.length < 3 || c.feature.length > 80) {
         return new Response(JSON.stringify({ 
           success: false, 
-          error: `Comparison row #${i + 1} metric name must be between 3 and 40 characters.` 
+          error: `Comparison row #${i + 1} metric name must be between 3 and 80 characters.` 
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (!c.current || c.current.length < 10 || c.current.length > 100) {
+      if (!c.current || c.current.length < 10 || c.current.length > 250) {
         return new Response(JSON.stringify({ 
           success: false, 
-          error: `Comparison row #${i + 1} advantage details must be between 10 and 100 characters.` 
+          error: `Comparison row #${i + 1} advantage details must be between 10 and 250 characters.` 
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (!c.others || c.others.length < 10 || c.others.length > 100) {
+      if (!c.others || c.others.length < 10 || c.others.length > 250) {
         return new Response(JSON.stringify({ 
           success: false, 
-          error: `Comparison row #${i + 1} alternative details must be between 10 and 100 characters.` 
+          error: `Comparison row #${i + 1} alternative details must be between 10 and 250 characters.` 
         }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
