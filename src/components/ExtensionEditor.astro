@@ -360,6 +360,24 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       </button>
     </div>
 
+    <!-- 📊 Active Generation Progress Bar -->
+    <div id="magic-progress-container" class="hidden space-y-1.5 pt-1">
+      <div class="flex items-center justify-between text-[11px]">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="magic-progress-spinner" class="w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0"></span>
+          <span id="magic-progress-stage" class="font-medium text-slate-700 truncate">Connecting to GitHub repository...</span>
+        </div>
+        <span id="magic-progress-percent" class="font-mono text-blue-600 font-semibold shrink-0 ml-2">0%</span>
+      </div>
+      <div class="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
+        <div
+          id="magic-progress-bar"
+          class="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
+          style="width: 0%"
+        ></div>
+      </div>
+    </div>
+
     <!-- Advanced Expandable Section: Target SEO Keywords -->
     <details class="group pt-0.5" id="magic-advanced-accordion">
       <summary class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 cursor-pointer select-none transition-colors">
@@ -3990,6 +4008,93 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     const magicBtn = document.getElementById('magic-import-btn') as HTMLButtonElement | null;
     const magicStatus = document.getElementById('magic-status-text');
 
+    const progressContainer = document.getElementById('magic-progress-container');
+    const progressBar = document.getElementById('magic-progress-bar');
+    const progressStage = document.getElementById('magic-progress-stage');
+    const progressPercent = document.getElementById('magic-progress-percent');
+    const progressSpinner = document.getElementById('magic-progress-spinner');
+
+    let progressInterval: any = null;
+
+    function startProgress() {
+      if (!progressContainer || !progressBar || !progressStage || !progressPercent || !progressSpinner) return;
+      clearInterval(progressInterval);
+
+      progressContainer.classList.remove('hidden');
+      progressBar.style.width = '6%';
+      progressBar.className = 'h-full bg-blue-600 rounded-full transition-all duration-300 ease-out';
+      progressSpinner.className = 'w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0';
+      progressPercent.className = 'font-mono text-blue-600 font-semibold shrink-0 ml-2';
+      progressPercent.textContent = '6%';
+      progressStage.className = 'font-medium text-slate-700 truncate';
+      progressStage.textContent = 'Connecting to GitHub repository...';
+
+      const startTime = Date.now();
+      progressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        let p = 6;
+        let stage = 'Connecting to GitHub repository...';
+
+        if (elapsed < 600) {
+          p = Math.round(6 + (elapsed / 600) * 14); // 6% -> 20%
+          stage = 'Connecting to GitHub repository...';
+        } else if (elapsed < 1600) {
+          p = Math.round(20 + ((elapsed - 600) / 1000) * 20); // 20% -> 40%
+          stage = 'Reading Manifest V3 & repository assets...';
+        } else if (elapsed < 3000) {
+          p = Math.round(40 + ((elapsed - 1600) / 1400) * 20); // 40% -> 60%
+          stage = 'Scanning codebase & distilling Chromium APIs...';
+        } else if (elapsed < 5000) {
+          p = Math.round(60 + ((elapsed - 3000) / 2000) * 20); // 60% -> 80%
+          stage = 'Generating Positioning & 6 Benefit Features...';
+        } else if (elapsed < 7500) {
+          p = Math.round(80 + ((elapsed - 5000) / 2500) * 12); // 80% -> 92%
+          stage = 'Drafting Deep SEO Guide & 10 Search FAQs...';
+        } else {
+          p = Math.min(97, Math.round(92 + ((elapsed - 7500) / 3000) * 5)); // 92% -> 97%
+          stage = 'Finalizing comparison matrix & Schema.org tags...';
+        }
+
+        progressBar.style.width = `${p}%`;
+        progressPercent.textContent = `${p}%`;
+        progressStage.textContent = stage;
+      }, 120);
+    }
+
+    function completeProgress(msg = '✓ 100% Complete: Features, Deep SEO Guide & 10 FAQs populated!') {
+      clearInterval(progressInterval);
+      if (!progressBar || !progressPercent || !progressStage || !progressSpinner) return;
+
+      progressBar.style.width = '100%';
+      progressBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300 ease-out';
+      progressSpinner.className = 'w-2 h-2 rounded-full bg-emerald-500 shrink-0';
+      progressPercent.className = 'font-mono text-emerald-600 font-semibold shrink-0 ml-2';
+      progressPercent.textContent = '100%';
+      progressStage.className = 'font-medium text-emerald-700 truncate';
+      progressStage.textContent = msg;
+
+      setTimeout(() => {
+        progressContainer?.classList.add('hidden');
+      }, 3500);
+    }
+
+    function failProgress(errMsg = 'Auto-fetch failed. Check repository URL.') {
+      clearInterval(progressInterval);
+      if (!progressBar || !progressPercent || !progressStage || !progressSpinner) return;
+
+      progressBar.style.width = '100%';
+      progressBar.className = 'h-full bg-red-500 rounded-full transition-all duration-300 ease-out';
+      progressSpinner.className = 'w-2 h-2 rounded-full bg-red-500 shrink-0';
+      progressPercent.className = 'font-mono text-red-600 font-semibold shrink-0 ml-2';
+      progressPercent.textContent = 'Failed';
+      progressStage.className = 'font-medium text-red-600 truncate';
+      progressStage.textContent = errMsg;
+
+      setTimeout(() => {
+        progressContainer?.classList.add('hidden');
+      }, 4500);
+    }
+
     let userRepos: any[] = [];
     let allUserRepos: any[] = [];
     let showExtensionsOnly = true;
@@ -4201,6 +4306,8 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         magicStatus.textContent = 'Syncing manifest & repository...';
         magicStatus.className = 'text-[11px] font-mono text-blue-600 font-medium hidden sm:block';
       }
+
+      startProgress();
 
       try {
         const targetKeywordsInput = document.getElementById('magic-target-keywords') as HTMLInputElement | null;
@@ -4441,12 +4548,19 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           magicStatus.className = 'text-[11px] font-mono text-emerald-600 font-semibold hidden sm:block';
         }
 
+        completeProgress(
+          d.isAiGenerated
+            ? '✓ Multi-Subagent Pipeline: 6 Features, 5 Steps, 4 Comparisons, 10 FAQs + SEO Guide populated!'
+            : '✓ Synced with Manifest & GitHub Repository!'
+        );
+
         setTimeout(() => {
           magicBtn.innerHTML = originalText;
           magicBtn.disabled = false;
         }, 2500);
       } catch (err: any) {
         console.error('Magic auto-fill failed:', err);
+        failProgress(err.message || 'Could not fetch repository.');
         alert(`Auto-fill error: ${err.message || 'Could not fetch repository.'}`);
         magicBtn.innerHTML = originalText;
         magicBtn.disabled = false;
