@@ -27,6 +27,14 @@ export default defineConfig({
     prefetchAll: true,
     defaultStrategy: 'hover',
   },
+  image: {
+    domains: ['avatars.githubusercontent.com', 'res.cloudinary.com', 'images.unsplash.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+      },
+    ],
+  },
   vite: {
     plugins: [tailwindcss()],
   },

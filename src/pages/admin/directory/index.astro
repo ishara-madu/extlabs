@@ -5,6 +5,7 @@ import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
 import { getDb, getStoreExtensions } from "../../../lib/db";
+import { Image } from 'astro:assets';
 import { 
   ShieldCheck, 
   Check, 
@@ -246,9 +247,11 @@ const verifiedCount = liveExtensions.filter(e => e.isVerified).length;
                     <!-- Extension Info -->
                     <td class="py-3.5 px-4 sm:px-6">
                       <div class="flex items-center gap-3">
-                        <img
+                        <Image
                           src={ext.iconUrl || "/icons/extension-placeholder.avif"}
                           alt={ext.name}
+                          width={32}
+                          height={32}
                           class="w-8 h-8 rounded-lg object-contain bg-slate-50 border border-slate-200/90 shrink-0 p-0.5"
                         />
                         <div>

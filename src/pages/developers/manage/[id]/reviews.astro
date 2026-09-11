@@ -16,6 +16,7 @@ import {
   Check,
   Eye
 } from '@lucide/astro';
+import { Image } from 'astro:assets';
 
 import { 
   getDb, 
@@ -182,7 +183,7 @@ const reviewsList = dbReviews.map((r) => ({
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
               {ext.iconUrl ? (
-                <img src={ext.iconUrl} alt={ext.name} class="w-full h-full object-cover" />
+                <Image src={ext.iconUrl} alt={ext.name} width={48} height={48} class="w-full h-full object-cover" />
               ) : (
                 <Box class="w-6 h-6 text-white" />
               )}
@@ -368,9 +369,11 @@ const reviewsList = dbReviews.map((r) => ({
                 <!-- Reviewer Info & Star Header -->
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-3">
-                    <img
+                    <Image
                       src={rev.avatar}
                       alt={rev.user}
+                      width={36}
+                      height={36}
                       class="w-9 h-9 rounded-full object-cover border-2 border-white shadow-2xs shrink-0"
                     />
                     <div class="space-y-0.5">

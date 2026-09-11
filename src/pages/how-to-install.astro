@@ -12,6 +12,7 @@ import {
   Terminal, 
   Pin
 } from '@lucide/astro';
+import { Image } from 'astro:assets';
 
 const siteUrl = "https://extlabs.io";
 const pageUrl = `${siteUrl}/how-to-install`;
@@ -421,13 +422,12 @@ const jsonLdSchema = {
             <!-- Verified Step Screenshot -->
             <figure class="space-y-2 pt-2">
               <div class="w-full aspect-[16/9] max-w-3xl bg-slate-950 rounded-xl border border-slate-200/90 overflow-hidden shadow-xs flex items-center justify-center">
-                <img 
+                <Image 
                   src={step.image} 
                   alt={step.imageAlt}
-                  width="1376"
-                  height="768"
+                  width={1376}
+                  height={768}
                   loading={idx === 0 ? "eager" : "lazy"}
-                  decoding="async"
                   class="w-full h-full object-contain"
                 />
               </div>

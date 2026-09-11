@@ -12,6 +12,7 @@ import {
   Star,
   Box
 } from '@lucide/astro';
+import { Image } from 'astro:assets';
 import { 
   getDb, 
   getDeveloperByUserIdOrSlug, 
@@ -248,9 +249,11 @@ if (db && user) {
                 <!-- Top Row: App Title & Manage App Link -->
                 <div class="flex items-start justify-between gap-4">
                   <div class="flex items-center gap-3.5">
-                    <img 
+                    <Image 
                       src={item.iconUrl || "/icons/extension-placeholder.avif"} 
                       alt={item.name} 
+                      width={48}
+                      height={48}
                       class="w-12 h-12 rounded-xl object-contain bg-slate-50 border border-slate-200 shrink-0 shadow-2xs p-1" 
                     />
                     
@@ -435,9 +438,11 @@ if (db && user) {
                     <!-- App Info -->
                     <td class="py-3.5 px-4">
                       <div class="flex items-center gap-3">
-                        <img 
+                        <Image 
                           src={ext.iconUrl || "/icons/extension-placeholder.avif"} 
                           alt={ext.name} 
+                          width={36}
+                          height={36}
                           class="w-9 h-9 rounded-lg object-contain bg-slate-50 border border-slate-200 shrink-0 p-0.5" 
                         />
                         

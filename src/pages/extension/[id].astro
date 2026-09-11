@@ -10,6 +10,7 @@ import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension, getDeveloperByUserIdOrSlug } from "../../lib/db";
 import { getReviewerUser, getSessionUser } from "../../lib/auth";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2, Terminal, Copy } from '@lucide/astro';
+import { Image } from 'astro:assets';
 import { marked } from 'marked';
 
 const requestedId = Astro.params.id || '';
@@ -428,14 +429,12 @@ const jsonLdSchema = {
           
           <!-- Left Info Block with Icon -->
           <div class="flex items-start gap-4 sm:gap-5 max-w-3xl">
-            <img
+            <Image
               src={ext.iconUrl || "/icons/extension-placeholder.avif"}
               alt={ext.name}
-              width="80"
-              height="80"
+              width={80}
+              height={80}
               loading="eager"
-              fetchpriority="high"
-              decoding="async"
               class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-white border border-slate-200/90 shadow-2xs p-1.5 shrink-0"
             />
             <div class="space-y-3">
@@ -602,15 +601,14 @@ const jsonLdSchema = {
             <>
               <!-- Main Screenshot Frame -->
               <div class="w-full aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative group flex items-center justify-center">
-                <img
+                <Image
                   id="main-screenshot-img"
                   src={screenshotsList[0]}
                   alt={`${ext.name} Store Screenshot 1`}
-                  width="1280"
-                  height="720"
+                  width={1280}
+                  height={720}
                   class="w-full h-full object-contain select-none"
                   loading="eager"
-                  decoding="async"
                 />
 
                 {screenshotsList.length > 1 && (
@@ -650,14 +648,12 @@ const jsonLdSchema = {
                       data-src={shot}
                       aria-label={`View screenshot ${idx + 1}`}
                     >
-                      <img
+                      <Image
                         src={shot}
                         alt={`Thumbnail ${idx + 1}`}
-                        width="96"
-                        height="54"
+                        width={96}
+                        height={54}
                         class="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
                       />
                     </button>
                   ))}
@@ -1065,7 +1061,7 @@ const jsonLdSchema = {
                   <div class="flex items-center justify-between text-xs">
                     <div class="flex items-center gap-2">
                       {userReview.avatarUrl ? (
-                        <img src={userReview.avatarUrl} alt="" class="w-4 h-4 rounded-full object-cover" />
+                        <Image src={userReview.avatarUrl} alt={userReview.author} width={16} height={16} class="w-4 h-4 rounded-full object-cover" />
                       ) : null}
                       <span class="font-semibold text-slate-900">{userReview.author}</span>
                       <span class="text-[10px] text-emerald-600 font-medium inline-flex items-center gap-0.5">
@@ -1146,7 +1142,7 @@ const jsonLdSchema = {
                       <div class="flex items-center justify-between text-xs">
                         <div class="flex items-center gap-1.5">
                           {rev.avatarUrl ? (
-                            <img src={rev.avatarUrl} alt="" class="w-4 h-4 rounded-full object-cover" />
+                            <Image src={rev.avatarUrl} alt={rev.author} width={16} height={16} class="w-4 h-4 rounded-full object-cover" />
                           ) : null}
                           <span class="font-medium text-slate-900">{rev.author}</span>
                           {rev.verified && (
@@ -1283,7 +1279,7 @@ const jsonLdSchema = {
             <div class="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
               <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-medium text-slate-600 text-[10px] shrink-0">
                 {currentUser.avatar_url ? (
-                  <img src={currentUser.avatar_url} alt="" class="w-full h-full object-cover" />
+                  <Image src={currentUser.avatar_url} alt={currentUser.name || currentUser.username || 'User'} width={24} height={24} class="w-full h-full object-cover" />
                 ) : (
                   <span>{currentUser.name?.[0]?.toUpperCase() || currentUser.username?.[0]?.toUpperCase() || 'U'}</span>
                 )}

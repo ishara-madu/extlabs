@@ -1,6 +1,7 @@
 ---
 // FeaturedCard.astro
 import type { Extension } from '../data/extensions';
+import { Image } from 'astro:assets';
 import { Star, ArrowRight } from '@lucide/astro';
 import VerifiedBadge from './VerifiedBadge.astro';
 
@@ -45,13 +46,11 @@ const isNew = (() => {
     <div>
       <div class="flex items-center justify-between gap-2 mb-1.5">
         <h3 class="text-sm font-bold text-slate-900 group-hover:text-black leading-snug flex items-center gap-2 truncate">
-          <img
+          <Image
             src={extension.iconUrl || "/icons/extension-placeholder.avif"}
-            alt=""
-            width="20"
-            height="20"
-            loading="lazy"
-            decoding="async"
+            alt={extension.name}
+            width={20}
+            height={20}
             class="w-5 h-5 rounded object-contain shrink-0"
           />
           <span class="truncate">{extension.name}</span>

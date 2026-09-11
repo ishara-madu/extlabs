@@ -3,6 +3,7 @@
 import "../../styles/global.css";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer.astro";
+import { Image } from 'astro:assets';
 import {
   ExternalLink,
   ArrowRight,
@@ -261,11 +262,11 @@ const developerFeatures = [
                   <div
                     class="rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-white"
                   >
-                    <img
+                    <Image
                       src="/images/developer-hero.avif"
                       alt="Developer Portal & Extension Management Dashboard"
-                      width="1143"
-                      height="643"
+                      width={1143}
+                      height={643}
                       class="w-full h-auto block"
                       loading="eager"
                     />
@@ -406,13 +407,12 @@ const developerFeatures = [
                 <div
                   class="rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-white"
                 >
-                  <img
+                  <Image
                     src="/images/developer-earnings-showcase.avif"
                     alt="Developer Monetization Overview and Earnings Telemetry Dashboard"
-                    width="1376"
-                    height="768"
+                    width={1376}
+                    height={768}
                     class="w-full h-auto block hover:scale-[1.005] transition-transform duration-300"
-                    loading="lazy"
                   />
                 </div>
               </div>

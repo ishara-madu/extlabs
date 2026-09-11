@@ -26,6 +26,7 @@ import {
   Send,
   Bell
 } from '@lucide/astro';
+import { Image } from 'astro:assets';
 import { 
   getDb, 
   getDeveloperByUserIdOrSlug, 
@@ -375,7 +376,7 @@ try {
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
               {ext.iconUrl ? (
-                <img src={ext.iconUrl} alt={ext.name} class="w-full h-full object-cover" />
+                <Image src={ext.iconUrl} alt={ext.name} width={48} height={48} class="w-full h-full object-cover" />
               ) : (
                 <Box class="w-6 h-6 text-white" />
               )}
@@ -509,9 +510,11 @@ try {
               <!-- Extension Icon & Name Pill -->
               {(latestNotification.extension_icon_url || ext.iconUrl) && (
                 <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-xs text-slate-800 shadow-2xs">
-                  <img
+                  <Image
                     src={latestNotification.extension_icon_url || ext.iconUrl}
                     alt={ext.name}
+                    width={16}
+                    height={16}
                     class="w-4 h-4 rounded-full object-cover shrink-0"
                   />
                   <span class="font-medium text-[11px] truncate max-w-[150px]">{ext.name}</span>
@@ -961,7 +964,7 @@ try {
           <!-- Monetag Stream Details (With official Monetag icon from public folder) -->
           <div class="space-y-3.5 bg-white p-5 rounded-xl shadow-2xs">
             <div class="flex items-center gap-2">
-              <img src="/icons/monetag-icon.avif" alt="Monetag" class="w-4 h-4 rounded-xs object-contain" />
+              <Image src="/icons/monetag-icon.avif" alt="Monetag" width={16} height={16} class="w-4 h-4 rounded-xs object-contain" />
               <span class="font-bold text-slate-900">Monetag Direct Link Stream</span>
             </div>
 

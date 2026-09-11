@@ -6,6 +6,7 @@ import DeveloperNavbar from "../../components/DeveloperNavbar.astro";
 import Footer from "../../components/Footer.astro";
 import { getDb, getDeveloperByUserIdOrSlug, type DbDeveloper } from "../../lib/db";
 import { getSessionUser } from "../../lib/auth";
+import { Image } from 'astro:assets';
 import { 
   ShieldCheck, 
   ArrowLeft,
@@ -215,10 +216,12 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
 
           <!-- Avatar & Header Strip -->
           <div class="flex items-center gap-4 p-4 bg-[#f0f4f9] rounded-2xl">
-            <img
+            <Image
               id="dev-profile-avatar"
-              src={devAvatar}
+              src={devAvatar || "/icons/github-profile-placeholder.avif"}
               alt="Developer Avatar"
+              width={48}
+              height={48}
               class="w-12 h-12 rounded-full border border-white shadow-2xs object-cover bg-white"
             />
             <div class="space-y-1">

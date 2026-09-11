@@ -5,6 +5,7 @@ import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
 import { getDb, getLiveExtensionsCount } from "../../../lib/db";
+import { Image } from 'astro:assets';
 import { DEVELOPERS_DATA } from "../../../data/developers";
 import { OPEN_REPORTS_COUNT } from "../../../data/reports";
 import { 
@@ -320,9 +321,11 @@ const activeStaff = ADMIN_MEMBERS_DATA.filter(a => a.status === 'active').length
                     <!-- Administrator Info -->
                     <td class="py-3.5 px-4 sm:px-6">
                       <div class="flex items-center gap-3">
-                        <img 
+                        <Image 
                           src={admin.avatar} 
                           alt={admin.name} 
+                          width={32}
+                          height={32}
                           class="w-8 h-8 rounded-full border border-slate-200 object-cover shrink-0" 
                         />
                         <div>
@@ -450,9 +453,11 @@ const activeStaff = ADMIN_MEMBERS_DATA.filter(a => a.status === 'active').length
           {RECENT_AUDIT_LOGS.map((log) => (
             <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
               <div class="flex items-center gap-3">
-                <img 
+                <Image 
                   src={log.adminAvatar} 
                   alt={log.adminName} 
+                  width={28}
+                  height={28}
                   class="w-7 h-7 rounded-full border border-slate-200 object-cover shrink-0" 
                 />
                 <div>

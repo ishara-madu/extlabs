@@ -8,6 +8,7 @@ import Footer from "../../components/Footer.astro";
 import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { CATEGORIES, type CategoryInfo } from "../../data/extensions";
 import { getDb, getStoreExtensions } from "../../lib/db";
+import { Image } from 'astro:assets';
 import { Home, Star, Search, ArrowRight, SlidersHorizontal, ChevronDown, Check } from '@lucide/astro';
 
 const categoryId = Astro.params.id || 'productivity';
@@ -151,11 +152,12 @@ Astro.response.headers.set('Vary', 'Cookie');
           <!-- Right Visual Graphic Banner -->
           <div class="lg:col-span-6 w-full aspect-[16/10] rounded-2xl overflow-hidden shadow-2xs border border-slate-200/70 bg-slate-900 flex items-center justify-center">
             {category.imageUrl ? (
-              <img
+              <Image
                 src={category.imageUrl}
                 alt={category.label}
+                width={640}
+                height={400}
                 class="w-full h-full object-cover"
-                loading="eager"
               />
             ) : category.heroIllustrationSvg ? (
               <Fragment set:html={category.heroIllustrationSvg} />
