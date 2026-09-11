@@ -38,7 +38,8 @@ if (!rawExtension) {
 }
 
 const ext = rawExtension;
-const isDraftPreview = Boolean(ext.isDraft);
+const isPublishedLive = ext.status === 'published' && ext.isActive !== false && !ext.isSuspended;
+const isDraftPreview = !isPublishedLive;
 
 // Optimize: Only query DB for reviewer session if session cookie is present
 const hasSessionCookie = Boolean(Astro.request.headers.get('Cookie')?.includes('extlabs_user_session='));
@@ -46,8 +47,8 @@ const currentUser = (db && hasSessionCookie) ? await getReviewerUser(db, Astro.r
 const userReview = currentUser && db ? await getUserReviewForExtension(db, ext.id, currentUser.id) : null;
 
 // Edge CDN Caching: Unauthenticated traffic served directly from Cloudflare Edge for 7 days (0 DB queries)
-// Note: Draft previews are never cached by edge CDN
-if (!currentUser && !isDraftPreview) {
+// Note: Draft previews and staff sessions are never cached by edge CDN
+if (!currentUser && !isAdmin && isPublishedLive) {
   Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=604800, stale-while-revalidate=86400');
   Astro.response.headers.set('Vary', 'Cookie');
 } else {
@@ -256,15 +257,56 @@ const jsonLdSchema = {
     <!-- Top Navigation -->
     <Navbar />
 
-    {isAdmin && (!ext.isActive || ext.status !== 'published') && (
+    {isAdmin && isPublishedLive && (
+      <div class="bg-slate-900 text-white border-b border-slate-800 px-6 py-2.5 text-xs shadow-xs">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="font-semibold text-emerald-400 uppercase tracking-wider text-[11px] font-mono">Staff Mode</span>
+            <span class="text-slate-400 hidden sm:inline">•</span>
+            <span class="text-slate-300">
+              This extension is <strong class="text-emerald-300 font-semibold">Published &amp; Live</strong> on the public store directory.
+            </span>
+          </div>
+          <div class="flex items-center gap-2.5 shrink-0" id="staff-admin-bar-actions">
+            {ext.downloadUrl && ext.downloadUrl !== '#' && (
+              <a
+                href={ext.downloadUrl}
+                target="_blank"
+                download
+                class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
+              >
+                <Download class="w-3.5 h-3.5 text-slate-400" />
+                <span>Download Package (.zip)</span>
+              </a>
+            )}
+            <a
+              href={`/developers/manage/${ext.slug || ext.id}`}
+              class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
+            >
+              <span>Manage Extension</span>
+            </a>
+            <a
+              href="/admin/pending-review"
+              class="px-2.5 py-1.5 text-slate-400 hover:text-white transition-colors text-xs inline-flex items-center gap-1"
+            >
+              <span>Review Queue</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {isAdmin && !isPublishedLive && (
       <div class="bg-slate-900 text-white border-b border-slate-800 px-6 py-3 text-xs shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
-            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-            <span class="font-semibold text-amber-400 uppercase tracking-wider text-[11px] font-mono">Staff Review Mode</span>
+            <span class={`w-2 h-2 rounded-full ${ext.status === 'rejected' ? 'bg-rose-500' : ext.status === 'pending_review' ? 'bg-amber-400' : 'bg-slate-400'}`}></span>
+            <span class={`font-semibold uppercase tracking-wider text-[11px] font-mono ${ext.status === 'rejected' ? 'text-rose-400' : ext.status === 'pending_review' ? 'text-amber-400' : 'text-slate-300'}`}>Staff Review Mode</span>
             <span class="text-slate-400 hidden sm:inline">•</span>
             <span class="text-slate-300">
-              This extension is <strong>{ext.status === 'pending_review' ? 'Pending Admin Approval' : (ext.status === 'rejected' ? 'Rejected' : 'Draft')}</strong> and hidden from public store visitors.
+              This extension is <strong class={ext.status === 'rejected' ? 'text-rose-300' : ext.status === 'pending_review' ? 'text-amber-300' : 'text-slate-200'}>{ext.status === 'pending_review' ? 'Pending Admin Approval' : (ext.status === 'rejected' ? 'Rejected' : 'Draft (Unpublished)')}</strong> and hidden from public store visitors.
             </span>
           </div>
           <div class="flex items-center gap-2.5 shrink-0" id="staff-admin-bar-actions">
@@ -288,15 +330,17 @@ const jsonLdSchema = {
             >
               Approve & Publish
             </button>
-            <button
-              type="button"
-              id="staff-reject-btn"
-              data-id={ext.dbId || ext.id}
-              data-name={ext.name}
-              class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 font-semibold rounded-lg transition-colors cursor-pointer text-xs"
-            >
-              Reject
-            </button>
+            {ext.status !== 'rejected' && (
+              <button
+                type="button"
+                id="staff-reject-btn"
+                data-id={ext.dbId || ext.id}
+                data-name={ext.name}
+                class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 font-semibold rounded-lg transition-colors cursor-pointer text-xs"
+              >
+                Reject
+              </button>
+            )}
             <a
               href="/admin/pending-review"
               class="px-2.5 py-1.5 text-slate-400 hover:text-white transition-colors text-xs inline-flex items-center gap-1"
@@ -314,10 +358,18 @@ const jsonLdSchema = {
         <div class="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span class="font-semibold">Draft Preview</span>
-            <span class="text-amber-700 hidden sm:inline">— This extension is currently in draft status and is not visible to public store visitors.</span>
+            <span class="font-semibold">
+              {ext.status === 'pending_review' ? 'Submission In Review' : ext.status === 'rejected' ? 'Submission Rejected' : 'Draft Preview'}
+            </span>
+            <span class="text-amber-700 hidden sm:inline">
+              — {ext.status === 'pending_review' 
+                ? 'This extension is under review by ExtLabs administrators and not yet visible to public visitors.'
+                : ext.status === 'rejected'
+                ? 'This submission was rejected by moderation review. Please update and resubmit.'
+                : 'This extension is currently in draft status and is not visible to public store visitors.'}
+            </span>
           </div>
-          <a href={`/developers/manage/${ext.id}/edit`} class="font-medium text-amber-900 hover:text-amber-950 underline shrink-0">
+          <a href={`/developers/manage/${ext.slug || ext.id}/edit`} class="font-medium text-amber-900 hover:text-amber-950 underline shrink-0">
             Return to Editor &rarr;
           </a>
         </div>

@@ -86,6 +86,8 @@ export interface Extension {
   supportedBrowsers?: string[];
   status?: string;
   isDraft?: boolean;
+  isActive?: boolean;
+  isSuspended?: boolean;
 }
 
 export interface CategoryInfo {

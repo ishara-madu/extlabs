@@ -596,8 +596,10 @@ export function mapDbExtensionToStoreItem(
     license: dbExt.license || 'MIT',
     manifestVersion: dbExt.manifest_version || 'v3',
     supportedBrowsers,
-    status: dbExt.status || 'published',
+    status: dbExt.status || (dbExt.is_active === 1 ? 'published' : 'draft'),
     isDraft: dbExt.status === 'draft' || dbExt.is_active === 0,
+    isActive: dbExt.is_active === 1,
+    isSuspended: Boolean(dbExt.is_suspended),
   };
 }
 
