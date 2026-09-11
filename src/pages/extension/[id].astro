@@ -615,7 +615,8 @@ const jsonLdSchema = {
                   width={1280}
                   height={720}
                   class="w-full h-full object-contain select-none"
-                  loading="eager"
+                  loading="lazy"
+                  decoding="async"
                 />
 
                 {screenshotsList.length > 1 && (
@@ -660,7 +661,8 @@ const jsonLdSchema = {
                         alt={`Thumbnail ${idx + 1}`}
                         width={96}
                         height={54}
-                        loading="eager"
+                        loading="lazy"
+                        decoding="async"
                         class="w-full h-full object-cover"
                       />
                     </button>
@@ -1320,13 +1322,14 @@ const jsonLdSchema = {
 
           <!-- Review Title (Optional) -->
           <div class="space-y-1">
-            <label for="review-title-input" class="block text-xs font-medium text-slate-700">
+            <span class="block text-xs font-medium text-slate-700">
               Review Title <span class="text-slate-400 font-normal">(Optional)</span>
-            </label>
+            </span>
             <input
               type="text"
               id="review-title-input"
               name="title"
+              aria-label="Review Title (Optional)"
               maxlength="120"
               value={userReview?.title || ''}
               placeholder="e.g., Clean, fast, and indispensable for my workflow"
@@ -1337,14 +1340,15 @@ const jsonLdSchema = {
           <!-- Review Comment (Required) -->
           <div class="space-y-1">
             <div class="flex items-center justify-between">
-              <label for="review-comment-input" class="block text-xs font-medium text-slate-700">
+              <span class="block text-xs font-medium text-slate-700">
                 Your Feedback <span class="text-rose-500">*</span>
-              </label>
+              </span>
               <span id="review-char-counter" class="text-[10px] text-slate-400 font-mono">0 / 2000</span>
             </div>
             <textarea
               id="review-comment-input"
               name="comment"
+              aria-label="Your Feedback"
               rows="4"
               required
               maxlength="2000"
