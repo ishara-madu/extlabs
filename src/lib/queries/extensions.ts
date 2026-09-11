@@ -559,6 +559,7 @@ export function mapDbExtensionToStoreItem(
     category: (dbExt.category || 'productivity') as any,
     categoryLabel: categoryLabels[dbExt.category] || 'Productivity',
     developer: dbExt.developer_name || 'Developer',
+    developerId: dbExt.developer_id,
     isVerified: Boolean(dbExt.developer_verified),
     rating,
     reviewCount,

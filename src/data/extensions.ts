@@ -46,6 +46,7 @@ export interface Extension {
   id: string;
   dbId?: string;
   slug?: string;
+  developerId?: string;
   name: string;
   tagline: string;
   description: string;

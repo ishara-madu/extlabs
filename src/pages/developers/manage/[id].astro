@@ -64,7 +64,8 @@ if (db) {
     if (user) {
       developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
     }
-    dbExtension = await getDeveloperExtensionDetail(db, id, developer?.id);
+    const isStaffAdmin = Boolean(user && ['super_admin', 'moderator', 'security_auditor'].includes(user.role));
+    dbExtension = await getDeveloperExtensionDetail(db, id, isStaffAdmin ? undefined : developer?.id);
     dbRegionalTelemetry = await getExtensionRegionalAnalytics(db, id);
     if (dbExtension) {
       dbRatingBreakdown = await getExtensionRatingBreakdown(db, dbExtension.id);
