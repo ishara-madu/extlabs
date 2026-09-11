@@ -117,6 +117,22 @@ export interface DbPlatformSetting {
   updated_at: string;
 }
 
+export interface DbNotification {
+  id: string;
+  user_id?: string | null;
+  developer_id?: string | null;
+  extension_id?: string | null;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success' | 'announcement';
+  action_url?: string | null;
+  action_label?: string | null;
+  is_read: number;
+  sender_name: string;
+  sender_avatar_url?: string | null;
+  created_at: string;
+}
+
 /**
  * Get Cloudflare D1 Database binding via cloudflare:workers env
  */

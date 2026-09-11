@@ -11,3 +11,4 @@
 export * from './developers';
 export * from './extensions';
 export * from './settings';
+export * from './notifications';

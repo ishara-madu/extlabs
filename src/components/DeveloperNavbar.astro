@@ -7,13 +7,43 @@ import {
   LogOut, 
   ExternalLink, 
   ChevronDown, 
-  ChevronUp,
+  ChevronUp, 
   Settings, 
   User, 
-  ShieldCheck,
-  Zap,
-  Trash2
+  ShieldCheck, 
+  Zap, 
+  Trash2,
+  BellOff
 } from '@lucide/astro';
+import { getDb, getDeveloperNotifications, getUnreadNotificationCount, type DbNotification } from '../lib/db';
+import { getSessionUser } from '../lib/auth';
+
+const db = getDb();
+let user = (Astro.locals as any)?.user;
+if (!user && db) {
+  try {
+    user = await getSessionUser(db, Astro.request);
+  } catch {}
+}
+
+let notifications: DbNotification[] = [];
+let unreadCount = 0;
+
+if (db) {
+  try {
+    notifications = await getDeveloperNotifications(db, {
+      userId: user?.id,
+      developerId: (user as any)?.developer_id,
+      limit: 20
+    });
+    unreadCount = await getUnreadNotificationCount(db, {
+      userId: user?.id,
+      developerId: (user as any)?.developer_id
+    });
+  } catch (err) {
+    console.error('Failed to load notifications in DeveloperNavbar:', err);
+  }
+}
 ---
 
 <header class="sticky top-0 z-40 w-full bg-white border-b border-slate-200">
@@ -70,7 +100,9 @@ import {
           >
             <Bell class="w-4 h-4" />
             <!-- Notification Alert Dot -->
-            <span id="notification-alert-dot" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+            {unreadCount > 0 && (
+              <span id="notification-alert-dot" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+            )}
           </button>
 
           <!-- Notification Dropdown Window -->
@@ -93,129 +125,92 @@ import {
 
             <!-- Notifications List Container -->
             <div class="p-3 space-y-3 max-h-[420px] overflow-y-auto" id="notifications-list">
-              
-              <!-- Notification 1 (Expanded State) -->
-              <div
-                class="notification-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
-                data-id="notif-1"
-                data-expanded="true"
-              >
-                <!-- Top Header Row -->
-                <div class="flex items-center justify-between">
-                  <!-- User / Sender Pill -->
-                  <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-xs text-slate-800 shadow-2xs">
-                    <img
-                      src="/icons/github-profile-placeholder.avif"
-                      alt="Ishara Madhusanka"
-                      class="w-4.5 h-4.5 rounded-full object-cover"
-                    />
-                    <span class="font-medium text-[11px]">Ishara Madhusanka</span>
+              {notifications.length === 0 ? (
+                <div class="py-12 px-4 text-center space-y-2">
+                  <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                    <BellOff class="w-5 h-5" />
                   </div>
-
-                  <!-- Date & Expand/Collapse Chevron -->
-                  <div class="flex items-center gap-2 text-slate-500 text-xs">
-                    <span class="font-normal text-[11px]">Aug 27</span>
-                    <ChevronUp class="w-3.5 h-3.5 notif-chevron text-slate-600" />
-                  </div>
-                </div>
-
-                <!-- Expanded Content Area -->
-                <div class="notif-expanded-body space-y-2">
-                  <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
-                    Introducing new quality requirements to optimize app memory and secure device migration
-                  </h4>
-                  
-                  <p class="text-xs text-slate-600 leading-relaxed font-normal">
-                    Read our blog post to learn about new tools, performance thresholds, and 2027 deadlines
+                  <p class="text-xs font-semibold text-slate-800">No notifications yet</p>
+                  <p class="text-[11px] text-slate-500 max-w-[240px] mx-auto">
+                    You're all caught up! Updates about your extensions and review decisions will appear here.
                   </p>
-
-                  <!-- Bottom Actions Row -->
-                  <div class="flex items-center justify-between pt-1">
-                    <a
-                      href="/developers#how-it-works"
-                      class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
+                </div>
+              ) : (
+                notifications.map((notif, index) => {
+                  const isFirst = index === 0;
+                  const dateStr = new Date(notif.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  return (
+                    <div
+                      class="notification-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
+                      data-id={notif.id}
+                      data-expanded={isFirst ? "true" : "false"}
                     >
-                      Read blog post
-                    </a>
+                      <!-- Top Header Row -->
+                      <div class="flex items-center justify-between">
+                        <!-- User / Sender Pill -->
+                        <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-xs text-slate-800 shadow-2xs">
+                          <img
+                            src={notif.sender_avatar_url || "/icons/github-profile-placeholder.avif"}
+                            alt={notif.sender_name}
+                            class="w-4.5 h-4.5 rounded-full object-cover"
+                          />
+                          <span class="font-medium text-[11px]">{notif.sender_name}</span>
+                        </div>
 
-                    <button
-                      type="button"
-                      class="notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-                      title="Delete notification"
-                    >
-                      <Trash2 class="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                        <!-- Date & Expand/Collapse Chevron -->
+                        <div class="flex items-center gap-2 text-slate-500 text-xs">
+                          <span class="font-normal text-[11px]">{dateStr}</span>
+                          {isFirst ? (
+                            <ChevronUp class="w-3.5 h-3.5 notif-chevron text-slate-600" />
+                          ) : (
+                            <ChevronDown class="w-3.5 h-3.5 notif-chevron text-slate-600" />
+                          )}
+                        </div>
+                      </div>
 
-                <!-- Collapsed Preview (Hidden when expanded) -->
-                <div class="notif-collapsed-preview hidden text-xs text-slate-800 font-normal leading-snug">
-                  Introducing new quality requirements to optimize app memory...
-                </div>
+                      <!-- Expanded Content Area -->
+                      <div class={`notif-expanded-body space-y-2 ${isFirst ? '' : 'hidden'}`}>
+                        <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
+                          {notif.title}
+                        </h4>
+                        
+                        <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                          {notif.message}
+                        </p>
 
-              </div>
+                        <!-- Bottom Actions Row -->
+                        <div class="flex items-center justify-between pt-1">
+                          {notif.action_url ? (
+                            <a
+                              href={notif.action_url}
+                              class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
+                            >
+                              {notif.action_label || 'View details'}
+                            </a>
+                          ) : (
+                            <span></span>
+                          )}
 
-              <!-- Notification 2 (Collapsed State by Default) -->
-              <div
-                class="notification-item bg-[#f0f4f9] hover:bg-[#e9eef6] rounded-2xl p-4 transition-colors space-y-3 cursor-pointer"
-                data-id="notif-2"
-                data-expanded="false"
-              >
-                <!-- Top Header Row -->
-                <div class="flex items-center justify-between">
-                  <!-- User / Sender Pill -->
-                  <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-xs text-slate-800 shadow-2xs">
-                    <img
-                      src="/icons/github-profile-placeholder.avif"
-                      alt="Ishara Madhusanka"
-                      class="w-4.5 h-4.5 rounded-full object-cover"
-                    />
-                    <span class="font-medium text-[11px]">Ishara Madhusanka</span>
-                  </div>
+                          <button
+                            type="button"
+                            class="notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                            title="Delete notification"
+                            data-id={notif.id}
+                          >
+                            <Trash2 class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
 
-                  <!-- Date & Expand/Collapse Chevron -->
-                  <div class="flex items-center gap-2 text-slate-500 text-xs">
-                    <span class="font-normal text-[11px]">Aug 7</span>
-                    <ChevronDown class="w-3.5 h-3.5 notif-chevron text-slate-600" />
-                  </div>
-                </div>
+                      <!-- Collapsed Preview (Hidden when expanded) -->
+                      <div class={`notif-collapsed-preview text-xs text-slate-800 font-normal leading-snug ${isFirst ? 'hidden' : ''}`}>
+                        {notif.title}
+                      </div>
 
-                <!-- Expanded Content Area (Hidden initially) -->
-                <div class="notif-expanded-body hidden space-y-2">
-                  <h4 class="text-xs sm:text-[13px] font-semibold text-slate-900 leading-snug">
-                    Ensure your browser extensions are registered for developer verification by Sep 30, 2026
-                  </h4>
-                  
-                  <p class="text-xs text-slate-600 leading-relaxed font-normal">
-                    Complete your publisher verification profile to ensure uninterrupted updates and automated Manifest V3 reviews.
-                  </p>
-
-                  <!-- Bottom Actions Row -->
-                  <div class="flex items-center justify-between pt-1">
-                    <a
-                      href="/developers/dashboard"
-                      class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center"
-                    >
-                      Complete verification
-                    </a>
-
-                    <button
-                      type="button"
-                      class="notif-delete-btn p-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-                      title="Delete notification"
-                    >
-                      <Trash2 class="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Collapsed Preview (Shown initially) -->
-                <div class="notif-collapsed-preview text-xs text-slate-800 font-normal leading-snug">
-                  Ensure your browser extensions are registered for developer verification by Sep 30, 2026
-                </div>
-
-              </div>
-
+                    </div>
+                  );
+                })
+              )}
             </div>
 
           </div>
@@ -392,11 +387,24 @@ import {
       // Delete Button Handler
       const delBtn = item.querySelector('.notif-delete-btn');
       if (delBtn) {
-        delBtn.addEventListener('click', (e) => {
+        delBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
+          const notifId = item.getAttribute('data-id');
           lastDeletedItem = item as HTMLElement;
           lastDeletedItem.style.display = 'none';
           if (deletedBanner) deletedBanner.classList.remove('hidden');
+
+          if (notifId) {
+            try {
+              await fetch('/api/developers/notifications/action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', notificationId: notifId })
+              });
+            } catch (err) {
+              console.error('Failed to delete notification:', err);
+            }
+          }
         });
       }
     });

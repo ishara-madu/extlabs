@@ -17,7 +17,8 @@ import {
   ArrowRight,
   FolderGit2,
   BarChart3,
-  Mail
+  Mail,
+  X
 } from '@lucide/astro';
 import { 
   getDb, 
@@ -25,8 +26,10 @@ import {
   getDeveloperExtensionDetail,
   getExtensionRegionalAnalytics,
   getExtensionRatingBreakdown,
+  getLatestExtensionNotification,
   type ManageExtensionDetail,
-  type ExtensionRegionalTelemetry
+  type ExtensionRegionalTelemetry,
+  type DbNotification
 } from "../../../lib/db";
 import { getSessionUser } from "../../../lib/auth";
 
@@ -54,6 +57,7 @@ let developer = null;
 let dbExtension: ManageExtensionDetail | null = null;
 let dbRegionalTelemetry: ExtensionRegionalTelemetry[] = [];
 let dbRatingBreakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+let latestNotification: DbNotification | null = null;
 
 if (db) {
   try {
@@ -64,6 +68,7 @@ if (db) {
     dbRegionalTelemetry = await getExtensionRegionalAnalytics(db, id);
     if (dbExtension) {
       dbRatingBreakdown = await getExtensionRatingBreakdown(db, dbExtension.id);
+      latestNotification = await getLatestExtensionNotification(db, dbExtension.id);
     }
   } catch (err) {
     console.error("Database error fetching extension detail & telemetry:", err);
@@ -339,6 +344,86 @@ try {
         </div>
 
       </div>
+
+      <!-- Extension-Specific Special Notification Banner (Appears only when there is an active notification for this extension) -->
+      {latestNotification && (
+        <div 
+          id="extension-notification-banner"
+          data-notification-id={latestNotification.id}
+          class="p-5 bg-[#f0f4f9] rounded-2xl border-0 shadow-2xs space-y-2.5 transition-opacity"
+        >
+          <!-- Top Row: Type Indicator, Sender Info, Date, and Dismiss Button -->
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold">
+                {latestNotification.type === 'success' && (
+                  <>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span class="text-emerald-700">Update</span>
+                  </>
+                )}
+                {latestNotification.type === 'warning' && (
+                  <>
+                    <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                    <span class="text-amber-700">Warning</span>
+                  </>
+                )}
+                {latestNotification.type === 'error' && (
+                  <>
+                    <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                    <span class="text-rose-700">Action Required</span>
+                  </>
+                )}
+                {(latestNotification.type === 'info' || latestNotification.type === 'announcement' || !['success', 'warning', 'error'].includes(latestNotification.type)) && (
+                  <>
+                    <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                    <span class="text-blue-700">Notice</span>
+                  </>
+                )}
+              </span>
+              <span class="text-slate-300">•</span>
+              <span class="text-xs text-slate-600 font-medium">{latestNotification.sender_name || 'ExtLabs Review Team'}</span>
+              <span class="text-slate-300">•</span>
+              <span class="text-xs text-slate-500">
+                {new Date(latestNotification.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            </div>
+
+            <!-- Dismiss Button -->
+            <button
+              type="button"
+              id="dismiss-ext-notification-btn"
+              class="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+              title="Dismiss notification"
+            >
+              <X class="w-4 h-4" />
+            </button>
+          </div>
+
+          <!-- Notification Title & Content -->
+          <div class="space-y-1">
+            <h3 class="text-sm font-bold text-slate-900 leading-snug">
+              {latestNotification.title}
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed font-normal">
+              {latestNotification.message}
+            </p>
+          </div>
+
+          <!-- Action Link -->
+          {latestNotification.action_url && (
+            <div class="pt-0.5">
+              <a
+                href={latestNotification.action_url}
+                class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+              >
+                <span>{latestNotification.action_label || 'View Details'}</span>
+                <ArrowRight class="w-3.5 h-3.5" />
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       <!-- 4 KPI Metrics (Soft Shaded Borderless Grid) -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -967,6 +1052,31 @@ try {
             }
           }
         });
+
+        // 4. Dismiss Extension Notification Banner
+        const dismissNotifBtn = document.getElementById('dismiss-ext-notification-btn');
+        const notifBanner = document.getElementById('extension-notification-banner');
+        if (dismissNotifBtn && notifBanner) {
+          dismissNotifBtn.addEventListener('click', async () => {
+            const notifId = notifBanner.getAttribute('data-notification-id');
+            notifBanner.classList.add('opacity-0');
+            setTimeout(() => {
+              notifBanner.remove();
+            }, 200);
+
+            if (notifId) {
+              try {
+                await fetch('/api/developers/notifications/action', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'delete', notificationId: notifId })
+                });
+              } catch (e) {
+                console.error('Failed to delete notification:', e);
+              }
+            }
+          });
+        }
       });
     </script>
 
