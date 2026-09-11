@@ -86,6 +86,7 @@ const rawRating = rawReviewCount > 0 && typeof dbExtension.rating === 'number'
 
 const ext = {
   id: dbExtension.id || id,
+  slug: dbExtension.slug || id,
   name: dbExtension.name || 'Untitled Extension',
   version: dbExtension.version_name || dbExtension.current_version || '1.0.0',
   downloadCount: typeof dbExtension.download_count === 'number' 
@@ -168,7 +169,7 @@ const reviewsList = dbReviews.map((r) => ({
             <span>Developer Console</span>
           </a>
           <span class="text-slate-300">/</span>
-          <a href={`/developers/manage/${ext.id}`} class="hover:text-blue-600 transition-colors">
+          <a href={`/developers/manage/${ext.slug}`} class="hover:text-blue-600 transition-colors">
             {ext.name}
           </a>
           <span class="text-slate-300">/</span>
@@ -179,8 +180,12 @@ const reviewsList = dbReviews.map((r) => ({
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-[#f0f4f9] rounded-2xl border-0 shadow-2xs">
           
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs">
-              <Box class="w-6 h-6 text-white" />
+            <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+              {ext.iconUrl ? (
+                <img src={ext.iconUrl} alt={ext.name} class="w-full h-full object-cover" />
+              ) : (
+                <Box class="w-6 h-6 text-white" />
+              )}
             </div>
 
             <div class="space-y-0.5">
@@ -192,7 +197,7 @@ const reviewsList = dbReviews.map((r) => ({
                   {ext.name}
                 </span>
                 <span class="font-mono text-[11px] text-slate-600 bg-white/80 px-2 py-0.5 rounded-full shadow-2xs">
-                  v{ext.version || '2.4.1'}
+                  v{ext.version}
                 </span>
               </div>
               
@@ -204,7 +209,7 @@ const reviewsList = dbReviews.map((r) => ({
 
           <div class="flex items-center gap-2.5 shrink-0">
             <a
-              href={`/developers/manage/${ext.id}`}
+              href={`/developers/manage/${ext.slug}`}
               class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-xl inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             >
               <ArrowLeft class="w-3.5 h-3.5 text-slate-500" />
@@ -212,12 +217,12 @@ const reviewsList = dbReviews.map((r) => ({
             </a>
 
             <a
-              href={`/extension/${ext.id}`}
+              href={`/extension/${ext.slug}`}
               target="_blank"
               class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-xl inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             >
               <Eye class="w-3.5 h-3.5 text-white" />
-              <span>Store Listing</span>
+              <span>{ext.status === 'Production' ? 'Store Listing' : 'Preview Listing'}</span>
             </a>
           </div>
 

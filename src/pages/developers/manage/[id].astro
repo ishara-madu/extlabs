@@ -92,8 +92,74 @@ const rawRating = rawReviewCount > 0 && typeof dbExtension.rating === 'number'
   ? dbExtension.rating
   : 0;
 
+// 1. Normalize Status & Update Status (100% aligned with Dashboard & Admin review queue)
+const isPending = dbExtension.status === 'pending_review' || dbExtension.review_status === 'pending';
+const isRejected = dbExtension.status === 'rejected' || dbExtension.review_status === 'rejected';
+const isDraft = dbExtension.status === 'draft';
+const hasPendingDraft = Boolean(dbExtension.has_pending_draft || dbExtension.draft_data);
+
+let appStatus: 'Production' | 'In Review' | 'Rejected' | 'Draft' = 'Production';
+let updateStatus = 'Live on Directory';
+
+if (isRejected) {
+  appStatus = 'Rejected';
+  updateStatus = 'Review rejected';
+} else if (isPending) {
+  appStatus = 'In Review';
+  updateStatus = 'Pending admin review';
+} else if (isDraft) {
+  appStatus = 'Draft';
+  updateStatus = 'Draft (not published)';
+} else if (hasPendingDraft) {
+  appStatus = 'Production';
+  updateStatus = 'Draft edits pending';
+} else {
+  appStatus = 'Production';
+  updateStatus = 'Live on Directory';
+}
+
+// 2. Normalize Slug, Package ID, Dates, and Categories
+const slug = dbExtension.slug || id;
+const packageId = `io.extlabs.${slug.replace(/[-_]/g, '')}`;
+
+let lastUpdated = 'Recently';
+if (dbExtension.updated_at) {
+  try {
+    const d = new Date(dbExtension.updated_at);
+    lastUpdated = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {}
+}
+
+const categoryLabels: Record<string, string> = {
+  ai: 'AI & Smart Tools',
+  dev: 'Developer Tools',
+  productivity: 'Productivity',
+  privacy: 'Security & Privacy',
+  social: 'Social & Communication',
+  utilities: 'Utilities',
+  media: 'Photos & Media',
+  ecommerce: 'Shopping & Finance'
+};
+const categoryName = categoryLabels[dbExtension.category?.toLowerCase()] || dbExtension.category || 'Utility';
+
+// 3. Verification Badge Label
+let verificationLabel = 'Verified Package';
+let verificationClass = 'text-slate-500 font-normal';
+if (isRejected) {
+  verificationLabel = 'Review Rejected';
+  verificationClass = 'text-rose-600 font-medium';
+} else if (isPending) {
+  verificationLabel = 'Under Review';
+  verificationClass = 'text-amber-600 font-medium';
+} else if (isDraft) {
+  verificationLabel = 'Draft Package';
+  verificationClass = 'text-slate-400';
+}
+
 const ext = {
   id: dbExtension.id || id,
+  slug,
+  packageId,
   name: dbExtension.name || 'Untitled Extension',
   version: dbExtension.version_name || dbExtension.current_version || '1.0.0',
   downloadCount: rawDownloadCount,
@@ -103,9 +169,15 @@ const ext = {
     ? dbExtension.weekly_active_users
     : 0,
   category: dbExtension.category || 'productivity',
+  categoryName,
   tagline: dbExtension.tagline || dbExtension.short_description || 'No description available',
-  status: dbExtension.status === 'draft' ? 'Draft' : dbExtension.status === 'pending_review' ? 'In Review' : 'Production',
-  hasPendingDraft: Boolean(dbExtension.has_pending_draft || dbExtension.draft_data),
+  appStatus,
+  status: appStatus,
+  updateStatus,
+  hasPendingDraft,
+  verificationLabel,
+  verificationClass,
+  lastUpdated,
   reviewStatus: dbExtension.review_status || 'approved',
   monetagUrl: dbExtension.monetag_direct_link || '',
   githubRepo: dbExtension.source_repo_url || '',
@@ -115,7 +187,7 @@ const ext = {
   docsUrl: dbExtension.docs_url || ''
 };
 
-const hasTelemetry = ext.downloadCount > 0;
+const hasTelemetry = ext.downloadCount >= 10;
 const hasReviews = ext.reviewCount > 0;
 
 // Dynamic Region Name & Flag Resolvers (Native Intl + Unicode standard)
@@ -295,45 +367,106 @@ try {
               )}
             </div>
 
-            <div class="space-y-0.5">
+            <div class="space-y-1">
               <div class="flex items-center gap-2.5 flex-wrap">
                 <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight" id="display-ext-name">
                   {ext.name}
                 </h1>
-                <span class="text-slate-600 font-medium text-xs inline-flex items-center gap-1.5">
-                  <span class={`w-1.5 h-1.5 rounded-full ${ext.status === 'Production' ? 'bg-emerald-500' : ext.status === 'In Review' ? 'bg-amber-500' : 'bg-slate-400'}`}></span>
-                  <span>{ext.status}</span>
-                </span>
-                {ext.hasPendingDraft && (
+
+                <!-- App Status -->
+                {ext.appStatus === 'Production' && (
+                  <span class="text-slate-700 font-medium text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>Production</span>
+                  </span>
+                )}
+                {ext.appStatus === 'In Review' && (
+                  <span class="text-amber-700 font-medium text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <span>In Review</span>
+                  </span>
+                )}
+                {ext.appStatus === 'Rejected' && (
+                  <span class="text-rose-700 font-semibold text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    <span>Rejected</span>
+                  </span>
+                )}
+                {ext.appStatus === 'Draft' && (
+                  <span class="text-slate-500 font-medium text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                    <span>Draft</span>
+                  </span>
+                )}
+
+                <span class="text-slate-300">•</span>
+
+                <!-- Update Status with Color Matching (Consistent with All Extensions Table) -->
+                {ext.updateStatus === 'Live on Directory' && (
+                  <span class="text-emerald-600 font-medium text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span>Live on Directory</span>
+                  </span>
+                )}
+                {ext.updateStatus === 'Pending admin review' && (
+                  <span class="text-amber-600 font-medium text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                    <span>Pending admin review</span>
+                  </span>
+                )}
+                {ext.updateStatus === 'Draft edits pending' && (
                   <span class="text-blue-600 font-medium text-xs inline-flex items-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                     <span>Draft edits pending</span>
                   </span>
                 )}
+                {ext.updateStatus === 'Review rejected' && (
+                  <span class="text-rose-600 font-semibold text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                    <span>Review rejected</span>
+                  </span>
+                )}
+                {ext.updateStatus === 'Draft (not published)' && (
+                  <span class="text-slate-500 text-xs inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                    <span>Draft (not published)</span>
+                  </span>
+                )}
+
+                <span class="text-slate-300">•</span>
+
+                <!-- Version -->
                 <span class="font-mono text-xs text-slate-500">
                   v{ext.version}
                 </span>
               </div>
               
-              <p class="text-xs text-slate-500">
-                Package: <span class="font-mono text-slate-700">io.extlabs.{ext.id.replace(/-/g, '')}</span> • Verified Package
+              <!-- Package ID, Category & Verification Metadata -->
+              <p class="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
+                <span>Package: <span class="font-mono text-slate-700 font-medium">{ext.packageId}</span></span>
+                <span class="text-slate-300">•</span>
+                <span class={ext.verificationClass}>{ext.verificationLabel}</span>
+                <span class="text-slate-300">•</span>
+                <span>{ext.categoryName}</span>
+                <span class="text-slate-300">•</span>
+                <span>Updated {ext.lastUpdated}</span>
               </p>
             </div>
           </div>
 
           <div class="flex items-center gap-2.5 shrink-0">
             <a
-              href={`/extension/${ext.id}`}
+              href={`/extension/${ext.slug}`}
               target="_blank"
               class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-xl inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             >
               <Eye class="w-3.5 h-3.5 text-slate-500" />
-              <span>View Store Listing</span>
+              <span>{ext.appStatus === 'Production' ? 'View Store Listing' : 'Preview Store Listing'}</span>
             </a>
 
             <!-- Dedicated Edit Button (Navigates to Edit Page in Blue Styling) -->
             <a
-              href={`/developers/manage/${ext.id}/edit`}
+              href={`/developers/manage/${ext.slug}/edit`}
               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
             >
               <Pencil class="w-3.5 h-3.5 text-white" />
@@ -462,16 +595,18 @@ try {
           <span class="text-xs text-slate-500 font-medium block">Total Downloads</span>
           <div class="flex items-baseline gap-2">
             <span class="text-2xl font-extrabold text-slate-900 font-mono">
-              {hasTelemetry ? (ext.downloadCount >= 1000 ? `${(ext.downloadCount / 1000).toFixed(1)}K` : ext.downloadCount.toLocaleString()) : '0'}
+              {ext.downloadCount >= 1000 ? `${(ext.downloadCount / 1000).toFixed(1)}K` : ext.downloadCount.toLocaleString()}
             </span>
-            {hasTelemetry ? (
+            {ext.downloadCount >= 50 ? (
               <span class="text-xs text-emerald-600 font-semibold font-mono">↑ 24.5%</span>
+            ) : ext.downloadCount > 0 ? (
+              <span class="text-xs text-emerald-600 font-semibold font-mono">New</span>
             ) : (
               <span class="text-xs text-slate-400 font-medium font-mono">0%</span>
             )}
           </div>
           <span class="text-[11px] text-slate-400 block">
-            {hasTelemetry ? 'vs previous 30 days' : 'Awaiting installs'}
+            {ext.downloadCount >= 50 ? 'vs previous 30 days' : ext.downloadCount > 0 ? 'First installs logged' : 'Awaiting installs'}
           </span>
         </div>
 
@@ -479,16 +614,16 @@ try {
           <span class="text-xs text-slate-500 font-medium block">Active Weekly Users</span>
           <div class="flex items-baseline gap-2">
             <span class="text-2xl font-extrabold text-slate-900 font-mono">
-              {hasTelemetry ? (ext.weeklyUsers >= 1000 ? `${(ext.weeklyUsers / 1000).toFixed(1)}K` : ext.weeklyUsers.toLocaleString()) : '0'}
+              {ext.weeklyUsers >= 1000 ? `${(ext.weeklyUsers / 1000).toFixed(1)}K` : ext.weeklyUsers.toLocaleString()}
             </span>
-            {hasTelemetry ? (
-              <span class="text-xs text-slate-500 font-mono">34% ret.</span>
+            {ext.weeklyUsers > 0 ? (
+              <span class="text-xs text-slate-500 font-mono">Active</span>
             ) : (
               <span class="text-xs text-slate-400 font-mono">—</span>
             )}
           </div>
           <span class="text-[11px] text-slate-400 block">
-            {hasTelemetry ? 'Verified active devices' : 'No active devices yet'}
+            {ext.weeklyUsers > 0 ? 'Verified active devices' : 'No active devices yet'}
           </span>
         </div>
 
@@ -496,16 +631,16 @@ try {
           <span class="text-xs text-slate-500 font-medium block">Monetag Direct Triggers</span>
           <div class="flex items-baseline gap-2">
             <span class="text-2xl font-extrabold text-slate-900 font-mono">
-              {hasTelemetry ? (ext.downloadCount >= 1000 ? `${(ext.downloadCount / 1000).toFixed(1)}K` : ext.downloadCount.toLocaleString()) : '0'}
+              {ext.monetagUrl ? (ext.downloadCount >= 1000 ? `${(ext.downloadCount / 1000).toFixed(1)}K` : ext.downloadCount.toLocaleString()) : '—'}
             </span>
-            {hasTelemetry ? (
+            {ext.monetagUrl ? (
               <span class="text-xs text-emerald-600 font-semibold font-mono">100% split</span>
             ) : (
-              <span class="text-xs text-slate-400 font-mono">0%</span>
+              <span class="text-xs text-slate-400 font-mono">Not configured</span>
             )}
           </div>
           <span class="text-[11px] text-slate-400 block">
-            {hasTelemetry ? 'All downloads monetized' : 'Awaiting traffic'}
+            {ext.monetagUrl ? (ext.downloadCount > 0 ? 'Monetized triggers logged' : 'Direct link active') : 'Awaiting direct link setup'}
           </span>
         </div>
 
@@ -593,7 +728,7 @@ try {
             </div>
             <div class="pt-2">
               <a
-                href={`/extension/${ext.id}`}
+                href={`/extension/${ext.slug}`}
                 target="_blank"
                 class="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 inline-flex items-center gap-1.5 transition-colors"
               >
@@ -729,7 +864,7 @@ try {
                 )}
               </span>
               <a
-                href={`/developers/manage/${ext.id}/reviews`}
+                href={`/developers/manage/${ext.slug}/reviews`}
                 class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 group"
               >
                 <span>See all reviews & reply</span>
@@ -778,7 +913,7 @@ try {
 
           <!-- Edit Button -->
           <a
-            href={`/developers/manage/${ext.id}/edit`}
+            href={`/developers/manage/${ext.slug}/edit`}
             class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl inline-flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer self-start sm:self-auto border border-slate-200"
           >
             <Pencil class="w-3.5 h-3.5 text-slate-600" />
@@ -827,7 +962,7 @@ try {
                   </>
                 ) : (
                   <a
-                    href={`/developers/manage/${ext.id}/edit`}
+                    href={`/developers/manage/${ext.slug}/edit`}
                     class="px-3 py-1.5 bg-white hover:bg-slate-50 text-blue-600 border border-slate-200 rounded-lg text-xs font-medium transition-colors cursor-pointer shrink-0 shadow-2xs"
                   >
                     Configure
