@@ -75,8 +75,9 @@ if (db && user) {
         allExtensions = results.map((row) => {
           const isProd = row.is_active === 1 && !row.is_suspended && row.status === 'published';
           const isPendingReview = !isProd && (row.status === 'pending_review' || row.review_status === 'pending');
-          const isDraft = !isProd && !isPendingReview;
-          const status = isProd ? 'Production' : (isPendingReview ? 'In Review' : 'Draft');
+          const isRejected = !isProd && !isPendingReview && (row.status === 'rejected' || row.review_status === 'rejected');
+          const isDraft = !isProd && !isPendingReview && !isRejected;
+          const status = isProd ? 'Production' : (isPendingReview ? 'In Review' : (isRejected ? 'Rejected' : 'Draft'));
           const hasPendingDraft = Boolean(row.has_pending_draft);
 
           let updateStatus = 'Draft (not published)';
@@ -84,7 +85,7 @@ if (db && user) {
             updateStatus = hasPendingDraft ? 'Draft edits pending' : 'Live on Directory';
           } else if (isPendingReview) {
             updateStatus = 'Pending admin review';
-          } else if (row.status === 'rejected') {
+          } else if (isRejected) {
             updateStatus = 'Review rejected';
           }
           const dl = row.download_count || 0;
@@ -268,6 +269,7 @@ if (db && user) {
                         <span class="inline-flex items-center gap-1 font-medium text-slate-700">
                           {item.status === 'Production' && <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>}
                           {item.status === 'In Review' && <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>}
+                          {item.status === 'Rejected' && <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>}
                           {item.status === 'Draft' && <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>}
                           <span>{item.status}</span>
                         </span>
@@ -472,6 +474,12 @@ if (db && user) {
                           <span>In Review</span>
                         </span>
                       )}
+                      {ext.status === 'Rejected' && (
+                        <span class="text-rose-700 font-medium flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                          <span>Rejected</span>
+                        </span>
+                      )}
                       {ext.status === 'Draft' && (
                         <span class="text-slate-500 flex items-center gap-1.5">
                           <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
@@ -480,9 +488,43 @@ if (db && user) {
                       )}
                     </td>
 
-                    <!-- Update Status -->
-                    <td class="py-3.5 px-4 text-slate-500 text-[11px]">
-                      {ext.updateStatus}
+                    <!-- Update Status (Color-coded text according to status) -->
+                    <td class="py-3.5 px-4 text-[11px]">
+                      {ext.updateStatus === 'Live on Directory' && (
+                        <span class="text-emerald-600 font-medium inline-flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                          <span>Live on Directory</span>
+                        </span>
+                      )}
+                      {ext.updateStatus === 'Draft edits pending' && (
+                        <span class="text-blue-600 font-medium inline-flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                          <span>Draft edits pending</span>
+                        </span>
+                      )}
+                      {ext.updateStatus === 'Pending admin review' && (
+                        <span class="text-amber-600 font-medium inline-flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                          <span>Pending admin review</span>
+                        </span>
+                      )}
+                      {ext.updateStatus === 'Review rejected' && (
+                        <span class="text-rose-600 font-semibold inline-flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                          <span>Review rejected</span>
+                        </span>
+                      )}
+                      {ext.updateStatus === 'Draft (not published)' && (
+                        <span class="text-slate-500 inline-flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                          <span>Draft (not published)</span>
+                        </span>
+                      )}
+                      {!['Live on Directory', 'Draft edits pending', 'Pending admin review', 'Review rejected', 'Draft (not published)'].includes(ext.updateStatus) && (
+                        <span class="text-slate-500">
+                          {ext.updateStatus}
+                        </span>
+                      )}
                     </td>
 
                     <!-- Last Updated -->
