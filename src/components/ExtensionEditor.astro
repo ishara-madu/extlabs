@@ -3801,13 +3801,13 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         }
 
         if (tab4Status) {
-          tab4Status.textContent = publish ? '✓ Submitted to Directory' : '✓ Saved to ExtLabs database';
+          tab4Status.textContent = publish ? '✓ Submitted for Admin Review' : '✓ Saved to ExtLabs database';
           tab4Status.className = 'text-xs text-emerald-600 font-mono';
         }
 
         if (publish) {
-          alert(`🎉 Extension "${nameInput?.value || 'Untitled'}" has been published and submitted to ExtLabs Directory successfully!`);
-          window.location.href = `/developers/manage/${currentSlug || currentExtId}?published=true`;
+          alert(`🚀 Extension "${nameInput?.value || 'Untitled'}" has been submitted for Admin Review! It will appear in the public store once approved by our moderation team.`);
+          window.location.href = `/developers/manage/${currentSlug || currentExtId}?submitted=true`;
           return true;
         }
 

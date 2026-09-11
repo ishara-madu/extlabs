@@ -99,7 +99,7 @@ const ext = {
     : 0,
   category: dbExtension.category || 'productivity',
   tagline: dbExtension.tagline || dbExtension.short_description || 'No description available',
-  status: dbExtension.status === 'draft' ? 'Draft' : 'Production',
+  status: dbExtension.status === 'draft' ? 'Draft' : dbExtension.status === 'pending_review' ? 'In Review' : 'Production',
   hasPendingDraft: Boolean(dbExtension.has_pending_draft || dbExtension.draft_data),
   reviewStatus: dbExtension.review_status || 'approved',
   monetagUrl: dbExtension.monetag_direct_link || '',
@@ -296,7 +296,7 @@ try {
                   {ext.name}
                 </h1>
                 <span class="text-slate-600 font-medium text-xs inline-flex items-center gap-1.5">
-                  <span class={`w-1.5 h-1.5 rounded-full ${ext.status === 'Production' ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                  <span class={`w-1.5 h-1.5 rounded-full ${ext.status === 'Production' ? 'bg-emerald-500' : ext.status === 'In Review' ? 'bg-amber-500' : 'bg-slate-400'}`}></span>
                   <span>{ext.status}</span>
                 </span>
                 {ext.hasPendingDraft && (

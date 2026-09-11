@@ -667,20 +667,22 @@ export async function getStoreExtensionsByCategory(db: D1Database | null, catego
 export async function getStoreExtensionByIdOrSlug(
   db: D1Database | null, 
   idOrSlug: string,
-  options?: { allowDraftForDeveloperId?: string }
+  options?: { allowDraftForDeveloperId?: string; allowAdminPreview?: boolean }
 ): Promise<Extension | null> {
   if (!db) return null;
   try {
-    const allowDraft = Boolean(options?.allowDraftForDeveloperId);
+    const allowDraft = Boolean(options?.allowDraftForDeveloperId || options?.allowAdminPreview);
     let ext = await getExtensionBySlug(db, idOrSlug, { allowDraft });
     if (!ext) {
       ext = await getExtensionById(db, idOrSlug, { allowDraft });
     }
 
     if (ext) {
-      // If extension is not published or inactive, only permit preview if viewed by its developer author
+      // If extension is not published or inactive, only permit preview if viewed by its developer author or admin
       if (ext.status !== 'published' || ext.is_active !== 1 || ext.is_suspended === 1) {
-        if (!options?.allowDraftForDeveloperId || options.allowDraftForDeveloperId !== ext.developer_id) {
+        const isAuthor = options?.allowDraftForDeveloperId && options.allowDraftForDeveloperId === ext.developer_id;
+        const isAdmin = Boolean(options?.allowAdminPreview);
+        if (!isAuthor && !isAdmin) {
           return null; // Block public visitors from accessing drafts
         }
       }
@@ -1376,10 +1378,9 @@ export async function saveExtensionSpecs(
         license = ?,
         supported_browsers = ?,
         privacy_policy_url = ?,
-        is_active = 1,
-        status = 'published',
+        is_active = 0,
+        status = 'pending_review',
         draft_data = NULL,
-        published_at = COALESCE(published_at, DATETIME('now')),
         updated_at = DATETIME('now')
       WHERE id = ? AND developer_id = ?
     `)
@@ -1668,5 +1669,254 @@ export async function searchStoreExtensions(
     console.warn('Failed to execute searchStoreExtensions on D1:', err);
   }
   return [];
+}
+
+export interface PendingReviewExtension {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  icon_url: string;
+  current_version: string;
+  short_description: string;
+  full_description?: string | null;
+  status: string;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+  developer_name: string;
+  developer_slug: string;
+  developer_verified: boolean;
+  developer_website?: string | null;
+  source_repo_url?: string | null;
+  monetag_direct_link?: string | null;
+  support_email?: string | null;
+  docs_url?: string | null;
+  screenshots?: string[];
+  version_id?: string;
+  version_name?: string;
+  review_status: string;
+  package_size_bytes?: number;
+  package_zip_url?: string;
+  manifest_json?: string;
+  permissions?: string[];
+  submitted_at: string;
+  auditStatus: 'clean' | 'warning';
+  auditSummary: string;
+}
+
+/**
+ * Fetch all extensions pending admin review from Cloudflare D1
+ */
+export async function getPendingReviewExtensions(db: D1Database | null): Promise<PendingReviewExtension[]> {
+  if (!db) return [];
+  try {
+    const query = `
+      SELECT 
+        e.id,
+        e.slug,
+        e.name,
+        e.category,
+        e.icon_url,
+        e.current_version,
+        e.short_description,
+        e.full_description,
+        e.source_repo_url,
+        e.monetag_direct_link,
+        e.support_email,
+        e.docs_url,
+        e.screenshots,
+        e.status,
+        e.is_active,
+        e.created_at,
+        e.updated_at,
+        COALESCE(d.display_name, 'ExtLabs Developer') AS developer_name,
+        COALESCE(d.slug, 'developer') AS developer_slug,
+        COALESCE(d.is_verified, 0) AS developer_verified,
+        d.website AS developer_website,
+        ev.id AS version_id,
+        ev.version AS version_name,
+        ev.review_status,
+        ev.package_size_bytes,
+        COALESCE(ev.package_zip_url, e.zip_download_url, '') AS package_zip_url,
+        ev.manifest_json,
+        ev.permissions,
+        COALESCE(ev.submitted_at, e.updated_at, e.created_at) AS submitted_at
+      FROM extensions e
+      LEFT JOIN developers d ON e.developer_id = d.id
+      LEFT JOIN (
+        SELECT extension_id, id, version, review_status, package_size_bytes, package_zip_url, manifest_json, permissions, submitted_at,
+               ROW_NUMBER() OVER (PARTITION BY extension_id ORDER BY submitted_at DESC) as rn
+        FROM extension_versions
+      ) ev ON e.id = ev.extension_id AND ev.rn = 1
+      WHERE (e.status = 'pending_review' OR ev.review_status = 'pending')
+        AND e.is_suspended = 0
+      ORDER BY COALESCE(ev.submitted_at, e.updated_at, e.created_at) DESC
+    `;
+    const { results } = await db.prepare(query).all<any>();
+    if (!results) return [];
+
+    return results.map((row) => {
+      let parsedPerms: string[] = [];
+      try {
+        if (row.permissions) {
+          parsedPerms = typeof row.permissions === 'string' ? JSON.parse(row.permissions) : row.permissions;
+        }
+      } catch {}
+
+      let parsedScreenshots: string[] = [];
+      try {
+        if (row.screenshots) {
+          parsedScreenshots = typeof row.screenshots === 'string' ? JSON.parse(row.screenshots) : row.screenshots;
+        }
+      } catch {}
+
+      // Analyze permissions for security indicator
+      const highRiskPerms = ['<all_urls>', 'webRequestBlocking', 'debugger', 'management', 'nativeMessaging'];
+      const hasHighRisk = Array.isArray(parsedPerms) && parsedPerms.some(p => highRiskPerms.includes(p));
+
+      let formattedDate = 'Recently';
+      if (row.submitted_at) {
+        try {
+          const d = new Date(row.submitted_at);
+          formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } catch {}
+      }
+
+      return {
+        id: row.id,
+        slug: row.slug,
+        name: row.name,
+        category: (row.category || 'productivity').charAt(0).toUpperCase() + (row.category || 'productivity').slice(1),
+        icon_url: row.icon_url || '/icons/extension-placeholder.avif',
+        current_version: row.current_version || '1.0.0',
+        short_description: row.short_description || '',
+        full_description: row.full_description || '',
+        status: row.status,
+        is_active: row.is_active,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        developer_name: row.developer_name,
+        developer_slug: row.developer_slug,
+        developer_verified: Boolean(row.developer_verified),
+        developer_website: row.developer_website || null,
+        source_repo_url: row.source_repo_url || null,
+        monetag_direct_link: row.monetag_direct_link || null,
+        support_email: row.support_email || null,
+        docs_url: row.docs_url || null,
+        screenshots: Array.isArray(parsedScreenshots) ? parsedScreenshots : [],
+        version_id: row.version_id,
+        version_name: row.version_name || row.current_version || '1.0.0',
+        review_status: row.review_status || 'pending',
+        package_size_bytes: row.package_size_bytes || 0,
+        package_zip_url: row.package_zip_url || '',
+        manifest_json: row.manifest_json,
+        permissions: parsedPerms,
+        submitted_at: formattedDate,
+        auditStatus: hasHighRisk ? 'warning' : 'clean',
+        auditSummary: hasHighRisk ? 'Elevated Permissions' : 'Passed Automated Scan • Clean',
+      };
+    });
+  } catch (err) {
+    console.error('Failed to fetch pending review extensions from D1:', err);
+    return [];
+  }
+}
+
+/**
+ * Approve an extension for publication to the public directory
+ */
+export async function approveExtensionReview(
+  db: D1Database,
+  extensionId: string,
+  reviewedByUserId?: string
+): Promise<{ success: boolean; slug: string; category: string }> {
+  const ext = await db
+    .prepare('SELECT id, slug, category FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+    .bind(extensionId, extensionId)
+    .first<{ id: string; slug: string; category: string }>();
+
+  if (!ext) {
+    throw new Error('Extension not found.');
+  }
+
+  const batchStatements = [
+    db.prepare(`
+      UPDATE extensions
+      SET 
+        status = 'published',
+        is_active = 1,
+        is_suspended = 0,
+        published_at = COALESCE(published_at, DATETIME('now')),
+        updated_at = DATETIME('now')
+      WHERE id = ?
+    `).bind(ext.id),
+
+    db.prepare(`
+      UPDATE extension_versions
+      SET 
+        review_status = 'approved',
+        reviewed_by = ?,
+        reviewed_at = DATETIME('now')
+      WHERE extension_id = ?
+    `).bind(reviewedByUserId || null, ext.id)
+  ];
+
+  await db.batch(batchStatements);
+
+  // Invalidate memory caches
+  try {
+    clearMemoryCache();
+  } catch {}
+
+  return { success: true, slug: ext.slug, category: ext.category };
+}
+
+/**
+ * Reject an extension submission in the review queue
+ */
+export async function rejectExtensionReview(
+  db: D1Database,
+  extensionId: string,
+  reason: string = 'Package did not pass ExtLabs security or quality guidelines.',
+  reviewedByUserId?: string
+): Promise<{ success: boolean; slug: string }> {
+  const ext = await db
+    .prepare('SELECT id, slug FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+    .bind(extensionId, extensionId)
+    .first<{ id: string; slug: string }>();
+
+  if (!ext) {
+    throw new Error('Extension not found.');
+  }
+
+  const batchStatements = [
+    db.prepare(`
+      UPDATE extensions
+      SET 
+        status = 'rejected',
+        is_active = 0,
+        updated_at = DATETIME('now')
+      WHERE id = ?
+    `).bind(ext.id),
+
+    db.prepare(`
+      UPDATE extension_versions
+      SET 
+        review_status = 'rejected',
+        rejection_reason = ?,
+        reviewed_by = ?,
+        reviewed_at = DATETIME('now')
+      WHERE extension_id = ?
+    `).bind(reason, reviewedByUserId || null, ext.id)
+  ];
+
+  await db.batch(batchStatements);
+
+  try {
+    clearMemoryCache();
+  } catch {}
+
+  return { success: true, slug: ext.slug };
 }
 

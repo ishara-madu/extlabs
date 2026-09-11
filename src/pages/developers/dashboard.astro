@@ -74,15 +74,18 @@ if (db && user) {
 
         allExtensions = results.map((row) => {
           const isProd = row.is_active === 1 && !row.is_suspended && row.status === 'published';
-          const isDraft = row.status === 'draft' || row.is_active === 0;
-          const status = isProd ? 'Production' : (isDraft ? 'Draft' : (row.review_status === 'pending' ? 'In Review' : 'Draft'));
+          const isPendingReview = !isProd && (row.status === 'pending_review' || row.review_status === 'pending');
+          const isDraft = !isProd && !isPendingReview;
+          const status = isProd ? 'Production' : (isPendingReview ? 'In Review' : 'Draft');
           const hasPendingDraft = Boolean(row.has_pending_draft);
 
           let updateStatus = 'Draft (not published)';
           if (isProd) {
             updateStatus = hasPendingDraft ? 'Draft edits pending' : 'Live on Directory';
-          } else if (row.review_status === 'pending') {
-            updateStatus = 'Pending security audit';
+          } else if (isPendingReview) {
+            updateStatus = 'Pending admin review';
+          } else if (row.status === 'rejected') {
+            updateStatus = 'Review rejected';
           }
           const dl = row.download_count || 0;
           const formattedDownloads = dl >= 1000000 ? `${(dl / 1000000).toFixed(1)}M` : dl >= 1000 ? `${(dl / 1000).toFixed(1)}K` : dl.toString();
