@@ -18,7 +18,12 @@ import {
   FolderGit2,
   BarChart3,
   Mail,
-  X
+  X,
+  AlertTriangle,
+  EyeOff,
+  Trash2,
+  Clock,
+  Send
 } from '@lucide/astro';
 import { 
   getDb, 
@@ -27,9 +32,11 @@ import {
   getExtensionRegionalAnalytics,
   getExtensionRatingBreakdown,
   getLatestExtensionNotification,
+  getActiveLifecycleRequestsForExtension,
   type ManageExtensionDetail,
   type ExtensionRegionalTelemetry,
-  type DbNotification
+  type DbNotification,
+  type LifecycleRequest
 } from "../../../lib/db";
 import { getSessionUser } from "../../../lib/auth";
 
@@ -58,6 +65,7 @@ let dbExtension: ManageExtensionDetail | null = null;
 let dbRegionalTelemetry: ExtensionRegionalTelemetry[] = [];
 let dbRatingBreakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 let latestNotification: DbNotification | null = null;
+let pendingLifecycleRequests: LifecycleRequest[] = [];
 
 if (db) {
   try {
@@ -70,11 +78,15 @@ if (db) {
     if (dbExtension) {
       dbRatingBreakdown = await getExtensionRatingBreakdown(db, dbExtension.id);
       latestNotification = await getLatestExtensionNotification(db, dbExtension.id);
+      pendingLifecycleRequests = await getActiveLifecycleRequestsForExtension(db, dbExtension.id);
     }
   } catch (err) {
     console.error("Database error fetching extension detail & telemetry:", err);
   }
 }
+
+const pendingUnpublishReq = pendingLifecycleRequests.find(r => r.request_type === 'unpublish');
+const pendingDeleteReq = pendingLifecycleRequests.find(r => r.request_type === 'delete');
 
 if (!dbExtension) {
   return Astro.redirect('/developers/dashboard', 302);
@@ -1068,7 +1080,166 @@ try {
 
       </section>
 
+      <!-- SECTION 4: DANGER ZONE & LIFECYCLE CONTROLS (Soft Shaded Card) -->
+      <section class="p-6 sm:p-7 bg-[#f0f4f9] rounded-2xl border-0 space-y-6">
+        <div class="border-b border-slate-200/60 pb-4">
+          <div class="space-y-1">
+            <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <AlertTriangle class="w-4 h-4 text-rose-500" />
+              <span>Lifecycle &amp; Visibility Controls</span>
+            </h2>
+            <p class="text-xs text-slate-500">
+              Submit formal requests to unpublish or permanently remove this package from the ExtLabs Store. All lifecycle actions require administrative moderation review.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+          <!-- Unpublish Option -->
+          <div class="bg-white p-5 rounded-xl shadow-2xs space-y-4 flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <EyeOff class="w-4 h-4 text-slate-700" />
+                <span class="font-bold text-slate-900">Unpublish Extension</span>
+              </div>
+              <p class="text-slate-500 text-[11px] leading-relaxed">
+                Temporarily take this extension off the public store directory. Existing active users retain their local installation, but new visitors will not be able to discover or install it.
+              </p>
+              
+              {pendingUnpublishReq ? (
+                <div class="mt-3 p-3 bg-amber-50/70 border border-amber-200/60 rounded-lg space-y-1.5">
+                  <div class="flex items-center gap-1.5 text-amber-800 font-semibold text-xs">
+                    <Clock class="w-3.5 h-3.5 text-amber-600" />
+                    <span>Unpublish Request Pending Review</span>
+                  </div>
+                  <p class="text-slate-600 text-[11px]">
+                    <strong class="font-medium text-slate-700">Reason submitted:</strong> &ldquo;{pendingUnpublishReq.reason}&rdquo;
+                  </p>
+                  <span class="text-[10px] text-slate-400 block font-mono">
+                    Submitted on {new Date(pendingUnpublishReq.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+              ) : (ext.status === 'Draft' || dbExtension.is_active === 0) ? (
+                <div class="mt-3 p-3 bg-slate-50 rounded-lg text-slate-500 text-[11px]">
+                  This extension is currently unlisted and not live on the public directory.
+                </div>
+              ) : null}
+            </div>
+
+            {!pendingUnpublishReq && ext.status !== 'Draft' && dbExtension.is_active === 1 && (
+              <button
+                type="button"
+                id="open-unpublish-modal-btn"
+                class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 font-semibold rounded-xl transition-colors cursor-pointer inline-flex items-center justify-center gap-2 shadow-2xs self-start"
+              >
+                <EyeOff class="w-3.5 h-3.5 text-slate-500" />
+                <span>Request Unpublish</span>
+              </button>
+            )}
+          </div>
+
+          <!-- Delete Option -->
+          <div class="bg-white p-5 rounded-xl shadow-2xs space-y-4 flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <Trash2 class="w-4 h-4 text-rose-600" />
+                <span class="font-bold text-slate-900">Permanently Delete Extension</span>
+              </div>
+              <p class="text-slate-500 text-[11px] leading-relaxed">
+                Submit a permanent removal request. If approved by administrators, this package, all release versions, user reviews, and listing assets will be completely erased.
+              </p>
+
+              {pendingDeleteReq ? (
+                <div class="mt-3 p-3 bg-rose-50/70 border border-rose-200/60 rounded-lg space-y-1.5">
+                  <div class="flex items-center gap-1.5 text-rose-800 font-semibold text-xs">
+                    <Clock class="w-3.5 h-3.5 text-rose-600" />
+                    <span>Permanent Deletion Pending Review</span>
+                  </div>
+                  <p class="text-slate-600 text-[11px]">
+                    <strong class="font-medium text-slate-700">Reason submitted:</strong> &ldquo;{pendingDeleteReq.reason}&rdquo;
+                  </p>
+                  <span class="text-[10px] text-slate-400 block font-mono">
+                    Submitted on {new Date(pendingDeleteReq.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+
+            {!pendingDeleteReq && (
+              <button
+                type="button"
+                id="open-delete-modal-btn"
+                class="px-4 py-2 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 hover:border-rose-300 font-semibold rounded-xl transition-colors cursor-pointer inline-flex items-center justify-center gap-2 shadow-2xs self-start"
+              >
+                <Trash2 class="w-3.5 h-3.5 text-rose-600" />
+                <span>Request Deletion</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
     </main>
+
+    <!-- Lifecycle Request Reason Modal (Clean HTML Dialog) -->
+    <div id="lifecycle-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span id="lifecycle-modal-icon-container">
+              <AlertTriangle class="w-4 h-4 text-slate-700" />
+            </span>
+            <h3 id="lifecycle-modal-title" class="font-bold text-slate-900 text-sm">Submit Request</h3>
+          </div>
+          <button type="button" id="close-lifecycle-modal-btn" class="text-slate-400 hover:text-slate-600 cursor-pointer p-1">
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <p id="lifecycle-modal-desc" class="text-xs text-slate-500 leading-relaxed">
+          Please provide a detailed explanation for administrators.
+        </p>
+
+        <form id="lifecycle-request-form" class="space-y-4">
+          <input type="hidden" id="lifecycle-request-type" value="unpublish" />
+          <input type="hidden" id="lifecycle-extension-id" value={ext.id} />
+          <div>
+            <label for="lifecycle-reason-input" class="block text-xs font-semibold text-slate-700 mb-1.5">
+              Reason for Request <span class="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="lifecycle-reason-input"
+              rows="4"
+              required
+              minlength="10"
+              placeholder="e.g. Taking down temporarily to resolve backend security vulnerability..."
+              class="w-full text-xs p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 resize-none placeholder:text-slate-400"
+            ></textarea>
+            <span class="text-[11px] text-slate-400 mt-1 block">Minimum 10 characters required.</span>
+          </div>
+
+          <div id="lifecycle-modal-error" class="hidden p-2.5 bg-rose-50 text-rose-700 text-xs rounded-lg border border-rose-200"></div>
+
+          <div class="flex items-center justify-end gap-2.5 pt-2">
+            <button
+              type="button"
+              id="cancel-lifecycle-btn"
+              class="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              id="submit-lifecycle-btn"
+              class="px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <Send class="w-3.5 h-3.5" />
+              <span id="submit-lifecycle-btn-text">Submit to Admin</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Footer -->
     <Footer />
@@ -1243,6 +1414,113 @@ try {
             }
           });
         }
+
+        // 5. Lifecycle Request Modal (Unpublish & Delete)
+        const lifecycleModal = document.getElementById('lifecycle-modal');
+        const openUnpublishBtn = document.getElementById('open-unpublish-modal-btn');
+        const openDeleteBtn = document.getElementById('open-delete-modal-btn');
+        const closeLifecycleBtn = document.getElementById('close-lifecycle-modal-btn');
+        const cancelLifecycleBtn = document.getElementById('cancel-lifecycle-btn');
+        const lifecycleForm = document.getElementById('lifecycle-request-form') as HTMLFormElement | null;
+        const lifecycleTypeInput = document.getElementById('lifecycle-request-type') as HTMLInputElement | null;
+        const lifecycleExtIdInput = document.getElementById('lifecycle-extension-id') as HTMLInputElement | null;
+        const lifecycleReasonInput = document.getElementById('lifecycle-reason-input') as HTMLTextAreaElement | null;
+        const lifecycleModalTitle = document.getElementById('lifecycle-modal-title');
+        const lifecycleModalDesc = document.getElementById('lifecycle-modal-desc');
+        const lifecycleModalError = document.getElementById('lifecycle-modal-error');
+        const submitLifecycleBtn = document.getElementById('submit-lifecycle-btn') as HTMLButtonElement | null;
+        const submitLifecycleBtnText = document.getElementById('submit-lifecycle-btn-text');
+
+        function openModal(type: 'unpublish' | 'delete') {
+          if (!lifecycleModal) return;
+          if (lifecycleTypeInput) lifecycleTypeInput.value = type;
+          if (lifecycleReasonInput) {
+            lifecycleReasonInput.value = '';
+            lifecycleReasonInput.placeholder = type === 'unpublish'
+              ? 'e.g. Taking down temporarily to resolve backend security patch...'
+              : 'e.g. Project deprecated in favor of our new cloud app...';
+          }
+          if (lifecycleModalError) {
+            lifecycleModalError.textContent = '';
+            lifecycleModalError.classList.add('hidden');
+          }
+
+          if (type === 'unpublish') {
+            if (lifecycleModalTitle) lifecycleModalTitle.textContent = 'Request Unpublish';
+            if (lifecycleModalDesc) {
+              lifecycleModalDesc.textContent = 'Please explain why you want to unpublish this extension from the store. Administrators will review your request.';
+            }
+          } else {
+            if (lifecycleModalTitle) lifecycleModalTitle.textContent = 'Request Permanent Deletion';
+            if (lifecycleModalDesc) {
+              lifecycleModalDesc.textContent = 'Warning: Deleting an extension completely removes all versions, reviews, and data. Please state your reason clearly for administrative review.';
+            }
+          }
+
+          lifecycleModal.classList.remove('hidden');
+          setTimeout(() => lifecycleReasonInput?.focus(), 100);
+        }
+
+        function closeModal() {
+          if (lifecycleModal) lifecycleModal.classList.add('hidden');
+        }
+
+        openUnpublishBtn?.addEventListener('click', () => openModal('unpublish'));
+        openDeleteBtn?.addEventListener('click', () => openModal('delete'));
+        closeLifecycleBtn?.addEventListener('click', closeModal);
+        cancelLifecycleBtn?.addEventListener('click', closeModal);
+
+        lifecycleForm?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const type = lifecycleTypeInput?.value;
+          const extId = lifecycleExtIdInput?.value;
+          const reason = lifecycleReasonInput?.value?.trim() || '';
+
+          if (reason.length < 10) {
+            if (lifecycleModalError) {
+              lifecycleModalError.textContent = 'Reason must be at least 10 characters.';
+              lifecycleModalError.classList.remove('hidden');
+            }
+            return;
+          }
+
+          if (submitLifecycleBtn) submitLifecycleBtn.disabled = true;
+          if (submitLifecycleBtnText) submitLifecycleBtnText.textContent = 'Submitting...';
+
+          try {
+            const res = await fetch('/api/developers/extensions/request-lifecycle', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                extensionId: extId,
+                requestType: type,
+                reason,
+              }),
+            });
+
+            const data = await res.json() as any;
+
+            if (!res.ok || !data.success) {
+              if (lifecycleModalError) {
+                lifecycleModalError.textContent = data.error || 'Failed to submit request.';
+                lifecycleModalError.classList.remove('hidden');
+              }
+              if (submitLifecycleBtn) submitLifecycleBtn.disabled = false;
+              if (submitLifecycleBtnText) submitLifecycleBtnText.textContent = 'Submit to Admin';
+              return;
+            }
+
+            // Success: reload to show pending notice
+            window.location.reload();
+          } catch (err: any) {
+            if (lifecycleModalError) {
+              lifecycleModalError.textContent = err.message || 'Network error occurred.';
+              lifecycleModalError.classList.remove('hidden');
+            }
+            if (submitLifecycleBtn) submitLifecycleBtn.disabled = false;
+            if (submitLifecycleBtnText) submitLifecycleBtnText.textContent = 'Submit to Admin';
+          }
+        });
       });
     </script>
 

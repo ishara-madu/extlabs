@@ -4,7 +4,14 @@ export const prerender = false;
 import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
-import { getDb, getLiveExtensionsCount, getPendingReviewExtensions, type PendingReviewExtension } from "../../../lib/db";
+import { 
+  getDb, 
+  getLiveExtensionsCount, 
+  getPendingReviewExtensions, 
+  getPendingLifecycleRequests,
+  type PendingReviewExtension,
+  type LifecycleRequestWithDetails
+} from "../../../lib/db";
 import { 
   ShieldCheck, 
   Check, 
@@ -14,26 +21,31 @@ import {
   RefreshCw, 
   BadgeCheck, 
   ExternalLink, 
-  AlertCircle,
-  Users,
-  BarChart3,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Filter,
-  Box,
-  Key,
-  FileCode,
-  Download,
-  X,
-  Copy
+  AlertCircle, 
+  Users, 
+  BarChart3, 
+  Settings, 
+  ChevronLeft, 
+  ChevronRight, 
+  Clock, 
+  Filter, 
+  Box, 
+  Key, 
+  FileCode, 
+  Download, 
+  X, 
+  Copy,
+  EyeOff,
+  Trash2,
+  MessageSquare
 } from '@lucide/astro';
 
 const db = getDb();
-const [liveExtensionsCount, pendingSubmissions] = await Promise.all([
+const [liveExtensionsCount, pendingSubmissions, unpublishRequests, deleteRequests] = await Promise.all([
   getLiveExtensionsCount(db),
   getPendingReviewExtensions(db),
+  getPendingLifecycleRequests(db, 'unpublish'),
+  getPendingLifecycleRequests(db, 'delete'),
 ]);
 
 const ITEMS_PER_PAGE = 20;
@@ -419,7 +431,264 @@ function formatPackageSize(bytes?: number): string {
 
       </div>
 
+      <!-- LIFECYCLE MODERATION SECTION: UNPUBLISH & DELETION REQUESTS -->
+      <div class="space-y-10 pt-6 border-t border-slate-200">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2">
+            <span class="text-xs font-semibold text-rose-600 font-mono">
+              Staff Workstation • Direct Publisher Requests
+            </span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            Publisher Lifecycle Requests
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Review and moderate formal requests submitted by publishers to unpublish or permanently delete extensions from the ExtLabs Store.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8">
+          
+          <!-- PANEL 1: UNPUBLISH REQUESTS -->
+          <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <EyeOff class="w-4 h-4 text-amber-600" />
+                <h3 class="font-bold text-slate-900 text-sm">Unpublish Requests</h3>
+                <span class="text-xs font-mono font-semibold text-amber-600" id="unpublish-requests-count">({unpublishRequests.length})</span>
+              </div>
+              <p class="text-xs text-slate-500">
+                Requests to remove active extensions from public storefront while preserving existing users.
+              </p>
+            </div>
+
+            {unpublishRequests.length === 0 ? (
+              <div class="py-12 px-6 text-center text-slate-500" id="unpublish-empty-state">
+                <p class="text-xs">No unpublish requests pending review.</p>
+              </div>
+            ) : (
+              <div class="divide-y divide-slate-100" id="unpublish-requests-list">
+                {unpublishRequests.map((req) => (
+                  <div class="p-6 space-y-4 hover:bg-slate-50/60 transition-colors lifecycle-row" id={`lifecycle-row-${req.id}`}>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img
+                          src={req.extension_icon_url || "/icons/extension-placeholder.avif"}
+                          alt={req.extension_name}
+                          class="w-9 h-9 rounded-lg object-contain bg-slate-50 border border-slate-200 shrink-0 p-0.5"
+                        />
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <a
+                              href={`/extension/${req.extension_slug}`}
+                              target="_blank"
+                              class="font-bold text-slate-900 hover:text-blue-600 text-xs sm:text-sm flex items-center gap-1 transition-colors truncate"
+                            >
+                              <span>{req.extension_name}</span>
+                              <ExternalLink class="w-3 h-3 text-slate-400" />
+                            </a>
+                            <span class="text-[11px] text-slate-400 font-mono">v{req.extension_version || '1.0.0'}</span>
+                          </div>
+                          <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                            <span>Publisher: <strong class="text-slate-700 font-medium">{req.developer_name}</strong></span>
+                            <span class="text-slate-300">•</span>
+                            <span class="font-mono text-slate-400">Submitted {new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          class="approve-lifecycle-btn px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                          data-id={req.id}
+                          data-type="unpublish"
+                          data-name={req.extension_name}
+                        >
+                          <Check class="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Approve Unpublish</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="reject-lifecycle-btn px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                          data-id={req.id}
+                          data-type="unpublish"
+                          data-name={req.extension_name}
+                        >
+                          <X class="w-3.5 h-3.5 text-slate-400" />
+                          <span>Decline</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Developer's Reason Box -->
+                    <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1.5">
+                      <div class="flex items-center gap-1.5 text-slate-500 font-mono text-[11px] font-semibold uppercase tracking-wider">
+                        <MessageSquare class="w-3.5 h-3.5 text-slate-400" />
+                        <span>Developer's Reason for Unpublishing</span>
+                      </div>
+                      <p class="text-xs text-slate-800 font-normal italic leading-relaxed">
+                        &ldquo;{req.reason}&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <!-- PANEL 2: PERMANENT DELETION REQUESTS -->
+          <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <Trash2 class="w-4 h-4 text-rose-600" />
+                <h3 class="font-bold text-slate-900 text-sm">Permanent Deletion Requests</h3>
+                <span class="text-xs font-mono font-semibold text-rose-600" id="delete-requests-count">({deleteRequests.length})</span>
+              </div>
+              <p class="text-xs text-slate-500">
+                Irreversible requests to permanently purge packages, metadata, releases, and reviews from database.
+              </p>
+            </div>
+
+            {deleteRequests.length === 0 ? (
+              <div class="py-12 px-6 text-center text-slate-500" id="delete-empty-state">
+                <p class="text-xs">No deletion requests pending review.</p>
+              </div>
+            ) : (
+              <div class="divide-y divide-slate-100" id="delete-requests-list">
+                {deleteRequests.map((req) => (
+                  <div class="p-6 space-y-4 hover:bg-slate-50/60 transition-colors lifecycle-row" id={`lifecycle-row-${req.id}`}>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img
+                          src={req.extension_icon_url || "/icons/extension-placeholder.avif"}
+                          alt={req.extension_name}
+                          class="w-9 h-9 rounded-lg object-contain bg-slate-50 border border-slate-200 shrink-0 p-0.5"
+                        />
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <a
+                              href={`/extension/${req.extension_slug}`}
+                              target="_blank"
+                              class="font-bold text-slate-900 hover:text-blue-600 text-xs sm:text-sm flex items-center gap-1 transition-colors truncate"
+                            >
+                              <span>{req.extension_name}</span>
+                              <ExternalLink class="w-3 h-3 text-slate-400" />
+                            </a>
+                            <span class="text-[11px] text-slate-400 font-mono">v{req.extension_version || '1.0.0'}</span>
+                            {typeof req.weekly_active_users === 'number' && req.weekly_active_users > 0 && (
+                              <span class="text-[11px] font-semibold text-rose-600">
+                                Warning: {req.weekly_active_users} active users
+                              </span>
+                            )}
+                          </div>
+                          <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                            <span>Publisher: <strong class="text-slate-700 font-medium">{req.developer_name}</strong></span>
+                            <span class="text-slate-300">•</span>
+                            <span class="font-mono text-slate-400">Submitted {new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          class="approve-lifecycle-btn px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                          data-id={req.id}
+                          data-type="delete"
+                          data-name={req.extension_name}
+                        >
+                          <Trash2 class="w-3.5 h-3.5 text-white" />
+                          <span>Approve &amp; Delete</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="reject-lifecycle-btn px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                          data-id={req.id}
+                          data-type="delete"
+                          data-name={req.extension_name}
+                        >
+                          <X class="w-3.5 h-3.5 text-slate-400" />
+                          <span>Decline</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Developer's Reason Box -->
+                    <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1.5">
+                      <div class="flex items-center gap-1.5 text-slate-500 font-mono text-[11px] font-semibold uppercase tracking-wider">
+                        <MessageSquare class="w-3.5 h-3.5 text-slate-400" />
+                        <span>Developer's Reason for Permanent Deletion</span>
+                      </div>
+                      <p class="text-xs text-slate-800 font-normal italic leading-relaxed">
+                        &ldquo;{req.reason}&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+
     </main>
+
+    <!-- Admin Lifecycle Decline Modal -->
+    <div id="lifecycle-decline-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <X class="w-4 h-4 text-rose-500" />
+            <h3 class="font-bold text-slate-900 text-sm">Decline Lifecycle Request</h3>
+          </div>
+          <button type="button" id="close-decline-modal-btn" class="text-slate-400 hover:text-slate-600 cursor-pointer p-1">
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Provide a reason for declining this request. This will be delivered as a notification to the extension developer.
+        </p>
+
+        <form id="lifecycle-decline-form" class="space-y-4">
+          <input type="hidden" id="decline-request-id" value="" />
+          <div>
+            <label for="decline-reason-input" class="block text-xs font-semibold text-slate-700 mb-1.5">
+              Reason for Declining <span class="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="decline-reason-input"
+              rows="3"
+              required
+              minlength="5"
+              placeholder="e.g. Please address pending user support tickets before unpublishing..."
+              class="w-full text-xs p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 resize-none placeholder:text-slate-400"
+            ></textarea>
+          </div>
+
+          <div id="decline-modal-error" class="hidden p-2.5 bg-rose-50 text-rose-700 text-xs rounded-lg border border-rose-200"></div>
+
+          <div class="flex items-center justify-end gap-2.5 pt-2">
+            <button
+              type="button"
+              id="cancel-decline-btn"
+              class="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              id="submit-decline-btn"
+              class="px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <span>Decline Request</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Deep Package Inspection Modal -->
     <div
@@ -1179,6 +1448,157 @@ function formatPackageSize(bytes?: number): string {
             }
           });
         }
+
+        // 7. Lifecycle Request Review Actions (Unpublish & Delete)
+        const declineModal = document.getElementById('lifecycle-decline-modal');
+        const closeDeclineModalBtn = document.getElementById('close-decline-modal-btn');
+        const cancelDeclineBtn = document.getElementById('cancel-decline-btn');
+        const declineForm = document.getElementById('lifecycle-decline-form');
+        const declineRequestIdInput = document.getElementById('decline-request-id');
+        const declineReasonInput = document.getElementById('decline-reason-input');
+        const declineModalError = document.getElementById('decline-modal-error');
+        const submitDeclineBtn = document.getElementById('submit-decline-btn');
+
+        function openDeclineModal(requestId) {
+          if (!declineModal) return;
+          if (declineRequestIdInput) declineRequestIdInput.value = requestId;
+          if (declineReasonInput) declineReasonInput.value = '';
+          if (declineModalError) {
+            declineModalError.textContent = '';
+            declineModalError.classList.add('hidden');
+          }
+          declineModal.classList.remove('hidden');
+          setTimeout(() => declineReasonInput?.focus(), 100);
+        }
+
+        function closeDeclineModal() {
+          if (declineModal) declineModal.classList.add('hidden');
+        }
+
+        closeDeclineModalBtn?.addEventListener('click', closeDeclineModal);
+        cancelDeclineBtn?.addEventListener('click', closeDeclineModal);
+
+        // Approve buttons
+        document.querySelectorAll('.approve-lifecycle-btn').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const requestId = btn.getAttribute('data-id');
+            const requestType = btn.getAttribute('data-type');
+            const extName = btn.getAttribute('data-name');
+            if (!requestId) return;
+
+            const confirmMsg = requestType === 'delete'
+              ? `Are you sure you want to approve PERMANENT DELETION for "${extName}"? This cannot be undone.`
+              : `Are you sure you want to approve UNPUBLISHING for "${extName}"? The extension will be unlisted from the store.`;
+
+            if (!confirm(confirmMsg)) return;
+
+            btn.disabled = true;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span>Processing...</span>';
+
+            try {
+              const res = await fetch('/api/admin/extensions/lifecycle-review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  requestId,
+                  action: 'approve',
+                }),
+              });
+
+              const data = await res.json();
+              if (!res.ok || !data.success) {
+                alert(data.error || 'Failed to approve lifecycle request.');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                return;
+              }
+
+              const row = document.getElementById(`lifecycle-row-${requestId}`);
+              if (row) {
+                row.remove();
+              }
+
+              const counterId = requestType === 'unpublish' ? 'unpublish-requests-count' : 'delete-requests-count';
+              const listId = requestType === 'unpublish' ? 'unpublish-requests-list' : 'delete-requests-list';
+              
+              const listEl = document.getElementById(listId);
+              const countEl = document.getElementById(counterId);
+              if (listEl && countEl) {
+                const remaining = listEl.querySelectorAll('.lifecycle-row').length;
+                countEl.textContent = `(${remaining})`;
+                if (remaining === 0) {
+                  window.location.reload();
+                }
+              }
+            } catch (err) {
+              alert('Network error approving lifecycle request.');
+              btn.disabled = false;
+              btn.innerHTML = originalHtml;
+            }
+          });
+        });
+
+        // Reject / Decline buttons
+        document.querySelectorAll('.reject-lifecycle-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const requestId = btn.getAttribute('data-id');
+            if (requestId) {
+              openDeclineModal(requestId);
+            }
+          });
+        });
+
+        declineForm?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const requestId = declineRequestIdInput?.value;
+          const adminReason = declineReasonInput?.value?.trim() || '';
+
+          if (!requestId || adminReason.length < 5) {
+            if (declineModalError) {
+              declineModalError.textContent = 'Please provide a reason with at least 5 characters.';
+              declineModalError.classList.remove('hidden');
+            }
+            return;
+          }
+
+          if (submitDeclineBtn) submitDeclineBtn.disabled = true;
+
+          try {
+            const res = await fetch('/api/admin/extensions/lifecycle-review', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                requestId,
+                action: 'reject',
+                adminReason,
+              }),
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+              if (declineModalError) {
+                declineModalError.textContent = data.error || 'Failed to decline request.';
+                declineModalError.classList.remove('hidden');
+              }
+              if (submitDeclineBtn) submitDeclineBtn.disabled = false;
+              return;
+            }
+
+            closeDeclineModal();
+            const row = document.getElementById(`lifecycle-row-${requestId}`);
+            if (row) {
+              row.remove();
+            }
+            window.location.reload();
+          } catch (err) {
+            if (declineModalError) {
+              declineModalError.textContent = 'Network error declining request.';
+              declineModalError.classList.remove('hidden');
+            }
+            if (submitDeclineBtn) submitDeclineBtn.disabled = false;
+          }
+        });
 
         // 8. Refresh Button
         const refreshBtn = document.getElementById('refresh-queue-btn');
