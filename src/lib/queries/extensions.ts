@@ -530,9 +530,7 @@ export function mapDbExtensionToStoreItem(
     if (match) youtubeVideoId = match[1];
   }
 
-  const bannerSvg = dbExt.header_image_url
-    ? `<img src="${dbExt.header_image_url}" alt="${dbExt.name}" class="w-full h-full object-cover" />`
-    : generateExtensionBannerSvg(dbExt.name, dbExt.category);
+  const bannerSvg = generateExtensionBannerSvg(dbExt.name, dbExt.category);
 
   const reviewCount = typeof dbExt.review_count === 'number' ? dbExt.review_count : 0;
   const rating = reviewCount > 0 && typeof dbExt.rating === 'number' ? dbExt.rating : 0;
@@ -575,6 +573,7 @@ export function mapDbExtensionToStoreItem(
     badge: dbExt.is_featured ? 'Featured' : undefined,
     iconUrl: dbExt.icon_url || '/icons/extension-placeholder.avif',
     bannerSvg,
+    headerImageUrl: dbExt.header_image_url || undefined,
     screenshots: Array.isArray(screenshots) && screenshots.length > 0 ? screenshots : undefined,
     youtubeVideoId,
     tags,

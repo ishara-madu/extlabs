@@ -7,9 +7,10 @@ import VerifiedBadge from './VerifiedBadge.astro';
 
 interface Props {
   extension: Extension;
+  loading?: 'lazy' | 'eager';
 }
 
-const { extension } = Astro.props;
+const { extension, loading = 'eager' } = Astro.props;
 
 const hasRating = extension.reviewCount > 0 && extension.rating > 0;
 const isNew = (() => {
@@ -33,7 +34,18 @@ const isNew = (() => {
 >
   <!-- Top Visual Artwork Banner -->
   <div class="w-full aspect-[16/9] bg-slate-900 overflow-hidden relative border-b border-slate-100">
-    <Fragment set:html={extension.bannerSvg} />
+    {extension.headerImageUrl ? (
+      <Image
+        src={extension.headerImageUrl}
+        alt={extension.name}
+        width={640}
+        height={360}
+        loading={loading}
+        class="w-full h-full object-cover"
+      />
+    ) : (
+      <Fragment set:html={extension.bannerSvg} />
+    )}
     {extension.badge && (
       <span class="absolute top-3 right-3 text-[10px] font-semibold text-slate-900 bg-white/95 px-2 py-0.5 rounded shadow-2xs">
         {extension.badge}
@@ -51,6 +63,7 @@ const isNew = (() => {
             alt={extension.name}
             width={20}
             height={20}
+            loading={loading}
             class="w-5 h-5 rounded object-contain shrink-0"
           />
           <span class="truncate">{extension.name}</span>

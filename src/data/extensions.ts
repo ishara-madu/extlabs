@@ -67,6 +67,7 @@ export interface Extension {
   iconSvg?: string;
   iconUrl?: string;
   bannerSvg: string;
+  headerImageUrl?: string;
   screenshots?: string[];
   youtubeVideoId?: string;
   tags: string[];
