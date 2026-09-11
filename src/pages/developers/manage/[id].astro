@@ -23,7 +23,8 @@ import {
   EyeOff,
   Trash2,
   Clock,
-  Send
+  Send,
+  Bell
 } from '@lucide/astro';
 import { 
   getDb, 
@@ -491,12 +492,12 @@ try {
 
       </div>
 
-      <!-- Extension-Specific Special Notification Banner (Appears only when there is an active notification for this extension) -->
-      {latestNotification && (
+      <!-- Extension-Specific Special Notification Banner (Appears only when there is an active notification for this extension, otherwise displays clean empty state) -->
+      {latestNotification ? (
         <div 
           id="extension-notification-banner"
           data-notification-id={latestNotification.id}
-          class={`p-5 rounded-2xl shadow-2xs space-y-2.5 transition-opacity ${
+          class={`p-5 rounded-2xl shadow-2xs space-y-2.5 transition-opacity duration-200 ${
             latestNotification.type === 'error' 
               ? 'bg-[#fff5f5] ring-1 ring-rose-200/80 border-0' 
               : 'bg-[#f0f4f9] border-0'
@@ -598,6 +599,27 @@ try {
               </a>
             </div>
           )}
+        </div>
+      ) : (
+        <div 
+          id="extension-notification-empty-state"
+          class="p-4 sm:p-5 rounded-2xl bg-[#f0f4f9] border-0 flex items-center justify-between gap-4 text-xs text-slate-600"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center text-slate-400 shrink-0 shadow-2xs">
+              <Bell class="w-4 h-4 text-slate-500" />
+            </div>
+            <div class="min-w-0">
+              <span class="font-semibold text-slate-800 block text-xs">No active alerts for this extension</span>
+              <span class="text-[11px] text-slate-500 block truncate">
+                Moderation decisions, policy updates, and audit notices for this package will appear here.
+              </span>
+            </div>
+          </div>
+          <span class="text-[11px] font-medium text-emerald-600 font-mono shrink-0 hidden sm:inline-flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>All clear</span>
+          </span>
         </div>
       )}
 
@@ -1398,7 +1420,28 @@ try {
             const notifId = notifBanner.getAttribute('data-notification-id');
             notifBanner.classList.add('opacity-0');
             setTimeout(() => {
-              notifBanner.remove();
+              notifBanner.outerHTML = `
+                <div 
+                  id="extension-notification-empty-state"
+                  class="p-4 sm:p-5 rounded-2xl bg-[#f0f4f9] border-0 flex items-center justify-between gap-4 text-xs text-slate-600 transition-opacity duration-200"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-8 h-8 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center text-slate-400 shrink-0 shadow-2xs">
+                      <svg class="w-4 h-4 text-slate-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                      <span class="font-semibold text-slate-800 block text-xs">No active alerts for this extension</span>
+                      <span class="text-[11px] text-slate-500 block truncate">
+                        Moderation decisions, policy updates, and audit notices for this package will appear here.
+                      </span>
+                    </div>
+                  </div>
+                  <span class="text-[11px] font-medium text-emerald-600 font-mono shrink-0 hidden sm:inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>All clear</span>
+                  </span>
+                </div>
+              `;
             }, 200);
 
             if (notifId) {
