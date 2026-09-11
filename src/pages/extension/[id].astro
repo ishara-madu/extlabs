@@ -661,7 +661,7 @@ const jsonLdSchema = {
                         alt={`Thumbnail ${idx + 1}`}
                         width={96}
                         height={54}
-                        loading="eager"
+                        loading="lazy"
                         decoding="async"
                         class="w-full h-full object-cover"
                       />
@@ -1289,7 +1289,7 @@ const jsonLdSchema = {
             <div class="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
               <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-medium text-slate-600 text-[10px] shrink-0">
                 {currentUser.avatar_url ? (
-                  <Image src={currentUser.avatar_url} alt={currentUser.name || currentUser.username || 'User'} width={24} height={24} class="w-full h-full object-cover" />
+                  <Image src={currentUser.avatar_url} alt={currentUser.name || currentUser.username || 'User'} width={24} height={24} loading="eager" decoding="async" class="w-full h-full object-cover" />
                 ) : (
                   <span>{currentUser.name?.[0]?.toUpperCase() || currentUser.username?.[0]?.toUpperCase() || 'U'}</span>
                 )}
