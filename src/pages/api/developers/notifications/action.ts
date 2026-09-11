@@ -1,10 +1,10 @@
-// src/pages/api/developers/notifications/action.ts
 import type { APIRoute } from 'astro';
-import { getDb, markNotificationAsRead, deleteNotification } from '../../../../lib/db';
+import { getDb, markNotificationAsRead, deleteNotification, markAllNotificationsAsRead } from '../../../../lib/db';
+import { getSessionUser } from '../../../../lib/auth';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const db = getDb();
   if (!db) {
     return new Response(JSON.stringify({ success: false, error: 'Database unavailable' }), {
@@ -15,11 +15,28 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const body = (await request.json()) as {
-      action?: 'mark_read' | 'delete';
+      action?: 'mark_read' | 'delete' | 'mark_all_read';
       notificationId?: string;
     };
 
     const { action, notificationId } = body;
+
+    if (action === 'mark_all_read') {
+      let user = (locals as any)?.user;
+      if (!user) {
+        try {
+          user = await getSessionUser(db, request);
+        } catch {}
+      }
+      const ok = await markAllNotificationsAsRead(db, {
+        userId: user?.id,
+        developerId: (user as any)?.developer_id,
+      });
+      return new Response(JSON.stringify({ success: ok }), {
+        status: ok ? 200 : 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!notificationId || typeof notificationId !== 'string') {
       return new Response(JSON.stringify({ success: false, error: 'Notification ID is required.' }), {

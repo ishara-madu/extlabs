@@ -350,12 +350,34 @@ try {
         <div 
           id="extension-notification-banner"
           data-notification-id={latestNotification.id}
-          class="p-5 bg-[#f0f4f9] rounded-2xl border-0 shadow-2xs space-y-2.5 transition-opacity"
+          class={`p-5 rounded-2xl shadow-2xs space-y-2.5 transition-opacity ${
+            latestNotification.type === 'error' 
+              ? 'bg-[#fff5f5] ring-1 ring-rose-200/80 border-0' 
+              : 'bg-[#f0f4f9] border-0'
+          }`}
         >
-          <!-- Top Row: Type Indicator, Sender Info, Date, and Dismiss Button -->
+          <!-- Top Row: Extension Icon Pill, Type Indicator, Sender Info, Date, and Dismiss Button -->
           <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-2 flex-wrap">
+              <!-- Extension Icon & Name Pill -->
+              {(latestNotification.extension_icon_url || ext.iconUrl) && (
+                <div class="inline-flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full pl-1 pr-2.5 py-0.5 text-xs text-slate-800 shadow-2xs">
+                  <img
+                    src={latestNotification.extension_icon_url || ext.iconUrl}
+                    alt={ext.name}
+                    class="w-4 h-4 rounded-full object-cover shrink-0"
+                  />
+                  <span class="font-medium text-[11px] truncate max-w-[150px]">{ext.name}</span>
+                </div>
+              )}
+
               <span class="inline-flex items-center gap-1.5 text-xs font-semibold">
+                {latestNotification.type === 'error' && (
+                  <>
+                    <span class="w-2 h-2 rounded-full bg-rose-600 shrink-0"></span>
+                    <span class="text-rose-700 font-bold">Submission Rejected</span>
+                  </>
+                )}
                 {latestNotification.type === 'success' && (
                   <>
                     <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
@@ -368,12 +390,6 @@ try {
                     <span class="text-amber-700">Warning</span>
                   </>
                 )}
-                {latestNotification.type === 'error' && (
-                  <>
-                    <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
-                    <span class="text-rose-700">Action Required</span>
-                  </>
-                )}
                 {(latestNotification.type === 'info' || latestNotification.type === 'announcement' || !['success', 'warning', 'error'].includes(latestNotification.type)) && (
                   <>
                     <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
@@ -382,9 +398,11 @@ try {
                 )}
               </span>
               <span class="text-slate-300">•</span>
-              <span class="text-xs text-slate-600 font-medium">{latestNotification.sender_name || 'ExtLabs Review Team'}</span>
+              <span class={`text-xs font-medium ${latestNotification.type === 'error' ? 'text-rose-800' : 'text-slate-600'}`}>
+                {latestNotification.sender_name || 'ExtLabs Review Team'}
+              </span>
               <span class="text-slate-300">•</span>
-              <span class="text-xs text-slate-500">
+              <span class={`text-xs ${latestNotification.type === 'error' ? 'text-rose-700/80' : 'text-slate-500'}`}>
                 {new Date(latestNotification.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
@@ -393,7 +411,11 @@ try {
             <button
               type="button"
               id="dismiss-ext-notification-btn"
-              class="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+              class={`p-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
+                latestNotification.type === 'error'
+                  ? 'text-rose-400 hover:text-rose-700'
+                  : 'text-slate-400 hover:text-slate-700'
+              }`}
               title="Dismiss notification"
             >
               <X class="w-4 h-4" />
@@ -402,10 +424,14 @@ try {
 
           <!-- Notification Title & Content -->
           <div class="space-y-1">
-            <h3 class="text-sm font-bold text-slate-900 leading-snug">
+            <h3 class={`text-sm font-bold leading-snug ${
+              latestNotification.type === 'error' ? 'text-rose-950' : 'text-slate-900'
+            }`}>
               {latestNotification.title}
             </h3>
-            <p class="text-xs text-slate-600 leading-relaxed font-normal">
+            <p class={`text-xs leading-relaxed font-normal ${
+              latestNotification.type === 'error' ? 'text-rose-800' : 'text-slate-600'
+            }`}>
               {latestNotification.message}
             </p>
           </div>
@@ -415,7 +441,11 @@ try {
             <div class="pt-0.5">
               <a
                 href={latestNotification.action_url}
-                class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                class={`inline-flex items-center gap-1.5 text-xs font-semibold hover:underline cursor-pointer ${
+                  latestNotification.type === 'error'
+                    ? 'text-rose-600 hover:text-rose-700'
+                    : 'text-blue-600 hover:text-blue-700'
+                }`}
               >
                 <span>{latestNotification.action_label || 'View Details'}</span>
                 <ArrowRight class="w-3.5 h-3.5" />

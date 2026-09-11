@@ -16,22 +16,26 @@ export async function getLatestExtensionNotification(
     const result = await db
       .prepare(
         `SELECT 
-          id,
-          user_id,
-          developer_id,
-          extension_id,
-          title,
-          message,
-          type,
-          action_url,
-          action_label,
-          is_read,
-          sender_name,
-          sender_avatar_url,
-          created_at
-        FROM notifications
-        WHERE extension_id = ?
-        ORDER BY created_at DESC
+          n.id,
+          n.user_id,
+          n.developer_id,
+          n.extension_id,
+          n.title,
+          n.message,
+          n.type,
+          n.action_url,
+          n.action_label,
+          n.is_read,
+          n.sender_name,
+          n.sender_avatar_url,
+          n.created_at,
+          e.name as extension_name,
+          e.icon_url as extension_icon_url,
+          e.slug as extension_slug
+        FROM notifications n
+        LEFT JOIN extensions e ON n.extension_id = e.id
+        WHERE n.extension_id = ?
+        ORDER BY n.created_at DESC
         LIMIT 1`
       )
       .bind(extensionId)
@@ -63,20 +67,24 @@ export async function getDeveloperNotifications(
   try {
     let query = `
       SELECT 
-        id,
-        user_id,
-        developer_id,
-        extension_id,
-        title,
-        message,
-        type,
-        action_url,
-        action_label,
-        is_read,
-        sender_name,
-        sender_avatar_url,
-        created_at
-      FROM notifications
+        n.id,
+        n.user_id,
+        n.developer_id,
+        n.extension_id,
+        n.title,
+        n.message,
+        n.type,
+        n.action_url,
+        n.action_label,
+        n.is_read,
+        n.sender_name,
+        n.sender_avatar_url,
+        n.created_at,
+        e.name as extension_name,
+        e.icon_url as extension_icon_url,
+        e.slug as extension_slug
+      FROM notifications n
+      LEFT JOIN extensions e ON n.extension_id = e.id
       WHERE 
     `;
 
@@ -84,21 +92,21 @@ export async function getDeveloperNotifications(
     const conditions: string[] = [];
 
     if (userId && developerId) {
-      conditions.push(`(user_id = ? OR developer_id = ? OR developer_id IN (SELECT id FROM developers WHERE user_id = ?) OR (user_id IS NULL AND developer_id IS NULL))`);
+      conditions.push(`(n.user_id = ? OR n.developer_id = ? OR n.developer_id IN (SELECT id FROM developers WHERE user_id = ?) OR (n.user_id IS NULL AND n.developer_id IS NULL))`);
       params.push(userId, developerId, userId);
     } else if (userId) {
-      conditions.push(`(user_id = ? OR developer_id IN (SELECT id FROM developers WHERE user_id = ?) OR (user_id IS NULL AND developer_id IS NULL))`);
+      conditions.push(`(n.user_id = ? OR n.developer_id IN (SELECT id FROM developers WHERE user_id = ?) OR (n.user_id IS NULL AND n.developer_id IS NULL))`);
       params.push(userId, userId);
     } else if (developerId) {
-      conditions.push(`(developer_id = ? OR (user_id IS NULL AND developer_id IS NULL))`);
+      conditions.push(`(n.developer_id = ? OR (n.user_id IS NULL AND n.developer_id IS NULL))`);
       params.push(developerId);
     } else {
       // General announcements
-      conditions.push(`(user_id IS NULL AND developer_id IS NULL)`);
+      conditions.push(`(n.user_id IS NULL AND n.developer_id IS NULL)`);
     }
 
     query += conditions.join(' AND ');
-    query += ` ORDER BY created_at DESC LIMIT ?`;
+    query += ` ORDER BY n.created_at DESC LIMIT ?`;
     params.push(limit);
 
     const { results } = await db.prepare(query).bind(...params).all<DbNotification>();
@@ -265,6 +273,45 @@ export async function deleteNotification(
     return true;
   } catch (error) {
     console.error(`Error deleting notification ${notificationId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Mark all unread notifications as read for a developer / user.
+ */
+export async function markAllNotificationsAsRead(
+  db: D1Database,
+  options: {
+    developerId?: string | null;
+    userId?: string | null;
+  } = {}
+): Promise<boolean> {
+  if (!db) return false;
+
+  const { developerId, userId } = options;
+
+  try {
+    let query = `UPDATE notifications SET is_read = 1 WHERE is_read = 0 AND `;
+    const params: any[] = [];
+
+    if (userId && developerId) {
+      query += `(user_id = ? OR developer_id = ? OR developer_id IN (SELECT id FROM developers WHERE user_id = ?) OR (user_id IS NULL AND developer_id IS NULL))`;
+      params.push(userId, developerId, userId);
+    } else if (userId) {
+      query += `(user_id = ? OR developer_id IN (SELECT id FROM developers WHERE user_id = ?) OR (user_id IS NULL AND developer_id IS NULL))`;
+      params.push(userId, userId);
+    } else if (developerId) {
+      query += `(developer_id = ? OR (user_id IS NULL AND developer_id IS NULL))`;
+      params.push(developerId);
+    } else {
+      query += `(user_id IS NULL AND developer_id IS NULL)`;
+    }
+
+    await db.prepare(query).bind(...params).run();
+    return true;
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
     return false;
   }
 }

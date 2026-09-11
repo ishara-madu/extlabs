@@ -131,6 +131,9 @@ export interface DbNotification {
   sender_name: string;
   sender_avatar_url?: string | null;
   created_at: string;
+  extension_name?: string | null;
+  extension_icon_url?: string | null;
+  extension_slug?: string | null;
 }
 
 /**
