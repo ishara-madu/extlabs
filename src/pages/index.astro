@@ -27,6 +27,15 @@ for (const ext of allStoreExtensions) {
 // 7-day Edge CDN Caching: Serves home page in 5ms with 0 D1 reads
 Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=604800, stale-while-revalidate=86400');
 Astro.response.headers.set('Vary', 'Cookie');
+
+let eagerCount = 0;
+const getCardLoading = () => {
+  if (eagerCount < 4) {
+    eagerCount++;
+    return 'eager';
+  }
+  return 'lazy';
+};
 ---
 
 <html lang="en" data-theme="light">
@@ -99,7 +108,7 @@ Astro.response.headers.set('Vary', 'Cookie');
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             {featuredExtensions.map((ext) => (
-              <FeaturedCard extension={ext} />
+              <FeaturedCard extension={ext} loading={getCardLoading()} />
             ))}
           </div>
         </section>
@@ -126,7 +135,7 @@ Astro.response.headers.set('Vary', 'Cookie');
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {devExtensions.map((ext) => (
-              <ExtensionCard extension={ext} />
+              <ExtensionCard extension={ext} loading={getCardLoading()} />
             ))}
           </div>
         </section>
@@ -153,7 +162,7 @@ Astro.response.headers.set('Vary', 'Cookie');
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {aiAndProdExtensions.map((ext) => (
-              <ExtensionCard extension={ext} />
+              <ExtensionCard extension={ext} loading={getCardLoading()} />
             ))}
           </div>
         </section>
@@ -180,7 +189,7 @@ Astro.response.headers.set('Vary', 'Cookie');
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {privacyAndUtilExtensions.map((ext) => (
-              <ExtensionCard extension={ext} />
+              <ExtensionCard extension={ext} loading={getCardLoading()} />
             ))}
           </div>
         </section>

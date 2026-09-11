@@ -10,7 +10,7 @@ interface Props {
   loading?: 'lazy' | 'eager';
 }
 
-const { extension, loading = 'eager' } = Astro.props;
+const { extension, loading = 'lazy' } = Astro.props;
 
 const hasRating = extension.reviewCount > 0 && extension.rating > 0;
 const isNew = (() => {
