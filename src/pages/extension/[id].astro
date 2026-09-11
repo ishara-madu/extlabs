@@ -276,6 +276,7 @@ const jsonLdSchema = {
                 href={ext.downloadUrl}
                 target="_blank"
                 download
+                aria-label="Download Package (.zip)"
                 class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
               >
                 <Download class="w-3.5 h-3.5 text-slate-400" />
@@ -285,6 +286,7 @@ const jsonLdSchema = {
             {isAuthor ? (
               <a
                 href={`/developers/manage/${ext.slug || ext.id}`}
+                aria-label="Manage Extension"
                 class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
               >
                 <span>Manage Extension</span>
@@ -292,6 +294,7 @@ const jsonLdSchema = {
             ) : (
               <a
                 href="/admin/directory"
+                aria-label="Live Directory"
                 class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
               >
                 <span>Live Directory</span>
@@ -299,6 +302,7 @@ const jsonLdSchema = {
             )}
             <a
               href="/admin/pending-review"
+              aria-label="Review Queue"
               class="px-2.5 py-1.5 text-slate-400 hover:text-white transition-colors text-xs inline-flex items-center gap-1"
             >
               <span>Review Queue</span>
@@ -321,6 +325,7 @@ const jsonLdSchema = {
           <div class="flex items-center gap-2.5 shrink-0">
             <a
               href={`/developers/manage/${ext.slug || ext.id}`}
+              aria-label="Manage Extension Console"
               class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
             >
               <span>Manage Extension Console</span>
@@ -348,6 +353,7 @@ const jsonLdSchema = {
                 href={ext.downloadUrl}
                 target="_blank"
                 download
+                aria-label="Download Package (.zip)"
                 class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
               >
                 <Download class="w-3.5 h-3.5 text-slate-400" />
@@ -376,6 +382,7 @@ const jsonLdSchema = {
             )}
             <a
               href="/admin/pending-review"
+              aria-label="Review Queue"
               class="px-2.5 py-1.5 text-slate-400 hover:text-white transition-colors text-xs inline-flex items-center gap-1"
             >
               <span>Review Queue</span>
@@ -653,6 +660,7 @@ const jsonLdSchema = {
                         alt={`Thumbnail ${idx + 1}`}
                         width={96}
                         height={54}
+                        loading="eager"
                         class="w-full h-full object-cover"
                       />
                     </button>
@@ -710,7 +718,7 @@ const jsonLdSchema = {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 {ext.features.map((feat) => (
                   <div class="space-y-1">
-                    <h3 class="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
+                    <h3 class="text-xs font-semibold text-slate-900 flex items-center gap-1.5" aria-label={feat.title || 'Feature'}>
                       <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
                       <span>{feat.title}</span>
                     </h3>
@@ -736,7 +744,7 @@ const jsonLdSchema = {
                 {ext.howItWorks.map((step) => (
                   <div class="space-y-1.5">
                     <span class="text-[11px] font-mono font-medium text-slate-400">Stage 0{step.step}</span>
-                    <h3 class="text-xs font-semibold text-slate-900">
+                    <h3 class="text-xs font-semibold text-slate-900" aria-label={step.title || 'Workflow Stage'}>
                       {step.title}
                     </h3>
                     <p class="text-xs text-slate-500 leading-relaxed">
@@ -757,7 +765,7 @@ const jsonLdSchema = {
             
             <!-- Specs -->
             <div class="space-y-3">
-              <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
+              <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2" aria-label="Specifications">
                 Specifications
               </h3>
 
@@ -1086,7 +1094,7 @@ const jsonLdSchema = {
                     ))}
                   </div>
                   {userReview.title && (
-                    <h4 class="text-xs font-semibold text-slate-800">{userReview.title}</h4>
+                    <h4 class="text-xs font-semibold text-slate-800" aria-label={userReview.title}>{userReview.title}</h4>
                   )}
                   <p class="text-xs text-slate-600 leading-relaxed">
                     "{userReview.comment}"
@@ -1162,7 +1170,7 @@ const jsonLdSchema = {
                       </div>
 
                       {rev.title && (
-                        <h4 class="text-xs font-semibold text-slate-800">{rev.title}</h4>
+                        <h4 class="text-xs font-semibold text-slate-800" aria-label={rev.title}>{rev.title}</h4>
                       )}
 
                       <p class="text-xs text-slate-600 leading-relaxed">
@@ -1258,7 +1266,7 @@ const jsonLdSchema = {
       <div class="modal-box max-w-lg p-5 bg-white rounded-xl border border-slate-200 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h3 class="text-sm font-bold text-slate-900">{userReview ? 'Edit Your Review' : 'Rate & Review'}</h3>
+            <h3 class="text-sm font-bold text-slate-900" aria-label={userReview ? 'Edit Your Review' : 'Rate & Review'}>{userReview ? 'Edit Your Review' : 'Rate & Review'}</h3>
             <p class="text-xs text-slate-500">{ext.name}</p>
           </div>
           <button
@@ -1290,7 +1298,7 @@ const jsonLdSchema = {
 
           <!-- Interactive Star Rating Selector -->
           <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-slate-800">Your Rating <span class="text-rose-500">*</span></label>
+            <span class="block text-xs font-semibold text-slate-800">Your Rating <span class="text-rose-500">*</span></span>
             <div class="flex items-center gap-3">
               <div id="star-rating-selector" class="flex items-center gap-1" data-rating={userReview?.rating || 5}>
                 {[1, 2, 3, 4, 5].map((starVal) => (
@@ -1390,7 +1398,7 @@ const jsonLdSchema = {
     <dialog id="review-auth-modal" class="modal">
       <div class="modal-box max-w-sm p-6 bg-white rounded-xl border border-slate-200 space-y-4 text-center">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h3 class="text-sm font-bold text-slate-900 text-left">Sign In with Google</h3>
+          <h3 class="text-sm font-bold text-slate-900 text-left" aria-label="Sign In with Google">Sign In with Google</h3>
           <button
             type="button"
             id="close-auth-modal-btn"
@@ -1409,6 +1417,7 @@ const jsonLdSchema = {
           <!-- Google Sign In Button -->
           <a
             href={`/api/auth/google?redirect=${encodeURIComponent(Astro.url.pathname + '#reviews-section')}`}
+            aria-label="Continue with Google"
             class="flex items-center justify-center gap-3 w-full py-2.5 px-4 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-800 text-xs font-medium transition-colors shadow-2xs"
           >
             <svg class="w-4 h-4" viewBox="0 0 24 24">
@@ -1433,13 +1442,13 @@ const jsonLdSchema = {
     <!-- Report Modal Dialog -->
     <dialog id="report-modal" class="modal">
       <div class="modal-box max-w-md p-5 bg-white rounded-lg border border-slate-200 space-y-3">
-        <h3 class="text-sm font-bold text-slate-900">Report Extension</h3>
+        <h3 class="text-sm font-bold text-slate-900" aria-label="Report Extension">Report Extension</h3>
         <p class="text-xs text-slate-500">
           Describe the issue with <strong>{ext.name}</strong>:
         </p>
 
         <form id="report-form" class="space-y-2.5">
-          <select class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none">
+          <select aria-label="Report reason" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none">
             <option>Malware / Security Concern</option>
             <option>Broken functionality</option>
             <option>Misleading description</option>
@@ -1450,6 +1459,7 @@ const jsonLdSchema = {
           <textarea
             rows="3"
             required
+            aria-label="Report details"
             placeholder="Details..."
             class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none leading-relaxed"
           ></textarea>
@@ -1487,7 +1497,7 @@ const jsonLdSchema = {
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
               <span>Download Initiated (.zip)</span>
             </div>
-            <h3 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug">
+            <h3 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug" aria-label="Install in 3 Quick Steps">
               Install in 3 Quick Steps
             </h3>
             <p class="text-xs text-slate-500 leading-normal">
@@ -1514,7 +1524,7 @@ const jsonLdSchema = {
               <span class="w-5 h-5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
                 01
               </span>
-              <h4 class="text-xs font-bold text-slate-900">
+              <h4 class="text-xs font-bold text-slate-900" aria-label="Extract the Downloaded .ZIP">
                 Extract the Downloaded .ZIP
               </h4>
             </div>
@@ -1530,7 +1540,7 @@ const jsonLdSchema = {
                 <span class="w-5 h-5 rounded-md bg-slate-800 border border-slate-700 text-blue-400 font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
                   02
                 </span>
-                <h4 class="text-xs font-bold text-white">
+                <h4 class="text-xs font-bold text-white" aria-label="Open Extensions & Turn On Developer Mode">
                   Open Extensions & Turn On Developer Mode
                 </h4>
               </div>
@@ -1569,7 +1579,7 @@ const jsonLdSchema = {
               <span class="w-5 h-5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-[11px] flex items-center justify-center shrink-0">
                 03
               </span>
-              <h4 class="text-xs font-bold text-slate-900">
+              <h4 class="text-xs font-bold text-slate-900" aria-label="Click 'Load Unpacked' & Select Folder">
                 Click 'Load Unpacked' & Select Folder
               </h4>
             </div>
@@ -1588,6 +1598,7 @@ const jsonLdSchema = {
                 href={ext.downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Download .zip directly"
                 class="text-blue-600 hover:text-blue-700 hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer text-[11px]"
               >
                 <span>Download .zip directly</span>
@@ -1601,6 +1612,7 @@ const jsonLdSchema = {
             <a
               href="/how-to-install"
               target="_blank"
+              aria-label="View full guide with visual screenshots"
               class="text-slate-600 hover:text-blue-600 font-medium inline-flex items-center gap-1 transition-colors"
             >
               <span>View full guide with visual screenshots</span>
