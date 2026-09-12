@@ -113,23 +113,55 @@ function stripMarkdown(md: string): string {
     .trim();
 }
 
-const cleanedOverview = stripMarkdown(ext.description || '');
-const renderedOverviewHtml = ext.description ? await marked.parse(ext.description, { breaks: true, gfm: true }) : '';
-const metaDescription = (ext.tagline && ext.tagline.length >= 25)
-  ? ext.tagline
-  : (ext.tagline && cleanedOverview.toLowerCase().startsWith(ext.tagline.toLowerCase()))
-    ? (cleanedOverview.slice(0, 155) + (cleanedOverview.length > 155 ? '...' : ''))
-    : `${ext.tagline ? ext.tagline + ' — ' : ''}${cleanedOverview}`.slice(0, 155) + (cleanedOverview.length > 120 ? '...' : '');
+// Downgrade markdown headings to prevent duplicate h1 tags on page
+function downgradeMarkdownHeadings(md: string): string {
+  if (!md) return '';
+  return md.replace(/^(#{1,4})\s+/gm, (match, hashes) => '##' + hashes + ' ');
+}
 
-const ogImageUrl = screenshotsList[0] || ext.iconUrl || 'https://extlabs.io/favicon.svg';
+const cleanedOverview = stripMarkdown(ext.description || '');
+const safeMarkdownDescription = downgradeMarkdownHeadings(ext.description || '');
+const renderedOverviewHtml = safeMarkdownDescription ? await marked.parse(safeMarkdownDescription, { breaks: true, gfm: true }) : '';
+
+const canonicalSlug = ext.slug || ext.id;
+const canonicalUrl = `https://extlabs.io/extension/${canonicalSlug}`;
+
+// Smart title: stays under 60-65 chars for Google SERP display limits
+const pageTitle = ext.name.length > 42
+  ? `${ext.name} | ExtLabs`
+  : `${ext.name} — Free Browser Extension | ExtLabs`;
+
+const metaDescription = (() => {
+  if (ext.tagline && ext.tagline.length >= 50 && ext.tagline.length <= 155) {
+    return ext.tagline.endsWith('.') ? ext.tagline : `${ext.tagline}.`;
+  }
+  if (ext.tagline && cleanedOverview) {
+    const combined = `${ext.tagline} — ${cleanedOverview}`;
+    if (combined.length <= 155) return combined;
+    return combined.slice(0, 152).trim() + '...';
+  }
+  if (cleanedOverview) {
+    if (cleanedOverview.length <= 155) return cleanedOverview;
+    return cleanedOverview.slice(0, 152).trim() + '...';
+  }
+  return `Download ${ext.name} browser extension for Chrome, Edge, and Brave. Free direct package download verified safe on ExtLabs.`;
+})();
+
+const ogImageUrl = ext.headerImageUrl || screenshotsList[0] || ext.iconUrl || 'https://extlabs.io/favicon.svg';
 
 // JSON-LD Schema.org Structured Data for SEO
 const jsonLdGraph: any[] = [
   {
     "@type": "SoftwareApplication",
     "name": ext.name,
+    "url": canonicalUrl,
+    "image": ext.iconUrl || ogImageUrl,
+    ...(screenshotsList.length > 0 ? { "screenshot": screenshotsList } : {}),
+    ...(ext.downloadUrl && ext.downloadUrl !== '#' ? { "downloadUrl": ext.downloadUrl } : {}),
     "operatingSystem": "Chromium Browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi)",
     "applicationCategory": "BrowserExtension",
+    "applicationSubCategory": ext.categoryLabel || "Utilities",
+    "softwareRequirements": "Google Chrome, Microsoft Edge, Brave, or Chromium-based browsers",
     "offers": {
       "@type": "Offer",
       "price": "0",
@@ -152,7 +184,7 @@ const jsonLdGraph: any[] = [
     "softwareVersion": ext.version,
     "fileSize": ext.size,
     "dateModified": ext.updatedDate,
-    "description": cleanedOverview.slice(0, 300) || ext.tagline
+    "description": metaDescription
   },
   {
     "@type": "BreadcrumbList",
@@ -173,7 +205,7 @@ const jsonLdGraph: any[] = [
         "@type": "ListItem",
         "position": 3,
         "name": ext.name,
-        "item": `https://extlabs.io/extension/${ext.id}`
+        "item": canonicalUrl
       }
     ]
   }
@@ -227,26 +259,36 @@ const jsonLdSchema = {
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
     <link rel="preconnect" href="https://avatars.githubusercontent.com" crossorigin />
 
+    <!-- Robots Meta Tag -->
+    {isPublishedLive ? (
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    ) : (
+      <meta name="robots" content="noindex, nofollow" />
+    )}
+
     <!-- Primary SEO Meta Tags -->
-    <title>{ext.name} — Free Browser Extension | ExtLabs</title>
-    <meta name="title" content={`${ext.name} — Free Browser Extension | ExtLabs`} />
+    <title>{pageTitle}</title>
+    <meta name="title" content={pageTitle} />
     <meta name="description" content={metaDescription} />
     <meta name="keywords" content={`${ext.tags.join(', ')}, ${ext.categoryLabel}, browser extension, chrome extension`} />
     <meta name="author" content={ext.developer} />
-    <link rel="canonical" href={`https://extlabs.io/extension/${ext.id}`} />
+    <link rel="canonical" href={canonicalUrl} />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={`https://extlabs.io/extension/${ext.id}`} />
-    <meta property="og:title" content={`${ext.name} — ExtLabs Extension`} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={metaDescription} />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:alt" content={`${ext.name} preview`} />
     <meta property="og:site_name" content="ExtLabs" />
 
     <!-- Twitter Card -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={`https://extlabs.io/extension/${ext.id}`} />
-    <meta property="twitter:title" content={`${ext.name} — ExtLabs`} />
+    <meta property="twitter:site" content="@extlabs_io" />
+    <meta property="twitter:creator" content="@extlabs_io" />
+    <meta property="twitter:url" content={canonicalUrl} />
+    <meta property="twitter:title" content={pageTitle} />
     <meta property="twitter:description" content={metaDescription} />
     <meta property="twitter:image" content={ogImageUrl} />
 
@@ -767,9 +809,9 @@ const jsonLdSchema = {
             
             <!-- Specs -->
             <div class="space-y-3">
-              <h3 class="text-xs font-semibold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2" aria-label="Specifications">
+              <h2 class="text-xs font-semibold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2" aria-label="Specifications">
                 Specifications
-              </h3>
+              </h2>
 
               <dl class="divide-y divide-slate-100 text-xs">
                 {ext.version && (
