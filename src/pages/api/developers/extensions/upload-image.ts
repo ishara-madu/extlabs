@@ -2,7 +2,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug } from '../../../../lib/db';
-import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryFolder } from '../../../../lib/cloudinary';
+import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryFolder, CLOUDINARY_IMAGE_PRESETS } from '../../../../lib/cloudinary';
 
 export const prerender = false;
 
@@ -99,6 +99,7 @@ export const POST: APIRoute = async ({ request }) => {
       file: image,
       folder,
       tags,
+      transformation: CLOUDINARY_IMAGE_PRESETS[type] || CLOUDINARY_IMAGE_PRESETS.screenshot,
     });
 
     return new Response(

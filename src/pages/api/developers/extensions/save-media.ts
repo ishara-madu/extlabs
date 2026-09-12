@@ -1,8 +1,15 @@
 // src/pages/api/developers/extensions/save-media.ts
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
-import { getDb, getDeveloperByUserIdOrSlug, saveExtensionMedia } from '../../../../lib/db';
-import { uploadToCloudinary, isCloudinaryConfigured, getCloudinaryFolder } from '../../../../lib/cloudinary';
+import { getDb, getDeveloperByUserIdOrSlug, saveExtensionMedia, getExtensionBySlug, getExtensionById } from '../../../../lib/db';
+import { 
+  uploadToCloudinary, 
+  isCloudinaryConfigured, 
+  getCloudinaryFolder, 
+  CLOUDINARY_IMAGE_PRESETS,
+  deleteFromCloudinary,
+  extractCloudinaryPublicId
+} from '../../../../lib/cloudinary';
 
 export const prerender = false;
 
@@ -109,39 +116,73 @@ export const POST: APIRoute = async ({ request }) => {
     if (isCloudinaryConfigured()) {
       const extTag = slug || id || 'unknown';
 
-      // 1. Upload Icon if Base64
+      // Query existing extension to safely clean up replaced images from Cloudinary storage
+      let existingExt: any = null;
+      try {
+        existingExt = (await getExtensionBySlug(db, slug || id || '', { allowDraft: true })) ||
+                      (await getExtensionById(db, id || slug || '', { allowDraft: true }));
+      } catch (qErr) {
+        console.warn('Failed to query existing extension for Cloudinary cleanup:', qErr);
+      }
+
+      // 1. Upload Icon if Base64 (Limit to 256x256 max)
       const iconPromise = (async () => {
         if (finalIcon.startsWith('data:image/')) {
           const res = await uploadToCloudinary({
             file: finalIcon,
             folder: getCloudinaryFolder('icons'),
             tags: ['extlabs', 'icon', extTag],
+            transformation: CLOUDINARY_IMAGE_PRESETS.icon,
           });
+
+          // Delete old icon from Cloudinary if replaced
+          if (existingExt?.icon_url && existingExt.icon_url !== res.secure_url) {
+            const oldPublicId = extractCloudinaryPublicId(existingExt.icon_url);
+            if (oldPublicId) {
+              deleteFromCloudinary(oldPublicId).catch((delErr) => {
+                console.warn('Failed to delete old icon from Cloudinary:', delErr);
+              });
+            }
+          }
+
           return res.secure_url;
         }
         return finalIcon;
       })();
 
-      // 2. Upload Promo Banner if Base64
+      // 2. Upload Promo Banner if Base64 (Limit to 1400x560 max)
       const promoPromise = (async () => {
         if (finalPromo.startsWith('data:image/')) {
           const res = await uploadToCloudinary({
             file: finalPromo,
             folder: getCloudinaryFolder('banners'),
             tags: ['extlabs', 'banner', extTag],
+            transformation: CLOUDINARY_IMAGE_PRESETS.banner,
           });
+
+          // Delete old promo banner from Cloudinary if replaced
+          if (existingExt?.header_image_url && existingExt.header_image_url !== res.secure_url) {
+            const oldPublicId = extractCloudinaryPublicId(existingExt.header_image_url);
+            if (oldPublicId) {
+              deleteFromCloudinary(oldPublicId).catch((delErr) => {
+                console.warn('Failed to delete old promo banner from Cloudinary:', delErr);
+              });
+            }
+          }
+
           return res.secure_url;
         }
         return finalPromo;
       })();
 
-      // 3. Upload Screenshots if Base64
+      // 3. Upload Screenshots if Base64 (Limit to 1280x720 max)
       const screenshotsPromises = cleanedScreenshots.map(async (screenshotUrl, idx) => {
         if (screenshotUrl.startsWith('data:image/')) {
           const res = await uploadToCloudinary({
             file: screenshotUrl,
             folder: getCloudinaryFolder('screenshots'),
             tags: ['extlabs', 'screenshot', extTag, `index-${idx}`],
+            transformation: CLOUDINARY_IMAGE_PRESETS.screenshot,
           });
           return res.secure_url;
         }
@@ -154,6 +195,20 @@ export const POST: APIRoute = async ({ request }) => {
         promoPromise,
         Promise.all(screenshotsPromises),
       ]);
+
+      // Check if any old screenshots were dropped / replaced, and purge them from Cloudinary storage
+      if (existingExt?.screenshots && Array.isArray(existingExt.screenshots)) {
+        for (const oldScr of existingExt.screenshots) {
+          if (typeof oldScr === 'string' && !uploadedScreenshots.includes(oldScr)) {
+            const oldPublicId = extractCloudinaryPublicId(oldScr);
+            if (oldPublicId) {
+              deleteFromCloudinary(oldPublicId).catch((delErr) => {
+                console.warn('Failed to delete replaced screenshot from Cloudinary:', delErr);
+              });
+            }
+          }
+        }
+      }
 
       var targetIcon = uploadedIcon;
       var targetPromo = uploadedPromo;

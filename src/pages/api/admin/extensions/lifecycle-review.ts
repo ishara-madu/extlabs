@@ -1,9 +1,10 @@
 // src/pages/api/admin/extensions/lifecycle-review.ts
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
-import { getDb, createNotification } from '../../../../lib/db';
+import { getDb, createNotification, getExtensionById } from '../../../../lib/db';
 import { approveLifecycleRequest, rejectLifecycleRequest } from '../../../../lib/queries/lifecycle';
 import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
+import { deleteFromCloudinary, extractCloudinaryPublicId } from '../../../../lib/cloudinary';
 
 export const prerender = false;
 
@@ -107,7 +108,32 @@ export const POST: APIRoute = async ({ request }) => {
           }
         );
       } else {
-        // Deletion approved
+        // Deletion approved: Purge extension assets from Cloudinary
+        try {
+          const extToPurge = await getExtensionById(db, result.extensionId, { allowDraft: true });
+          if (extToPurge) {
+            if (extToPurge.icon_url) {
+              const pid = extractCloudinaryPublicId(extToPurge.icon_url);
+              if (pid) deleteFromCloudinary(pid).catch(() => {});
+            }
+            if (extToPurge.header_image_url) {
+              const pid = extractCloudinaryPublicId(extToPurge.header_image_url);
+              if (pid) deleteFromCloudinary(pid).catch(() => {});
+            }
+            if (extToPurge.screenshots && Array.isArray(extToPurge.screenshots)) {
+              for (const s of extToPurge.screenshots) {
+                if (typeof s === 'string') {
+                  const pid = extractCloudinaryPublicId(s);
+                  if (pid) deleteFromCloudinary(pid).catch(() => {});
+                }
+              }
+            }
+          }
+        } catch (cloudErr) {
+          console.warn('Failed to clean up Cloudinary assets upon extension deletion:', cloudErr);
+        }
+
+        // Notify developer
         try {
           await createNotification(db, {
             developerId: result.developerId,

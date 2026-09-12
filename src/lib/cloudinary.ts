@@ -13,7 +13,20 @@ export interface CloudinaryUploadOptions {
   folder?: string;
   publicId?: string;
   tags?: string[];
+  format?: string; // 'avif' | 'webp' | 'png' | 'jpg'
+  transformation?: string; // e.g. 'c_limit,w_1280,h_720,q_auto'
 }
+
+/**
+ * Standard optimization presets for ExtLabs assets to strictly minimize Cloudinary storage & bandwidth.
+ * Applying these incoming transformations discards the bulky original files (e.g. 4K/raw PNGs)
+ * and permanently stores lightweight AVIF/WebP assets.
+ */
+export const CLOUDINARY_IMAGE_PRESETS = {
+  icon: 'c_limit,w_256,h_256,q_auto',
+  screenshot: 'c_limit,w_1280,h_720,q_auto',
+  banner: 'c_limit,w_1400,h_560,q_auto',
+} as const;
 
 export interface CloudinaryUploadResult {
   secure_url: string;
@@ -121,7 +134,7 @@ export async function uploadToCloudinary(
     );
   }
 
-  const { file, folder, publicId, tags } = options;
+  const { file, folder, publicId, tags, format = 'avif', transformation } = options;
   if (!file) {
     throw new Error('No image file or URL provided for Cloudinary upload.');
   }
@@ -136,11 +149,17 @@ export async function uploadToCloudinary(
   if (folder) {
     paramsToSign.folder = folder;
   }
+  if (format) {
+    paramsToSign.format = format;
+  }
   if (publicId) {
     paramsToSign.public_id = publicId;
   }
   if (tags && tags.length > 0) {
     paramsToSign.tags = tags.join(',');
+  }
+  if (transformation) {
+    paramsToSign.transformation = transformation;
   }
 
   // Sort parameter keys alphabetically
@@ -158,8 +177,10 @@ export async function uploadToCloudinary(
   formData.append('signature', signature);
 
   if (folder) formData.append('folder', folder);
+  if (format) formData.append('format', format);
   if (publicId) formData.append('public_id', publicId);
   if (tags && tags.length > 0) formData.append('tags', tags.join(','));
+  if (transformation) formData.append('transformation', transformation);
 
   const endpoint = `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/image/upload`;
 
@@ -185,3 +206,118 @@ export async function uploadToCloudinary(
     bytes: data.bytes,
   };
 }
+
+/**
+ * Deletes an image from Cloudinary using signed authentication.
+ * Essential for freeing up Cloudinary storage when developers update or delete extension media.
+ */
+export async function deleteFromCloudinary(publicId: string): Promise<boolean> {
+  const config = getCloudinaryConfig();
+  if (!config) return false;
+  if (!publicId || typeof publicId !== 'string') return false;
+
+  try {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${config.apiSecret}`;
+    const signature = await computeSha1Hex(stringToSign);
+
+    const formData = new FormData();
+    formData.append('public_id', publicId);
+    formData.append('api_key', config.apiKey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+
+    const endpoint = `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/image/destroy`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = (await response.json()) as any;
+    return data?.result === 'ok';
+  } catch (err) {
+    console.error('Failed to delete image from Cloudinary:', err);
+    return false;
+  }
+}
+
+/**
+ * Extracts Cloudinary Public ID from a secure_url or delivery URL.
+ * Example: 'https://res.cloudinary.com/demo/image/upload/v1234/extlabs/icons/my-icon.avif'
+ * -> 'extlabs/icons/my-icon'
+ */
+export function extractCloudinaryPublicId(url: string | null | undefined): string | null {
+  if (!url || typeof url !== 'string') return null;
+  if (!url.includes('res.cloudinary.com')) return null;
+
+  try {
+    const uploadIndex = url.indexOf('/upload/');
+    if (uploadIndex === -1) return null;
+
+    let pathAfterUpload = url.substring(uploadIndex + '/upload/'.length);
+
+    // Remove any transformation segments (segments that don't start with v[0-9]+ or aren't folders)
+    const versionMatch = pathAfterUpload.match(/(?:^|\/)v\d+\/(.+)$/);
+    if (versionMatch && versionMatch[1]) {
+      pathAfterUpload = versionMatch[1];
+    } else {
+      const parts = pathAfterUpload.split('/');
+      while (parts.length > 1 && (parts[0].includes('_') || parts[0].includes(','))) {
+        parts.shift();
+      }
+      pathAfterUpload = parts.join('/');
+    }
+
+    // Strip file extension (.jpg, .png, .avif, .webp)
+    const dotIndex = pathAfterUpload.lastIndexOf('.');
+    if (dotIndex !== -1) {
+      pathAfterUpload = pathAfterUpload.substring(0, dotIndex);
+    }
+
+    return pathAfterUpload || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Optimizes a Cloudinary image delivery URL with automatic format (AVIF/WebP) and compression.
+ * Example: turns https://res.cloudinary.com/demo/image/upload/v1/sample.jpg
+ * into https://res.cloudinary.com/demo/image/upload/f_auto,q_auto/v1/sample.jpg
+ */
+export function getOptimizedCloudinaryUrl(
+  url: string | null | undefined,
+  options: {
+    format?: 'auto' | 'avif' | 'webp' | 'png' | 'jpg';
+    quality?: 'auto' | 'best' | 'good' | 'eco' | 'low' | number;
+    width?: number;
+    height?: number;
+    crop?: 'scale' | 'fill' | 'fit' | 'thumb';
+  } = {}
+): string {
+  if (!url || typeof url !== 'string') return '';
+  if (!url.includes('res.cloudinary.com')) return url;
+
+  const {
+    format = 'auto',
+    quality = 'auto',
+    width,
+    height,
+    crop = 'scale',
+  } = options;
+
+  const transformations: string[] = [];
+  if (format) transformations.push(`f_${format}`);
+  if (quality) transformations.push(`q_${quality}`);
+  if (width) transformations.push(`w_${width}`);
+  if (height) transformations.push(`h_${height}`);
+  if ((width || height) && crop) transformations.push(`c_${crop}`);
+
+  const transformString = transformations.join(',');
+  if (!transformString) return url;
+
+  // Insert transformations immediately after /upload/
+  return url.replace('/upload/', `/upload/${transformString}/`);
+}
+
+
