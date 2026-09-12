@@ -686,6 +686,7 @@ const jsonLdSchema = {
                   class="w-full h-full object-contain select-none"
                   loading="eager"
                   decoding="async"
+                  fetchpriority="high"
                 />
 
                 {screenshotsList.length > 1 && (
@@ -753,8 +754,9 @@ const jsonLdSchema = {
             <iframe
               id="youtube-iframe"
               class="w-full h-full"
-              src={`https://www.youtube-nocookie.com/embed/${ext.youtubeVideoId}?rel=0&modestbranding=1`}
+              data-src={`https://www.youtube-nocookie.com/embed/${ext.youtubeVideoId}?rel=0&modestbranding=1`}
               title={`${ext.name} Video Demo`}
+              loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen
             ></iframe>
@@ -1820,6 +1822,12 @@ const jsonLdSchema = {
             viewScreenshot.classList.add('hidden');
             if (counter) counter.classList.add('hidden');
             if (previewBadge) previewBadge.textContent = 'YouTube Video';
+
+            // Lazy-load YouTube iframe on-demand only when tab is activated
+            const ytIframe = document.getElementById('youtube-iframe') as HTMLIFrameElement | null;
+            if (ytIframe && !ytIframe.src && ytIframe.dataset.src) {
+              ytIframe.src = ytIframe.dataset.src;
+            }
           });
         }
 
@@ -2010,32 +2018,15 @@ const jsonLdSchema = {
         if (modalCopyBtn && modalUrlEl) {
           modalCopyBtn.addEventListener('click', async () => {
             const url = modalUrlEl.textContent?.trim() || 'chrome://extensions';
+            const btnLabel = modalCopyBtnText || modalCopyBtn;
             try {
               await navigator.clipboard.writeText(url);
-              if (modalCopyBtnText) {
-                modalCopyBtnText.textContent = 'Copied!';
-              } else {
-                modalCopyBtn.textContent = 'Copied!';
-              }
-              setTimeout(() => {
-                if (modalCopyBtnText) {
-                  modalCopyBtnText.textContent = 'Copy URL';
-                } else {
-                  modalCopyBtn.textContent = 'Copy URL';
-                }
-              }, 2000);
+              btnLabel.textContent = 'Copied!';
             } catch {
-              if (modalCopyBtnText) {
-                modalCopyBtnText.textContent = 'Copied!';
-              } else {
-                modalCopyBtn.textContent = 'Copied!';
-              }
+              btnLabel.textContent = 'Failed to copy';
+            } finally {
               setTimeout(() => {
-                if (modalCopyBtnText) {
-                  modalCopyBtnText.textContent = 'Copy URL';
-                } else {
-                  modalCopyBtn.textContent = 'Copy URL';
-                }
+                btnLabel.textContent = 'Copy URL';
               }, 2000);
             }
           });
@@ -2504,78 +2495,80 @@ const jsonLdSchema = {
       }
     </style>
 
-    <script is:inline>
-      document.addEventListener('DOMContentLoaded', () => {
-        const staffApproveBtn = document.getElementById('staff-approve-btn');
-        const staffRejectBtn = document.getElementById('staff-reject-btn');
+    {isAdmin && (
+      <script is:inline>
+        document.addEventListener('DOMContentLoaded', () => {
+          const staffApproveBtn = document.getElementById('staff-approve-btn');
+          const staffRejectBtn = document.getElementById('staff-reject-btn');
 
-        if (staffApproveBtn) {
-          staffApproveBtn.addEventListener('click', async () => {
-            const extId = staffApproveBtn.getAttribute('data-id');
-            const extName = staffApproveBtn.getAttribute('data-name');
-            if (!extId) return;
+          if (staffApproveBtn) {
+            staffApproveBtn.addEventListener('click', async () => {
+              const extId = staffApproveBtn.getAttribute('data-id');
+              const extName = staffApproveBtn.getAttribute('data-name');
+              if (!extId) return;
 
-            staffApproveBtn.disabled = true;
-            staffApproveBtn.textContent = 'Approving...';
+              staffApproveBtn.disabled = true;
+              staffApproveBtn.textContent = 'Approving...';
 
-            try {
-              const res = await fetch('/api/admin/extensions/review', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ extensionId: extId, action: 'approve' })
-              });
-              const data = await res.json();
-              if (data.success) {
-                alert(`✓ Extension "${extName}" approved and published to ExtLabs Directory!`);
-                window.location.reload();
-              } else {
-                alert(data.error || 'Failed to approve extension.');
+              try {
+                const res = await fetch('/api/admin/extensions/review', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ extensionId: extId, action: 'approve' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                  alert(`✓ Extension "${extName}" approved and published to ExtLabs Directory!`);
+                  window.location.reload();
+                } else {
+                  alert(data.error || 'Failed to approve extension.');
+                  staffApproveBtn.disabled = false;
+                  staffApproveBtn.textContent = 'Approve & Publish';
+                }
+              } catch (err) {
+                alert('Network error while communicating with server.');
                 staffApproveBtn.disabled = false;
                 staffApproveBtn.textContent = 'Approve & Publish';
               }
-            } catch (err) {
-              alert('Network error while communicating with server.');
-              staffApproveBtn.disabled = false;
-              staffApproveBtn.textContent = 'Approve & Publish';
-            }
-          });
-        }
+            });
+          }
 
-        if (staffRejectBtn) {
-          staffRejectBtn.addEventListener('click', async () => {
-            const extId = staffRejectBtn.getAttribute('data-id');
-            const extName = staffRejectBtn.getAttribute('data-name');
-            if (!extId) return;
+          if (staffRejectBtn) {
+            staffRejectBtn.addEventListener('click', async () => {
+              const extId = staffRejectBtn.getAttribute('data-id');
+              const extName = staffRejectBtn.getAttribute('data-name');
+              if (!extId) return;
 
-            const reason = prompt(`Enter rejection reason for "${extName}":`, 'Package did not satisfy ExtLabs security or quality guidelines.');
-            if (reason === null) return;
+              const reason = prompt(`Enter rejection reason for "${extName}":`, 'Package did not satisfy ExtLabs security or quality guidelines.');
+              if (reason === null) return;
 
-            staffRejectBtn.disabled = true;
-            staffRejectBtn.textContent = 'Rejecting...';
+              staffRejectBtn.disabled = true;
+              staffRejectBtn.textContent = 'Rejecting...';
 
-            try {
-              const res = await fetch('/api/admin/extensions/review', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ extensionId: extId, action: 'reject', reason: reason.trim() || 'Guidelines not met' })
-              });
-              const data = await res.json();
-              if (data.success) {
-                alert(`✗ Extension "${extName}" rejected.`);
-                window.location.href = '/admin/pending-review';
-              } else {
-                alert(data.error || 'Failed to reject extension.');
+              try {
+                const res = await fetch('/api/admin/extensions/review', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ extensionId: extId, action: 'reject', reason: reason.trim() || 'Guidelines not met' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                  alert(`✗ Extension "${extName}" rejected.`);
+                  window.location.href = '/admin/pending-review';
+                } else {
+                  alert(data.error || 'Failed to reject extension.');
+                  staffRejectBtn.disabled = false;
+                  staffRejectBtn.textContent = 'Reject';
+                }
+              } catch (err) {
+                alert('Network error while communicating with server.');
                 staffRejectBtn.disabled = false;
                 staffRejectBtn.textContent = 'Reject';
               }
-            } catch (err) {
-              alert('Network error while communicating with server.');
-              staffRejectBtn.disabled = false;
-              staffRejectBtn.textContent = 'Reject';
-            }
-          });
-        }
-      });
-    </script>
+            });
+          }
+        });
+      </script>
+    )}
   </body>
 </html>
