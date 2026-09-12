@@ -26,7 +26,13 @@ export default defineConfig({
     defaultStrategy: 'hover',
   },
   image: {
-    domains: ['avatars.githubusercontent.com', 'res.cloudinary.com', 'images.unsplash.com'],
+    domains: [
+      'avatars.githubusercontent.com',
+      'res.cloudinary.com',
+      'images.unsplash.com',
+      'lh3.googleusercontent.com',
+      'googleusercontent.com',
+    ],
     remotePatterns: [
       {
         protocol: 'https',

@@ -119,6 +119,33 @@ function downgradeMarkdownHeadings(md: string): string {
   return md.replace(/^(#{1,4})\s+/gm, (match, hashes) => '##' + hashes + ' ');
 }
 
+// Deterministic vibrant background color for user initial avatar
+function getAvatarBgColor(str?: string | null): string {
+  const bgColors = [
+    'bg-blue-600 text-white',
+    'bg-emerald-600 text-white',
+    'bg-violet-600 text-white',
+    'bg-amber-600 text-white',
+    'bg-rose-600 text-white',
+    'bg-indigo-600 text-white',
+    'bg-teal-600 text-white',
+    'bg-purple-600 text-white',
+    'bg-cyan-600 text-white',
+  ];
+  if (!str) return bgColors[0];
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return bgColors[Math.abs(hash) % bgColors.length];
+}
+
+// Extract clean uppercase initial letter
+function getAvatarInitial(name?: string | null, email?: string | null, username?: string | null): string {
+  const str = (name || username || email || 'U').trim();
+  return str.charAt(0).toUpperCase() || 'U';
+}
+
 const cleanedOverview = stripMarkdown(ext.description || '');
 const safeMarkdownDescription = downgradeMarkdownHeadings(ext.description || '');
 const renderedOverviewHtml = safeMarkdownDescription ? await marked.parse(safeMarkdownDescription, { breaks: true, gfm: true }) : '';
@@ -1112,9 +1139,31 @@ const jsonLdSchema = {
                 <div class="p-3.5 bg-slate-50/80 border border-slate-200 rounded-lg space-y-1.5">
                   <div class="flex items-center justify-between text-xs">
                     <div class="flex items-center gap-2">
-                      {userReview.avatarUrl ? (
-                        <Image src={userReview.avatarUrl} alt={userReview.author} width={16} height={16} class="w-4 h-4 rounded-full object-cover" />
-                      ) : null}
+                      <div class="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center font-bold text-[10px] shrink-0">
+                        {userReview.avatarUrl ? (
+                          <>
+                            <img
+                              src={userReview.avatarUrl}
+                              alt={userReview.author}
+                              width="20"
+                              height="20"
+                              loading="lazy"
+                              decoding="async"
+                              referrerpolicy="no-referrer"
+                              data-image-component="true"
+                              class="w-full h-full object-cover rounded-full"
+                              onerror="this.style.display='none'; const fb = this.nextElementSibling; if(fb){ fb.classList.remove('hidden'); fb.style.display='flex'; }"
+                            />
+                            <span class={`w-full h-full items-center justify-center hidden ${getAvatarBgColor(userReview.author)}`}>
+                              {getAvatarInitial(userReview.author)}
+                            </span>
+                          </>
+                        ) : (
+                          <span class={`w-full h-full flex items-center justify-center ${getAvatarBgColor(userReview.author)}`}>
+                            {getAvatarInitial(userReview.author)}
+                          </span>
+                        )}
+                      </div>
                       <span class="font-semibold text-slate-900">{userReview.author}</span>
                       <span class="text-[10px] text-emerald-600 font-medium inline-flex items-center gap-0.5">
                         <BadgeCheck class="w-3 h-3 text-emerald-500" />
@@ -1193,9 +1242,31 @@ const jsonLdSchema = {
                     >
                       <div class="flex items-center justify-between text-xs">
                         <div class="flex items-center gap-1.5">
-                          {rev.avatarUrl ? (
-                            <Image src={rev.avatarUrl} alt={rev.author} width={16} height={16} class="w-4 h-4 rounded-full object-cover" />
-                          ) : null}
+                          <div class="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center font-bold text-[10px] shrink-0">
+                            {rev.avatarUrl ? (
+                              <>
+                                <img
+                                  src={rev.avatarUrl}
+                                  alt={rev.author}
+                                  width="20"
+                                  height="20"
+                                  loading="lazy"
+                                  decoding="async"
+                                  referrerpolicy="no-referrer"
+                                  data-image-component="true"
+                                  class="w-full h-full object-cover rounded-full"
+                                  onerror="this.style.display='none'; const fb = this.nextElementSibling; if(fb){ fb.classList.remove('hidden'); fb.style.display='flex'; }"
+                                />
+                                <span class={`w-full h-full items-center justify-center hidden ${getAvatarBgColor(rev.author)}`}>
+                                  {getAvatarInitial(rev.author)}
+                                </span>
+                              </>
+                            ) : (
+                              <span class={`w-full h-full flex items-center justify-center ${getAvatarBgColor(rev.author)}`}>
+                                {getAvatarInitial(rev.author)}
+                              </span>
+                            )}
+                          </div>
                           <span class="font-medium text-slate-900">{rev.author}</span>
                           {rev.verified && (
                             <span class="text-[10px] text-emerald-600 font-medium inline-flex items-center gap-0.5">
@@ -1328,15 +1399,40 @@ const jsonLdSchema = {
           
           <!-- User Profile Info -->
           {currentUser && (
-            <div class="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-              <div class="w-6 h-6 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center font-medium text-slate-600 text-[10px] shrink-0">
+            <div class="flex items-center gap-2.5 text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+              <div class="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                 {currentUser.avatar_url ? (
-                  <Image src={currentUser.avatar_url} alt={currentUser.name || currentUser.username || 'User'} width={24} height={24} loading="eager" decoding="async" class="w-full h-full object-cover" />
+                  <>
+                    <img
+                      src={currentUser.avatar_url}
+                      alt={currentUser.name || currentUser.username || 'User'}
+                      width="28"
+                      height="28"
+                      loading="eager"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
+                      data-image-component="true"
+                      class="w-full h-full object-cover rounded-full"
+                      onerror="this.style.display='none'; const fb = this.nextElementSibling; if(fb){ fb.classList.remove('hidden'); fb.style.display='flex'; }"
+                    />
+                    <span
+                      class={`w-full h-full items-center justify-center hidden ${getAvatarBgColor(currentUser.name || currentUser.username || currentUser.email)}`}
+                    >
+                      {getAvatarInitial(currentUser.name, currentUser.email, currentUser.username)}
+                    </span>
+                  </>
                 ) : (
-                  <span>{currentUser.name?.[0]?.toUpperCase() || currentUser.username?.[0]?.toUpperCase() || 'U'}</span>
+                  <span
+                    class={`w-full h-full flex items-center justify-center ${getAvatarBgColor(currentUser.name || currentUser.username || currentUser.email)}`}
+                  >
+                    {getAvatarInitial(currentUser.name, currentUser.email, currentUser.username)}
+                  </span>
                 )}
               </div>
-              <span class="truncate">Reviewing as <strong class="text-slate-800">{currentUser.name || currentUser.username}</strong></span>
+              <div class="flex flex-col min-w-0">
+                <span class="truncate">Reviewing as <strong class="text-slate-900 font-semibold">{currentUser.name || currentUser.username}</strong></span>
+                {currentUser.email && <span class="text-[11px] text-slate-400 truncate">{currentUser.email}</span>}
+              </div>
             </div>
           )}
 
