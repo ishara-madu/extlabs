@@ -112,6 +112,42 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    // Strict payload size guards: Max 1MB for icon, max 2MB for banner & screenshots
+    if (finalIcon.startsWith('data:image/')) {
+      const rawData = finalIcon.split(',')[1] || '';
+      const estimatedBytes = Math.round(rawData.length * 0.75);
+      if (estimatedBytes > 1.2 * 1024 * 1024) {
+        return new Response(JSON.stringify({ success: false, error: 'Icon file size exceeds the strict 1 MB limit.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    if (finalPromo.startsWith('data:image/')) {
+      const rawData = finalPromo.split(',')[1] || '';
+      const estimatedBytes = Math.round(rawData.length * 0.75);
+      if (estimatedBytes > 2.2 * 1024 * 1024) {
+        return new Response(JSON.stringify({ success: false, error: 'Promotional banner file size exceeds the strict 2 MB limit.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    for (const shot of cleanedScreenshots) {
+      if (shot.startsWith('data:image/')) {
+        const rawData = shot.split(',')[1] || '';
+        const estimatedBytes = Math.round(rawData.length * 0.75);
+        if (estimatedBytes > 2.2 * 1024 * 1024) {
+          return new Response(JSON.stringify({ success: false, error: 'Screenshot file size exceeds the strict 2 MB limit.' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      }
+    }
+
     // If Cloudinary is configured, upload any Base64 images to Cloudinary CDN
     if (isCloudinaryConfigured()) {
       const extTag = slug || id || 'unknown';
@@ -125,7 +161,7 @@ export const POST: APIRoute = async ({ request }) => {
         console.warn('Failed to query existing extension for Cloudinary cleanup:', qErr);
       }
 
-      // 1. Upload Icon if Base64 (Limit to 256x256 max)
+      // 1. Upload Icon if Base64 (Strict 1:1, Min 128x128, Max 1024x1024)
       const iconPromise = (async () => {
         if (finalIcon.startsWith('data:image/')) {
           const res = await uploadToCloudinary({
@@ -134,6 +170,21 @@ export const POST: APIRoute = async ({ request }) => {
             tags: ['extlabs', 'icon', extTag],
             transformation: CLOUDINARY_IMAGE_PRESETS.icon,
           });
+
+          // Server-side strict aspect ratio (1:1) and dimension validation
+          const ratio = res.width / res.height;
+          if (Math.abs(ratio - 1.0) > 0.03) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Extension icon must strictly have a 1:1 square aspect ratio (${res.width}×${res.height} px uploaded). Other aspect ratios are not permitted.`);
+          }
+          if (res.width < 128 || res.height < 128) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Extension icon resolution is too low (${res.width}×${res.height} px). Minimum required size is 128×128 px to ensure crisp rendering.`);
+          }
+          if (res.width > 1024 || res.height > 1024) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Extension icon resolution (${res.width}×${res.height} px) exceeds maximum allowed size of 1024×1024 px.`);
+          }
 
           // Delete old icon from Cloudinary if replaced
           if (existingExt?.icon_url && existingExt.icon_url !== res.secure_url) {
@@ -150,7 +201,7 @@ export const POST: APIRoute = async ({ request }) => {
         return finalIcon;
       })();
 
-      // 2. Upload Promo Banner if Base64 (Limit to 1400x560 max)
+      // 2. Upload Promo Banner if Base64 (Strict 16:9, Min 640x360, Max 1920x1080)
       const promoPromise = (async () => {
         if (finalPromo.startsWith('data:image/')) {
           const res = await uploadToCloudinary({
@@ -159,6 +210,21 @@ export const POST: APIRoute = async ({ request }) => {
             tags: ['extlabs', 'banner', extTag],
             transformation: CLOUDINARY_IMAGE_PRESETS.banner,
           });
+
+          // Server-side strict aspect ratio (16:9) and dimension validation
+          const ratio = res.width / res.height;
+          if (Math.abs(ratio - (16 / 9)) > 0.04) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Promotional shelf banner must strictly have a 16:9 aspect ratio (${res.width}×${res.height} px uploaded). Other aspect ratios are not permitted.`);
+          }
+          if (res.width < 640 || res.height < 360) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Promotional banner resolution is too low (${res.width}×${res.height} px). Minimum required size is 640×360 px.`);
+          }
+          if (res.width > 1920 || res.height > 1080) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Promotional banner resolution (${res.width}×${res.height} px) exceeds maximum allowed size of 1920×1080 px.`);
+          }
 
           // Delete old promo banner from Cloudinary if replaced
           if (existingExt?.header_image_url && existingExt.header_image_url !== res.secure_url) {
@@ -175,7 +241,7 @@ export const POST: APIRoute = async ({ request }) => {
         return finalPromo;
       })();
 
-      // 3. Upload Screenshots if Base64 (Limit to 1280x720 max)
+      // 3. Upload Screenshots if Base64 (Strict 16:9, Min 1280x720, Max 1920x1080)
       const screenshotsPromises = cleanedScreenshots.map(async (screenshotUrl, idx) => {
         if (screenshotUrl.startsWith('data:image/')) {
           const res = await uploadToCloudinary({
@@ -184,6 +250,22 @@ export const POST: APIRoute = async ({ request }) => {
             tags: ['extlabs', 'screenshot', extTag, `index-${idx}`],
             transformation: CLOUDINARY_IMAGE_PRESETS.screenshot,
           });
+
+          // Server-side strict aspect ratio (16:9) and dimension validation
+          const ratio = res.width / res.height;
+          if (Math.abs(ratio - (16 / 9)) > 0.04) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Screenshot #${idx + 1} must strictly have a 16:9 aspect ratio (${res.width}×${res.height} px uploaded). Other aspect ratios are not permitted.`);
+          }
+          if (res.width < 1280 || res.height < 720) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Screenshot #${idx + 1} resolution is too low (${res.width}×${res.height} px). Minimum required size is 1280×720 px (720p HD).`);
+          }
+          if (res.width > 1920 || res.height > 1080) {
+            await deleteFromCloudinary(res.public_id).catch(() => {});
+            throw new Error(`Screenshot #${idx + 1} resolution (${res.width}×${res.height} px) exceeds maximum allowed size of 1920×1080 px.`);
+          }
+
           return res.secure_url;
         }
         return screenshotUrl;

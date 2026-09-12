@@ -23,9 +23,9 @@ export interface CloudinaryUploadOptions {
  * and permanently stores lightweight AVIF/WebP assets.
  */
 export const CLOUDINARY_IMAGE_PRESETS = {
-  icon: 'c_limit,w_256,h_256,q_auto',
-  screenshot: 'c_limit,w_1280,h_720,q_auto',
-  banner: 'c_limit,w_1400,h_560,q_auto',
+  icon: 'c_limit,w_512,h_512,q_auto',
+  screenshot: 'c_limit,w_1920,h_1080,q_auto',
+  banner: 'c_limit,w_1280,h_720,q_auto',
 } as const;
 
 export interface CloudinaryUploadResult {

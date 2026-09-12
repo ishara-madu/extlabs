@@ -864,28 +864,28 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
         <div class="space-y-1">
           <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            Strict Asset Dimension & Aspect Ratio Requirements
+            Strict Asset Specifications (Zero-Blur & Zero-Crop Display)
           </h3>
           <p class="text-[11px] text-slate-600 leading-relaxed">
-            Store shelves and showcase cards display media in fixed aspect ratios. Non-matching dimensions will be automatically cropped, which can cut off essential logos, graphics, or text. Please upload assets in the exact dimensions and aspect ratios specified below. Images outside these proportions will be rejected upon selection.
+            To ensure store assets render with razor-sharp clarity without being blurry or cropped, all visual media must strictly adhere to the designated aspect ratios and minimum/maximum resolution boundaries below. Assets with non-conforming aspect ratios or resolutions below the minimum limit will be rejected both in the browser and by the server.
           </p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2.5 border-t border-slate-200/70 text-xs">
           <div class="space-y-0.5">
             <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Extension Icon</span>
-            <div class="font-bold text-slate-800">Exact 1:1 Square</div>
-            <p class="text-[11px] text-slate-500">128×128 to 512×512 (Max 2MB). <span class="text-rose-600 font-medium">Non-square rejected</span> to prevent distortion.</p>
+            <div class="font-bold text-slate-800">Strict 1:1 Aspect Ratio</div>
+            <p class="text-[11px] text-slate-500">Min: <span class="font-medium text-slate-700">128×128</span> • Max: <span class="font-medium text-slate-700">1024×1024 px</span> (Rec: 512×512, Max 1MB).</p>
           </div>
           <div class="space-y-0.5">
-            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Shelf Banner</span>
-            <div class="font-bold text-slate-800">Exact 16:9 Landscape</div>
-            <p class="text-[11px] text-slate-500">1280×720 or 440×280 (Max 3MB). <span class="text-rose-600 font-medium">Portrait/square rejected</span> to prevent text cut-off.</p>
+            <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Shelf Promo Banner</span>
+            <div class="font-bold text-slate-800">Strict 16:9 Aspect Ratio</div>
+            <p class="text-[11px] text-slate-500">Min: <span class="font-medium text-slate-700">640×360</span> • Max: <span class="font-medium text-slate-700">1920×1080 px</span> (Rec: 1280×720, Max 2MB).</p>
           </div>
           <div class="space-y-0.5">
             <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Showcase Screenshots</span>
-            <div class="font-bold text-slate-800">Exact 16:9 Landscape</div>
-            <p class="text-[11px] text-slate-500">1280×720 (2 to 5 files, Max 5MB ea.). <span class="text-rose-600 font-medium">Non-16:9 rejected</span> to fit preview cards.</p>
+            <div class="font-bold text-slate-800">Strict 16:9 Aspect Ratio</div>
+            <p class="text-[11px] text-slate-500">Min: <span class="font-medium text-slate-700">1280×720</span> • Max: <span class="font-medium text-slate-700">1920×1080 px</span> (2-5 files, Max 2MB ea).</p>
           </div>
         </div>
       </div>
@@ -900,7 +900,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               Extension Logo / Icon <span class="text-red-500">*</span>
             </label>
             <span class="text-[10px] font-mono text-slate-400">
-              128x128 – 512x512 (1:1 Square)
+              Strict 1:1 (Min 128x128, Max 1MB)
             </span>
           </div>
 
@@ -922,7 +922,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               </div>
               <div class="space-y-0.5">
                 <span class="text-xs font-semibold text-slate-800 block">Click to upload or drag & drop</span>
-                <span class="text-[10px] text-slate-400 block">Strict 1:1 square transparent icon (128×128 to 512×512, Max 2MB)</span>
+                <span class="text-[10px] text-slate-400 block">Strict 1:1 square icon (Min 128×128, Max 1024×1024 px, Max 1MB)</span>
               </div>
             </div>
 
@@ -964,7 +964,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               Promotional Shelf Banner <span class="text-red-500">*</span>
             </label>
             <span class="text-[10px] font-mono text-slate-400">
-              1280x720 (16:9 Landscape)
+              Strict 16:9 (Min 640x360, Max 2MB)
             </span>
           </div>
 
@@ -986,7 +986,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               </div>
               <div class="space-y-0.5">
                 <span class="text-xs font-semibold text-slate-800 block">Click to upload promotional tile</span>
-                <span class="text-[10px] text-slate-400 block">Strict 16:9 shelf tile (1280×720, Max 3MB) • Avoid edge text</span>
+                <span class="text-[10px] text-slate-400 block">Strict 16:9 banner (Min 640×360, Max 1920×1080 px, Max 2MB)</span>
               </div>
             </div>
 
@@ -1031,7 +1031,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               Store Showcase Screenshots <span class="text-red-500">*</span>
             </label>
             <p class="text-[11px] text-slate-500">
-              High-resolution screenshots (1280x720 recommended). Upload 2 to 5 screenshots demonstrating your extension.
+              High-resolution store screenshots: Strict 16:9 aspect ratio (Min 1280×720 px, Max 1920×1080 px, Max 2MB each). Upload 2 to 5 screenshots demonstrating your extension.
             </p>
           </div>
           <span id="screenshots-count-badge" class="text-xs font-mono font-medium text-emerald-600 self-start sm:self-auto">
@@ -1067,9 +1067,9 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               </div>
               <div class="flex items-center justify-between text-xs">
                 <span class="font-bold text-slate-800 screenshot-number-label">
-                  Screenshot #{idx + 1}
+                  Screenshot #${idx + 1}
                 </span>
-                <span class="text-[10px] font-mono text-emerald-600 font-medium">1280×720 AVIF</span>
+                <span class="text-[10px] font-mono text-slate-400">16:9 HD</span>
               </div>
             </div>
           ))}
@@ -1086,7 +1086,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           <span class="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors cursor-pointer">
             Click to upload screenshots or drag & drop (Min: 2, Max: 5)
           </span>
-          <span class="text-[10px] text-slate-400">PNG, WebP, JPG up to 5MB each • <span class="text-emerald-600 font-medium">Auto-scaled to 1280×720 AVIF</span></span>
+          <span class="text-[10px] text-slate-400">Strict 16:9 widescreen (Min 1280×720, Max 1920×1080 px, Min 2, Max 5, Max 2MB each)</span>
         </div>
         <p id="err-ext-screenshots" class="hidden text-[11px] font-medium text-red-600 mt-1"></p>
       </div>
@@ -2491,10 +2491,10 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
     function validateTab2(focusFirst = true): boolean {
       const hasIcon = Boolean(iconUrlVal?.value && iconUrlVal.value.trim().length > 0);
-      const vIcon = validateVisualZone(iconDropzone, errIcon, hasIcon, 'Extension logo / icon is required (PNG, WebP, SVG).');
+      const vIcon = validateVisualZone(iconDropzone, errIcon, hasIcon, 'Extension logo / icon is required (Strict 1:1 aspect ratio, Min 128×128 px).');
 
       const hasPromo = Boolean(promoUrlVal?.value && promoUrlVal.value.trim().length > 0);
-      const vPromo = validateVisualZone(promoDropzone, errPromo, hasPromo, 'Promotional shelf banner is required (440x280 recommended).');
+      const vPromo = validateVisualZone(promoDropzone, errPromo, hasPromo, 'Promotional shelf banner is required (Strict 16:9 aspect ratio, Min 640×360 px).');
 
       const screenshotCards = screenshotsContainer?.querySelectorAll('.screenshot-card') || [];
       const count = screenshotCards.length;
@@ -2503,7 +2503,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         screenshotsDropzone,
         errScreenshots,
         hasScreenshots,
-        `Please upload between ${MIN_SCREENSHOTS} and ${MAX_SCREENSHOTS} screenshots (currently ${count}).`
+        `Please upload between ${MIN_SCREENSHOTS} and ${MAX_SCREENSHOTS} screenshots (Strict 16:9 aspect ratio, Min 1280×720 px).`
       );
 
       const ytVal = (youtubeInput?.value || '').trim();
@@ -3484,12 +3484,21 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         const data = await res.json();
 
         if (!res.ok || !data.success) {
+          const errMsg = data.error || 'Failed to save visual media.';
           if (tab2Status) {
-            tab2Status.textContent = `Error: ${data.error || 'Failed to save media'}`;
+            tab2Status.textContent = `Error: ${errMsg}`;
             tab2Status.className = 'text-xs text-red-600 font-medium';
           }
-          if (!silent) {
-            alert(data.error || 'Failed to save visual media.');
+          const lower = errMsg.toLowerCase();
+          if (lower.includes('icon') || lower.includes('logo')) {
+            setZoneError(iconDropzone, errIcon, errMsg);
+            iconDropzone?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else if (lower.includes('promo') || lower.includes('banner') || lower.includes('shelf')) {
+            setZoneError(promoDropzone, errPromo, errMsg);
+            promoDropzone?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else if (lower.includes('screenshot')) {
+            setZoneError(screenshotsDropzone, errScreenshots, errMsg);
+            screenshotsDropzone?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
           return false;
         }
@@ -3534,12 +3543,10 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         return true;
       } catch (err: any) {
         console.error('Error saving visual media to D1:', err);
+        const netErrMsg = 'Network or database error while saving visual media.';
         if (tab2Status) {
-          tab2Status.textContent = 'Network error saving media to database.';
+          tab2Status.textContent = netErrMsg;
           tab2Status.className = 'text-xs text-red-600 font-medium';
-        }
-        if (!silent) {
-          alert('Network or database error while saving visual media.');
         }
         return false;
       } finally {
@@ -5548,6 +5555,28 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       });
     }
 
+    function setZoneError(zoneEl: HTMLElement | null, errEl: HTMLElement | null, message: string) {
+      if (zoneEl) {
+        zoneEl.classList.add('border-red-400', 'bg-red-50/20');
+        zoneEl.classList.remove('border-slate-200');
+      }
+      if (errEl) {
+        errEl.textContent = message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    function clearZoneError(zoneEl: HTMLElement | null, errEl: HTMLElement | null) {
+      if (zoneEl) {
+        zoneEl.classList.remove('border-red-400', 'bg-red-50/20');
+        zoneEl.classList.add('border-slate-200');
+      }
+      if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.add('hidden');
+      }
+    }
+
     iconFileInput?.addEventListener('change', () => {
       if (iconFileInput.files && iconFileInput.files.length > 0) {
         handleIconFile(iconFileInput.files[0]);
@@ -5555,41 +5584,64 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     });
 
     async function handleIconFile(file: File) {
+      clearZoneError(iconDropzone, errIcon);
+
       if (!file.type.startsWith('image/')) {
-        alert('Please upload a valid image file (PNG, WebP, SVG, JPG).');
+        setZoneError(iconDropzone, errIcon, 'Please upload a valid image file (PNG, WebP, SVG, JPG).');
+        if (iconFileInput) iconFileInput.value = '';
         return;
       }
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Icon file size exceeds the 2MB limit. Please upload an image under 2MB.');
+      if (file.size > 1 * 1024 * 1024) {
+        setZoneError(iconDropzone, errIcon, `Icon file size (${(file.size / (1024 * 1024)).toFixed(2)} MB) exceeds the strict 1 MB limit. Please upload an image under 1 MB.`);
         if (iconFileInput) iconFileInput.value = '';
         return;
       }
 
       const dims = await inspectImageDimensions(file);
-      if (dims) {
-        // Enforce strict 1:1 square ratio
-        if (dims.ratio < 0.90 || dims.ratio > 1.10) {
-          alert(`Invalid Icon Dimensions (${dims.width}×${dims.height}). Extension icons must be a strict 1:1 square (e.g. 128×128, 256×256, or 512×512). Rectangular images will be cropped and cut off in the store layout. Please upload a square image.`);
+      if (dims && file.type !== 'image/svg+xml') {
+        const ratioDiff = Math.abs(dims.ratio - 1.0);
+        if (ratioDiff > 0.015) {
+          setZoneError(
+            iconDropzone,
+            errIcon,
+            `Invalid aspect ratio (${dims.width}×${dims.height} px). Extension icons must be strictly 1:1 square. Other aspect ratios are not permitted.`
+          );
           if (iconFileInput) iconFileInput.value = '';
           return;
         }
-        if (dims.width < 96 || dims.height < 96) {
-          alert(`Icon resolution is too low (${dims.width}×${dims.height}). Minimum required size is 128×128.`);
+
+        if (dims.width < 128 || dims.height < 128) {
+          setZoneError(
+            iconDropzone,
+            errIcon,
+            `Icon resolution is too low (${dims.width}×${dims.height} px). Minimum required size is 128×128 px to ensure sharp rendering without blurriness.`
+          );
+          if (iconFileInput) iconFileInput.value = '';
+          return;
+        }
+
+        if (dims.width > 1024 || dims.height > 1024) {
+          setZoneError(
+            iconDropzone,
+            errIcon,
+            `Icon resolution (${dims.width}×${dims.height} px) exceeds the maximum allowed limit of 1024×1024 px.`
+          );
           if (iconFileInput) iconFileInput.value = '';
           return;
         }
       }
 
-      const result = await compressImageFile(file, 256, 256, 0.9);
+      const result = await compressImageFile(file, 512, 512, 0.9);
       if (!result) return;
 
       if (iconPreviewImg) iconPreviewImg.src = result;
       if (iconFileName) iconFileName.textContent = file.name;
-      if (iconFileSize) iconFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height}` : '1:1 Square'})`;
+      if (iconFileSize) iconFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height} px • 1:1` : 'SVG Vector'})`;
       if (iconUrlVal) iconUrlVal.value = result;
 
       iconEmptyState?.classList.add('hidden');
       iconPreviewState?.classList.remove('hidden');
+      clearZoneError(iconDropzone, errIcon);
       validateTab2(false);
     }
 
@@ -5600,6 +5652,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       if (iconPreviewImg) iconPreviewImg.src = '';
       iconPreviewState?.classList.add('hidden');
       iconEmptyState?.classList.remove('hidden');
+      clearZoneError(iconDropzone, errIcon);
       validateTab2(false);
     });
 
@@ -5633,41 +5686,65 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     });
 
     async function handlePromoFile(file: File) {
+      clearZoneError(promoDropzone, errPromo);
+
       if (!file.type.startsWith('image/')) {
-        alert('Please upload a valid image file (PNG, WebP, JPG).');
+        setZoneError(promoDropzone, errPromo, 'Please upload a valid image file (PNG, WebP, JPG).');
+        if (promoFileInput) promoFileInput.value = '';
         return;
       }
-      if (file.size > 3 * 1024 * 1024) {
-        alert('Promotional banner file size exceeds the 3MB limit. Please upload an image under 3MB.');
+      if (file.size > 2 * 1024 * 1024) {
+        setZoneError(promoDropzone, errPromo, `Promotional banner file size (${(file.size / (1024 * 1024)).toFixed(2)} MB) exceeds the strict 2 MB limit. Please upload an image under 2 MB.`);
         if (promoFileInput) promoFileInput.value = '';
         return;
       }
 
       const dims = await inspectImageDimensions(file);
       if (dims) {
-        // Enforce strict landscape 16:9 / 4:3 ratio (between 1.30 and 2.60)
-        if (dims.ratio < 1.30 || dims.ratio > 2.60) {
-          alert(`Invalid Banner Proportions (${dims.width}×${dims.height}). Promotional shelf banners must be landscape 16:9 (recommended 1280×720 or 440×280). Non-landscape or square images will result in promotional text and logos being cut off on store shelf cards. Please upload a 16:9 landscape banner.`);
+        const targetRatio = 16 / 9;
+        const ratioDiff = Math.abs(dims.ratio - targetRatio);
+        if (ratioDiff > 0.02) {
+          setZoneError(
+            promoDropzone,
+            errPromo,
+            `Invalid aspect ratio (${dims.width}×${dims.height} px, ${(dims.width / dims.height).toFixed(2)}:1). Promotional shelf banner must strictly have a 16:9 aspect ratio. Other aspect ratios are not permitted.`
+          );
           if (promoFileInput) promoFileInput.value = '';
           return;
         }
-        if (dims.width < 400 || dims.height < 220) {
-          alert(`Banner resolution is too low (${dims.width}×${dims.height}). Recommended resolution is 1280×720 or 440×280.`);
+
+        if (dims.width < 640 || dims.height < 360) {
+          setZoneError(
+            promoDropzone,
+            errPromo,
+            `Banner resolution is too low (${dims.width}×${dims.height} px). Minimum required size is 640×360 px to prevent blurriness in store cards.`
+          );
+          if (promoFileInput) promoFileInput.value = '';
+          return;
+        }
+
+        if (dims.width > 1920 || dims.height > 1080) {
+          setZoneError(
+            promoDropzone,
+            errPromo,
+            `Banner resolution (${dims.width}×${dims.height} px) exceeds the maximum allowed limit of 1920×1080 px.`
+          );
           if (promoFileInput) promoFileInput.value = '';
           return;
         }
       }
 
-      const result = await compressImageFile(file, 880, 560, 0.85);
+      const result = await compressImageFile(file, 1280, 720, 0.85);
       if (!result) return;
 
       if (promoPreviewImg) promoPreviewImg.src = result;
       if (promoFileName) promoFileName.textContent = file.name;
-      if (promoFileSize) promoFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height}` : '16:9'})`;
+      if (promoFileSize) promoFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height} px • 16:9` : '16:9 Banner'})`;
       if (promoUrlVal) promoUrlVal.value = result;
 
       promoEmptyState?.classList.add('hidden');
       promoPreviewState?.classList.remove('hidden');
+      clearZoneError(promoDropzone, errPromo);
       validateTab2(false);
     }
 
@@ -5678,6 +5755,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       if (promoPreviewImg) promoPreviewImg.src = '';
       promoPreviewState?.classList.add('hidden');
       promoEmptyState?.classList.remove('hidden');
+      clearZoneError(promoDropzone, errPromo);
       validateTab2(false);
     });
 
@@ -5751,38 +5829,58 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
     async function handleScreenshotFiles(files: FileList) {
       if (!screenshotsContainer) return;
+      clearZoneError(screenshotsDropzone, errScreenshots);
       
       for (const file of Array.from(files)) {
         const total = screenshotsContainer.querySelectorAll('.screenshot-card').length;
         if (total >= MAX_SCREENSHOTS) {
-          alert(`You can upload a maximum of ${MAX_SCREENSHOTS} screenshots.`);
+          setZoneError(screenshotsDropzone, errScreenshots, `You can upload a maximum of ${MAX_SCREENSHOTS} screenshots.`);
           break;
         }
 
         if (!file.type.startsWith('image/')) {
-          alert(`File "${file.name}" is not a supported image.`);
+          setZoneError(screenshotsDropzone, errScreenshots, `File "${file.name}" is not a supported image.`);
           continue;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`Screenshot "${file.name}" exceeds the 5MB limit.`);
+        if (file.size > 2 * 1024 * 1024) {
+          setZoneError(screenshotsDropzone, errScreenshots, `Screenshot "${file.name}" file size (${(file.size / (1024 * 1024)).toFixed(2)} MB) exceeds the strict 2 MB limit.`);
           continue;
         }
 
         const dims = await inspectImageDimensions(file);
         if (dims) {
-          // Enforce landscape 16:9 ratio (ratio between 1.25 and 2.10)
-          if (dims.ratio < 1.25 || dims.ratio > 2.10) {
-            alert(`Screenshot "${file.name}" has invalid proportions (${dims.width}×${dims.height}). Showcase screenshots must be landscape 16:9 (recommended 1280×720 or 1920×1080). Portrait or square screenshots will be cropped and cut off in the store showcase carousel. Please upload a 16:9 landscape screenshot.`);
+          const targetRatio = 16 / 9;
+          const ratioDiff = Math.abs(dims.ratio - targetRatio);
+          if (ratioDiff > 0.02) {
+            setZoneError(
+              screenshotsDropzone,
+              errScreenshots,
+              `Screenshot "${file.name}" has invalid aspect ratio (${dims.width}×${dims.height} px, ${(dims.width / dims.height).toFixed(2)}:1). Showcase screenshots must strictly have a 16:9 aspect ratio. Other aspect ratios are not permitted.`
+            );
             continue;
           }
-          if (dims.width < 640 || dims.height < 360) {
-            alert(`Screenshot "${file.name}" resolution is too low (${dims.width}×${dims.height}). Recommended minimum resolution is 1280×720.`);
+
+          if (dims.width < 1280 || dims.height < 720) {
+            setZoneError(
+              screenshotsDropzone,
+              errScreenshots,
+              `Screenshot "${file.name}" resolution is too low (${dims.width}×${dims.height} px). Minimum required size is 1280×720 px (720p HD) to prevent blurry store displays.`
+            );
+            continue;
+          }
+
+          if (dims.width > 1920 || dims.height > 1080) {
+            setZoneError(
+              screenshotsDropzone,
+              errScreenshots,
+              `Screenshot "${file.name}" resolution (${dims.width}×${dims.height} px) exceeds the maximum allowed limit of 1920×1080 px.`
+            );
             continue;
           }
         }
 
-        const result = await compressImageFile(file, 1280, 800, 0.85);
+        const result = await compressImageFile(file, 1920, 1080, 0.85);
         if (!result) continue;
 
         const nextIndex = screenshotsContainer.querySelectorAll('.screenshot-card').length + 1;
@@ -5807,19 +5905,19 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             <span class="font-bold text-slate-800 screenshot-number-label">
               Screenshot #${nextIndex}
             </span>
-            <span class="text-[10px] font-mono text-slate-400">${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height}` : '16:9'})</span>
+            <span class="text-[10px] font-mono text-slate-400">${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height} px • 16:9` : '16:9'})</span>
           </div>
         `;
 
         screenshotsContainer.appendChild(card);
         refreshScreenshotsUI();
         attachScreenshotRemoveEvents();
+        clearZoneError(screenshotsDropzone, errScreenshots);
         validateTab2(false);
       }
+      attachScreenshotRemoveEvents();
+      refreshScreenshotsUI();
     }
-
-    attachScreenshotRemoveEvents();
-    refreshScreenshotsUI();
 
     // 9.4 YouTube Video Preview Handler
     function syncYouTubePreview() {
