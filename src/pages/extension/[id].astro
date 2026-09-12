@@ -605,7 +605,8 @@ const jsonLdSchema = {
               data-ext-name={ext.name}
               data-ext-version={ext.version}
               data-ext-developer={ext.developer}
-              data-monetag-url={ext.monetagUrl}
+              data-has-monetag={ext.monetagUrl ? 'true' : 'false'}
+              data-ad-frequency={ext.adFrequency || '24h'}
               data-download-url={ext.downloadUrl}
               data-manifest-version={ext.manifestVersion || 'v3'}
               class="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-black text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors"
@@ -1925,24 +1926,53 @@ const jsonLdSchema = {
           downloadBtn.addEventListener('click', () => {
             const extName = downloadBtn.getAttribute('data-ext-name') || 'extension';
             const extVersion = downloadBtn.getAttribute('data-ext-version') || '1.0.0';
-            const monetagUrl = downloadBtn.getAttribute('data-monetag-url') || '';
+            const hasMonetag = downloadBtn.getAttribute('data-has-monetag') === 'true';
+            const adFrequency = downloadBtn.getAttribute('data-ad-frequency') || '24h';
             const realDownloadUrl = downloadBtn.getAttribute('data-download-url');
 
-            // 1. Dual-Action Monetization: 5:1 pacing split
-            let adClickCount = Number(localStorage.getItem('extlabs_ad_split_count') || 0) + 1;
-            localStorage.setItem('extlabs_ad_split_count', String(adClickCount));
+            // 1. Check Ad Trigger Frequency & Cooldown Rules
+            let canTriggerAd = true;
+            const now = Date.now();
+            const lastTriggerKey = `extlabs_ad_last_${extId}`;
+            const sessionTriggerKey = `extlabs_ad_session_${extId}`;
 
-            const isPlatformAd = (adClickCount % 6 === 0);
-            const targetAdUrl = isPlatformAd
-              ? 'https://monetag.com' // ExtLabs platform Monetag tag
-              : monetagUrl;
+            if (adFrequency === '24h') {
+              const lastTime = Number(localStorage.getItem(lastTriggerKey) || 0);
+              if (lastTime && (now - lastTime) < 24 * 60 * 60 * 1000) {
+                canTriggerAd = false;
+              }
+            } else if (adFrequency === '12h') {
+              const lastTime = Number(localStorage.getItem(lastTriggerKey) || 0);
+              if (lastTime && (now - lastTime) < 12 * 60 * 60 * 1000) {
+                canTriggerAd = false;
+              }
+            } else if (adFrequency === 'session') {
+              if (sessionStorage.getItem(sessionTriggerKey) === 'true') {
+                canTriggerAd = false;
+              }
+            }
+            // 'download' frequency triggers on every package download event
 
-            if (targetAdUrl && targetAdUrl !== '#' && targetAdUrl.startsWith('http')) {
-              window.open(targetAdUrl, '_blank', 'noopener,noreferrer');
-              sendTelemetry(extId, isPlatformAd ? 'extlabs_ad_click' : 'dev_ad_click');
+            if (canTriggerAd) {
+              // 2. Dual-Action Monetization: 5:1 pacing split
+              let adClickCount = Number(localStorage.getItem('extlabs_ad_split_count') || 0) + 1;
+              localStorage.setItem('extlabs_ad_split_count', String(adClickCount));
+
+              const isPlatformAd = (adClickCount % 6 === 0);
+
+              // Only trigger if it's the platform ad OR developer has configured Monetag
+              if (isPlatformAd || hasMonetag) {
+                // Record timestamp to enforce frequency cooldown
+                localStorage.setItem(lastTriggerKey, String(now));
+                sessionStorage.setItem(sessionTriggerKey, 'true');
+
+                // Open first-party cloaked redirector (prevents client ad blockers from matching ad domains)
+                const adRedirectUrl = `/api/ad/go?extId=${encodeURIComponent(extId)}&p=${isPlatformAd ? '1' : '0'}`;
+                window.open(adRedirectUrl, '_blank', 'noopener,noreferrer');
+              }
             }
 
-            // 2. Trigger real extension package download
+            // 3. Trigger real extension package download
             if (realDownloadUrl && realDownloadUrl !== '#' && realDownloadUrl.startsWith('http')) {
               const a = document.createElement('a');
               a.href = realDownloadUrl;
@@ -1954,7 +1984,7 @@ const jsonLdSchema = {
               a.click();
               document.body.removeChild(a);
 
-              // 3. Track download on every click (buffered in server memory)
+              // 4. Track download on every click (buffered in server memory)
               sendTelemetry(extId, 'download');
 
               // 4. Update button state

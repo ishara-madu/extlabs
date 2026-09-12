@@ -83,6 +83,7 @@ export interface Extension {
   reviews?: ReviewItem[];
   downloadUrl?: string;
   monetagUrl?: string;
+  adFrequency?: string;
   license?: string;
   manifestVersion?: string;
   supportedBrowsers?: string[];

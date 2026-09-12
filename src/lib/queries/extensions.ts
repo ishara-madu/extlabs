@@ -593,6 +593,7 @@ export function mapDbExtensionToStoreItem(
     } : undefined,
     downloadUrl: dbExt.crx_download_url || dbExt.zip_download_url || dbExt.download_url || '#',
     monetagUrl: dbExt.monetag_direct_link || undefined,
+    adFrequency: dbExt.ad_frequency || '24h',
     license: dbExt.license || 'MIT',
     manifestVersion: dbExt.manifest_version || 'v3',
     supportedBrowsers,
