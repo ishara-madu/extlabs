@@ -9,7 +9,7 @@ import BrowserIcon from "../../components/BrowserIcon.astro";
 import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension, getDeveloperByUserIdOrSlug } from "../../lib/db";
 import { getReviewerUser, getSessionUser } from "../../lib/auth";
-import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2, Terminal, Copy } from '@lucide/astro';
+import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2, Terminal, Copy, Maximize2 } from '@lucide/astro';
 import { Image } from 'astro:assets';
 import { marked } from 'marked';
 
@@ -679,25 +679,48 @@ const jsonLdSchema = {
           {screenshotsList.length > 0 ? (
             <>
               <!-- Main Screenshot Frame -->
-              <div class="w-full aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative group flex items-center justify-center">
+              <div
+                id="screenshot-zoom-trigger"
+                class="w-full aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative group flex items-center justify-center cursor-pointer"
+                title="Click to view full resolution"
+              >
+                <!-- Ambient Backdrop to eliminate harsh empty borders -->
+                <img
+                  id="screenshot-ambient-bg"
+                  src={screenshotsList[0]}
+                  alt=""
+                  aria-hidden="true"
+                  class="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 select-none pointer-events-none transition-all duration-300"
+                />
                 <Image
                   id="main-screenshot-img"
                   src={screenshotsList[0]}
                   alt={`${ext.name} Store Screenshot 1`}
                   width={1280}
                   height={720}
-                  class="w-full h-full object-contain select-none"
+                  class="relative z-10 w-full h-full object-contain select-none transition-transform duration-200"
                   loading="eager"
                   decoding="async"
                   fetchpriority="high"
                 />
+
+                <!-- Fullscreen Expand Button -->
+                <button
+                  type="button"
+                  id="expand-screenshot-btn"
+                  class="absolute top-3 right-3 z-20 p-2 rounded-lg bg-slate-900/80 hover:bg-slate-900 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-sm focus:opacity-100"
+                  title="View full resolution"
+                  aria-label="View full resolution screenshot"
+                >
+                  <Maximize2 class="w-4 h-4" />
+                </button>
 
                 {screenshotsList.length > 1 && (
                   <>
                     <button
                       type="button"
                       id="prev-screenshot-btn"
-                      class="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-slate-900/75 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-sm focus:outline-none"
+                      class="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-lg bg-slate-900/75 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-sm focus:outline-none"
                       aria-label="Previous screenshot"
                     >
                       <ChevronLeft class="w-5 h-5" />
@@ -705,7 +728,7 @@ const jsonLdSchema = {
                     <button
                       type="button"
                       id="next-screenshot-btn"
-                      class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-slate-900/75 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-sm focus:outline-none"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-lg bg-slate-900/75 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-sm focus:outline-none"
                       aria-label="Next screenshot"
                     >
                       <ChevronRight class="w-5 h-5" />
@@ -720,7 +743,7 @@ const jsonLdSchema = {
                   {screenshotsList.map((shot, idx) => (
                     <button
                       type="button"
-                      class={`screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border cursor-pointer transition-all ${
+                      class={`screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border cursor-pointer transition-all bg-slate-950 flex items-center justify-center ${
                         idx === 0
                           ? 'border-slate-900 ring-1 ring-slate-900 opacity-100'
                           : 'border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-400'
@@ -736,7 +759,7 @@ const jsonLdSchema = {
                         height={54}
                         loading="lazy"
                         decoding="async"
-                        class="w-full h-full object-cover"
+                        class="w-full h-full object-contain"
                       />
                     </button>
                   ))}
@@ -1782,6 +1805,59 @@ const jsonLdSchema = {
       </form>
     </dialog>
 
+    <!-- Screenshot Fullscreen Lightbox Modal (Zero Cropping) -->
+    <dialog
+      id="screenshot-lightbox-modal"
+      class="backdrop:bg-slate-950/90 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto border-none outline-none max-w-[96vw] max-h-[96vh] rounded-2xl overflow-hidden"
+    >
+      <div class="relative flex flex-col items-center justify-center p-3 sm:p-4 bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl">
+        <!-- Top Bar -->
+        <div class="w-full flex items-center justify-between pb-3 px-2 text-white">
+          <span id="lightbox-counter" class="text-xs font-mono text-slate-400">
+            Screenshot 1 / {screenshotsList.length}
+          </span>
+          <button
+            type="button"
+            id="close-lightbox-btn"
+            class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Close fullscreen view"
+          >
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Image Container -->
+        <div class="relative max-w-6xl max-h-[82vh] flex items-center justify-center overflow-hidden rounded-xl bg-slate-900/50">
+          <img
+            id="lightbox-img"
+            src={screenshotsList[0] || ""}
+            alt={`${ext.name} Fullscreen Screenshot`}
+            class="max-w-full max-h-[80vh] w-auto h-auto object-contain select-none shadow-2xl rounded-lg"
+          />
+          {screenshotsList.length > 1 && (
+            <>
+              <button
+                type="button"
+                id="lightbox-prev-btn"
+                class="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-slate-900/85 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-lg"
+                aria-label="Previous screenshot"
+              >
+                <ChevronLeft class="w-6 h-6" />
+              </button>
+              <button
+                type="button"
+                id="lightbox-next-btn"
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-slate-900/85 hover:bg-slate-900 text-white cursor-pointer transition-colors shadow-lg"
+                aria-label="Next screenshot"
+              >
+                <ChevronRight class="w-6 h-6" />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </dialog>
+
     <!-- Minimalist Toast Notification -->
     <div class="fixed bottom-6 right-6 z-50">
       <div
@@ -1833,16 +1909,57 @@ const jsonLdSchema = {
           });
         }
 
-        // Store Showcase Screenshots Gallery Switcher
+        // Store Showcase Screenshots Gallery Switcher & Lightbox
         const mainImg = document.getElementById('main-screenshot-img') as HTMLImageElement | null;
+        const ambientBg = document.getElementById('screenshot-ambient-bg') as HTMLImageElement | null;
         const prevBtn = document.getElementById('prev-screenshot-btn');
         const nextBtn = document.getElementById('next-screenshot-btn');
         const thumbBtns = document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb-btn');
 
-        if (mainImg && thumbBtns.length > 1) {
-          let currentIndex = 0;
-          const total = thumbBtns.length;
+        // Lightbox elements
+        const lightbox = document.getElementById('screenshot-lightbox-modal') as HTMLDialogElement | null;
+        const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+        const lightboxCounter = document.getElementById('lightbox-counter');
+        const closeLightboxBtn = document.getElementById('close-lightbox-btn');
+        const zoomTrigger = document.getElementById('screenshot-zoom-trigger');
+        const expandBtn = document.getElementById('expand-screenshot-btn');
+        const lightboxPrev = document.getElementById('lightbox-prev-btn');
+        const lightboxNext = document.getElementById('lightbox-next-btn');
 
+        let currentIndex = 0;
+        const total = thumbBtns.length || (mainImg ? 1 : 0);
+
+        function openLightbox() {
+          if (lightbox && mainImg) {
+            if (lightboxImg) lightboxImg.src = mainImg.src;
+            if (lightboxCounter && total) {
+              lightboxCounter.textContent = `Screenshot ${currentIndex + 1} / ${total}`;
+            }
+            lightbox.showModal();
+          }
+        }
+
+        function closeLightbox() {
+          if (lightbox) lightbox.close();
+        }
+
+        zoomTrigger?.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement).closest('#prev-screenshot-btn') || (e.target as HTMLElement).closest('#next-screenshot-btn')) return;
+          openLightbox();
+        });
+
+        expandBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openLightbox();
+        });
+
+        closeLightboxBtn?.addEventListener('click', closeLightbox);
+
+        lightbox?.addEventListener('click', (e) => {
+          if (e.target === lightbox) closeLightbox();
+        });
+
+        if (mainImg && thumbBtns.length > 1) {
           function setScreenshot(index: number) {
             currentIndex = (index + total) % total;
             const targetBtn = thumbBtns[currentIndex];
@@ -1850,20 +1967,25 @@ const jsonLdSchema = {
             const newSrc = targetBtn.getAttribute('data-src');
             if (newSrc && mainImg) {
               mainImg.src = newSrc;
+              if (ambientBg) ambientBg.src = newSrc;
+              if (lightboxImg) lightboxImg.src = newSrc;
             }
 
             // Update active styles on thumbnails
             thumbBtns.forEach((btn, i) => {
               if (i === currentIndex) {
-                btn.className = 'screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border cursor-pointer transition-all border-slate-900 ring-1 ring-slate-900 opacity-100';
+                btn.className = 'screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border cursor-pointer transition-all bg-slate-950 flex items-center justify-center border-slate-900 ring-1 ring-slate-900 opacity-100';
               } else {
-                btn.className = 'screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border cursor-pointer transition-all border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-400';
+                btn.className = 'screenshot-thumb-btn shrink-0 w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border cursor-pointer transition-all bg-slate-950 flex items-center justify-center border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-400';
               }
             });
 
-            // Update counter
+            // Update counters
             if (counter) {
               counter.textContent = `${currentIndex + 1} / ${total}`;
+            }
+            if (lightboxCounter) {
+              lightboxCounter.textContent = `Screenshot ${currentIndex + 1} / ${total}`;
             }
           }
 
@@ -1878,6 +2000,14 @@ const jsonLdSchema = {
           if (nextBtn) {
             nextBtn.addEventListener('click', () => setScreenshot(currentIndex + 1));
           }
+
+          lightboxPrev?.addEventListener('click', () => {
+            setScreenshot(currentIndex - 1);
+          });
+
+          lightboxNext?.addEventListener('click', () => {
+            setScreenshot(currentIndex + 1);
+          });
         }
 
         // Toast Helper

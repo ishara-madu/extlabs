@@ -33,21 +33,29 @@ const isNew = (() => {
   data-tags={extension.tags.join(' ').toLowerCase()}
 >
   <!-- Top Visual Artwork Banner -->
-  <div class="w-full aspect-[16/9] bg-slate-900 overflow-hidden relative border-b border-slate-100">
+  <div class="w-full aspect-[16/9] bg-slate-950 overflow-hidden relative border-b border-slate-100 flex items-center justify-center">
     {extension.headerImageUrl ? (
-      <Image
-        src={extension.headerImageUrl}
-        alt={extension.name}
-        width={640}
-        height={360}
-        loading={loading}
-        class="w-full h-full object-cover"
-      />
+      <>
+        <img
+          src={extension.headerImageUrl}
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 select-none pointer-events-none"
+        />
+        <Image
+          src={extension.headerImageUrl}
+          alt={extension.name}
+          width={640}
+          height={360}
+          loading={loading}
+          class="relative z-10 w-full h-full object-contain"
+        />
+      </>
     ) : (
       <Fragment set:html={extension.bannerSvg} />
     )}
     {extension.badge && (
-      <span class="absolute top-3 right-3 text-[10px] font-semibold text-slate-900 bg-white/95 px-2 py-0.5 rounded shadow-2xs">
+      <span class="absolute top-3 right-3 z-20 text-[10px] font-semibold text-slate-900 bg-white/95 px-2 py-0.5 rounded shadow-2xs">
         {extension.badge}
       </span>
     )}

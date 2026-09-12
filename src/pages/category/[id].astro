@@ -196,16 +196,24 @@ Astro.response.headers.set('Vary', 'Cookie');
           >
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               <!-- Banner Left -->
-              <div class="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden bg-slate-900 border border-slate-100 shadow-2xs">
+              <div class="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-100 shadow-2xs relative flex items-center justify-center">
                 {topFeatured.headerImageUrl ? (
-                  <Image
-                    src={topFeatured.headerImageUrl}
-                    alt={topFeatured.name}
-                    width={640}
-                    height={360}
-                    loading="eager"
-                    class="w-full h-full object-cover"
-                  />
+                  <>
+                    <img
+                      src={topFeatured.headerImageUrl}
+                      alt=""
+                      aria-hidden="true"
+                      class="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 select-none pointer-events-none"
+                    />
+                    <Image
+                      src={topFeatured.headerImageUrl}
+                      alt={topFeatured.name}
+                      width={640}
+                      height={360}
+                      loading="eager"
+                      class="relative z-10 w-full h-full object-contain"
+                    />
+                  </>
                 ) : (
                   <Fragment set:html={topFeatured.bannerSvg} />
                 )}
