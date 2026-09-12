@@ -283,6 +283,8 @@ const jsonLdSchema = {
     <meta name="generator" content={Astro.generator} />
     
     <!-- Resource Hints for Third-Party CDNs -->
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
     <link rel="preconnect" href="https://avatars.githubusercontent.com" crossorigin />
 
@@ -1741,8 +1743,7 @@ const jsonLdSchema = {
                 id="modal-fallback-download-btn"
                 data-ext-id={ext.dbId || ext.id}
                 href={ext.downloadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                download
                 aria-label="Download .zip directly"
                 class="text-blue-600 hover:text-blue-700 hover:underline font-semibold inline-flex items-center gap-1 cursor-pointer text-[11px]"
               >
@@ -1972,12 +1973,10 @@ const jsonLdSchema = {
               }
             }
 
-            // 3. Trigger real extension package download
+            // 3. Trigger real extension package download on the same page (no second tab)
             if (realDownloadUrl && realDownloadUrl !== '#' && realDownloadUrl.startsWith('http')) {
               const a = document.createElement('a');
               a.href = realDownloadUrl;
-              a.target = '_blank';
-              a.rel = 'noopener noreferrer';
               const cleanFilename = realDownloadUrl.split('/').pop()?.split('?')[0] || `${extId}-v${extVersion}.zip`;
               a.setAttribute('download', cleanFilename);
               document.body.appendChild(a);
