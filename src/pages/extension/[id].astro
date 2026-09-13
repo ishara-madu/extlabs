@@ -286,7 +286,6 @@ const jsonLdSchema = {
     <link rel="dns-prefetch" href="https://res.cloudinary.com" />
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
-    <link rel="preconnect" href="https://avatars.githubusercontent.com" crossorigin />
 
     <!-- Robots Meta Tag -->
     {isPublishedLive ? (
@@ -618,7 +617,7 @@ const jsonLdSchema = {
             </button>
 
             <div class="flex flex-col items-center lg:items-end gap-1">
-              <span class="text-[11px] text-slate-400 text-center lg:text-right">
+              <span class="text-[11px] text-slate-500 text-center lg:text-right">
                 Free • Direct Package Download
               </span>
               <a
@@ -690,6 +689,9 @@ const jsonLdSchema = {
                   src={screenshotsList[0]}
                   alt=""
                   aria-hidden="true"
+                  loading="eager"
+                  decoding="async"
+                  fetchpriority="high"
                   class="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 select-none pointer-events-none transition-all duration-300"
                 />
                 <Image
@@ -842,7 +844,7 @@ const jsonLdSchema = {
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {ext.howItWorks.map((step) => (
                   <div class="space-y-1.5">
-                    <span class="text-[11px] font-mono font-medium text-slate-400">Stage 0{step.step}</span>
+                    <span class="text-[11px] font-mono font-medium text-slate-500">Stage 0{step.step}</span>
                     <h3 class="text-xs font-semibold text-slate-900" aria-label={step.title || 'Workflow Stage'}>
                       {step.title}
                     </h3>
@@ -904,7 +906,7 @@ const jsonLdSchema = {
 
             <!-- Supported Browsers -->
             <div class="pt-3 border-t border-slate-100 space-y-2">
-              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Supported Browsers</span>
+              <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Supported Browsers</span>
               <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-700 font-medium">
                 {supportedBrowsersList.map((b) => (
                   <span class="inline-flex items-center gap-1.5 py-0.5">
@@ -918,7 +920,7 @@ const jsonLdSchema = {
             <!-- Permissions -->
             {ext.permissions && ext.permissions.length > 0 && (
               <div class="pt-3 border-t border-slate-100 space-y-2">
-                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Permissions</span>
+                <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Permissions</span>
                 <div class="flex flex-wrap gap-1">
                   {ext.permissions.map((perm) => (
                     <span class="text-[11px] font-mono bg-slate-50 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
@@ -932,7 +934,7 @@ const jsonLdSchema = {
             <!-- Developer & Source -->
             {ext.developerSupport && (ext.developerSupport.website || ext.developerSupport.github) && (
               <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
-                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Developer & Source</span>
+                <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Developer & Source</span>
                 
                 <div class="space-y-1 text-slate-600">
                   {ext.developerSupport.website && (
@@ -965,7 +967,7 @@ const jsonLdSchema = {
             <!-- Help & Support -->
             {ext.developerSupport && (ext.developerSupport.docsUrl || ext.developerSupport.supportUrl || ext.developerSupport.email) && (
               <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
-                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Help & Support</span>
+                <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Help & Support</span>
                 
                 <div class="space-y-1 text-slate-600">
                   {(ext.developerSupport.docsUrl || ext.developerSupport.supportUrl) && (
@@ -995,7 +997,7 @@ const jsonLdSchema = {
 
             <!-- Legal & Safety -->
             <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
-              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Legal & Safety</span>
+              <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Legal & Safety</span>
               
               <div class="space-y-1 text-slate-600">
                 {ext.developerSupport?.privacyPolicy && (
@@ -1323,7 +1325,7 @@ const jsonLdSchema = {
                   ))}
                 </div>
               ) : !userReview ? (
-                <div class="py-4 text-center text-xs text-slate-400">
+                <div class="py-4 text-center text-xs text-slate-500">
                   <p>No written user reviews yet for this extension.</p>
                 </div>
               ) : null}
@@ -1423,7 +1425,7 @@ const jsonLdSchema = {
         </div>
 
         <form id="extension-review-form" class="space-y-4">
-          <input type="hidden" name="extensionId" value={ext.dbId || ext.id} />
+          <input type="hidden" id="review-extension-id" name="extensionId" value={ext.dbId || ext.id} />
           
           <!-- User Profile Info -->
           {currentUser && (
@@ -1618,20 +1620,27 @@ const jsonLdSchema = {
         </p>
 
         <form id="report-form" class="space-y-2.5">
-          <select aria-label="Report reason" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none">
-            <option>Malware / Security Concern</option>
-            <option>Broken functionality</option>
-            <option>Misleading description</option>
-            <option>Copyright / Trademark</option>
-            <option>Other issue</option>
+          <select
+            id="report-reason-select"
+            name="reason"
+            aria-label="Report reason"
+            class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none text-slate-800"
+          >
+            <option value="security">Malware / Security Concern</option>
+            <option value="broken">Broken functionality</option>
+            <option value="misleading">Misleading description</option>
+            <option value="copyright">Copyright / Trademark</option>
+            <option value="other">Other issue</option>
           </select>
 
           <textarea
+            id="report-details-textarea"
+            name="details"
             rows="3"
             required
             aria-label="Report details"
             placeholder="Details..."
-            class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none leading-relaxed"
+            class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded focus:outline-none leading-relaxed text-slate-800"
           ></textarea>
 
           <div class="flex items-center justify-end gap-2 pt-1">
