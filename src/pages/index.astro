@@ -29,12 +29,19 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=60480
 Astro.response.headers.set('Vary', 'Cookie');
 
 let eagerCount = 0;
-const getCardLoading = () => {
+const getCardLoadingProps = () => {
   if (eagerCount < 4) {
+    const isFirst = eagerCount === 0;
     eagerCount++;
-    return 'eager';
+    return {
+      loading: 'eager' as const,
+      fetchpriority: isFirst ? ('high' as const) : ('auto' as const),
+    };
   }
-  return 'lazy';
+  return {
+    loading: 'lazy' as const,
+    fetchpriority: 'auto' as const,
+  };
 };
 ---
 
@@ -46,9 +53,59 @@ const getCardLoading = () => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <title>ExtLabs — Extensions Store</title>
-    <meta name="description" content="Discover verified browser extensions, AI utilities, and developer tools." />
+    <meta name="description" content="Discover verified browser extensions, AI utilities, and developer tools built on open web standards." />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://extlabs.io/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:site_name" content="ExtLabs" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ExtLabs — Extensions Store" />
+    <meta property="og:description" content="Discover verified browser extensions, AI utilities, and developer tools built on open web standards." />
+    <meta property="og:url" content="https://extlabs.io/" />
+    <meta property="og:image" content="https://extlabs.io/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ExtLabs — Extensions Store" />
+    <meta name="twitter:description" content="Discover verified browser extensions, AI utilities, and developer tools built on open web standards." />
+    <meta name="twitter:image" content="https://extlabs.io/og-image.png" />
+
+    <!-- Resource Hints / Preconnects for CDN and LCP optimization -->
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
     <link rel="preconnect" href="https://avatars.githubusercontent.com" crossorigin />
+
+    <!-- Schema.org JSON-LD Structured Data (WebSite + SearchAction + Organization) -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://extlabs.io/#website",
+          "url": "https://extlabs.io/",
+          "name": "ExtLabs",
+          "description": "Discover verified browser extensions, AI utilities, and developer tools.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://extlabs.io/?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://extlabs.io/#organization",
+          "name": "ExtLabs",
+          "url": "https://extlabs.io/",
+          "logo": "https://extlabs.io/favicon.svg"
+        }
+      ]
+    })} />
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 antialiased min-h-screen flex flex-col font-sans">
@@ -62,6 +119,9 @@ const getCardLoading = () => {
     <!-- Main Content Area with generous breathing room -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-6 sm:px-8 lg:px-12 py-10 space-y-16">
       
+      <!-- Accessible H1 for SEO, Screen Readers & Document Heading Outline -->
+      <h1 class="sr-only">ExtLabs — Verified Browser Extensions, AI Utilities & Developer Tools Store</h1>
+
       <!-- Search & Filter Live Status Alert -->
       <div id="search-status-bar" class="hidden p-3.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs shadow-2xs">
         <div class="flex items-center gap-2 text-slate-700">
@@ -108,7 +168,10 @@ const getCardLoading = () => {
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             {featuredExtensions.map((ext) => (
-              <FeaturedCard extension={ext} loading={getCardLoading()} />
+              <FeaturedCard 
+                extension={ext} 
+                {...getCardLoadingProps()}
+              />
             ))}
           </div>
         </section>
@@ -135,7 +198,7 @@ const getCardLoading = () => {
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {devExtensions.map((ext) => (
-              <ExtensionCard extension={ext} loading={getCardLoading()} />
+              <ExtensionCard extension={ext} {...getCardLoadingProps()} />
             ))}
           </div>
         </section>
@@ -162,7 +225,7 @@ const getCardLoading = () => {
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {aiAndProdExtensions.map((ext) => (
-              <ExtensionCard extension={ext} loading={getCardLoading()} />
+              <ExtensionCard extension={ext} {...getCardLoadingProps()} />
             ))}
           </div>
         </section>
@@ -189,7 +252,7 @@ const getCardLoading = () => {
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {privacyAndUtilExtensions.map((ext) => (
-              <ExtensionCard extension={ext} loading={getCardLoading()} />
+              <ExtensionCard extension={ext} {...getCardLoadingProps()} />
             ))}
           </div>
         </section>

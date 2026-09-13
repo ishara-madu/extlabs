@@ -21,6 +21,9 @@ export default defineConfig({
         !page.includes('/api'),
     }),
   ],
+  devToolbar: {
+    enabled: false,
+  },
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'hover',
