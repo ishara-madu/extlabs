@@ -257,6 +257,12 @@ const jsonLdSchema = {
     <meta name="twitter:description" content={pageDescription} />
     <meta name="twitter:image" content={ogImage} />
 
+    <!-- Resource Hints / Preconnects for CDN & LCP -->
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
+    <link rel="preconnect" href="https://avatars.githubusercontent.com" crossorigin />
+
     <!-- Google Structured Data (JSON-LD) -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
   </head>
@@ -300,21 +306,21 @@ const jsonLdSchema = {
         <!-- Quick Summary Strip -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
           <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Format</span>
+            <span class="text-[10px] font-semibold text-slate-600 uppercase tracking-wider block">Format</span>
             <span class="font-medium text-slate-800">Unpacked .ZIP</span>
           </div>
           <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Standard</span>
+            <span class="text-[10px] font-semibold text-slate-600 uppercase tracking-wider block">Standard</span>
             <span class="font-medium text-slate-800">Chromium Native</span>
           </div>
           <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Security</span>
-            <span class="font-medium text-emerald-600 flex items-center gap-1">
-              <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" /> 100% Virus-Free
+            <span class="text-[10px] font-semibold text-slate-600 uppercase tracking-wider block">Security</span>
+            <span class="font-semibold text-emerald-700 flex items-center gap-1">
+              <ShieldCheck class="w-3.5 h-3.5 text-emerald-700" /> 100% Virus-Free
             </span>
           </div>
           <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Permissions</span>
+            <span class="text-[10px] font-semibold text-slate-600 uppercase tracking-wider block">Permissions</span>
             <span class="font-medium text-slate-800">Client-Side Only</span>
           </div>
         </div>
@@ -428,10 +434,12 @@ const jsonLdSchema = {
                   width={1376}
                   height={768}
                   loading={idx === 0 ? "eager" : "lazy"}
+                  fetchpriority={idx === 0 ? "high" : "auto"}
+                  decoding="async"
                   class="w-full h-full object-contain"
                 />
               </div>
-              <figcaption class="text-[12px] text-slate-500 pl-1">
+              <figcaption class="text-[12px] text-slate-600 pl-1">
                 {step.caption}
               </figcaption>
             </figure>
