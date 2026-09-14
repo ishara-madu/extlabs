@@ -20,7 +20,7 @@ export const DEVELOPERS_DATA: DeveloperAccount[] = [
     name: "ExtLabs Core Team",
     username: "extlabs-official",
     avatar: "/icons/github-profile-placeholder.avif",
-    email: "core-team@extlabs.io",
+    email: "core-team@extlabs.store",
     githubUrl: "https://github.com/extlabs",
     extensionsCount: 3,
     totalDownloads: "184.5K",

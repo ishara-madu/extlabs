@@ -107,7 +107,7 @@ if (db && user) {
           return {
             id: row.slug || row.id,
             name: row.name,
-            packageId: `io.extlabs.${(row.slug || row.id).replace(/-/g, '')}`,
+            packageId: `store.extlabs.${(row.slug || row.id).replace(/-/g, '')}`,
             lastUpdated,
             status,
             updateStatus,

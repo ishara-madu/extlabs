@@ -54,7 +54,7 @@ const devEmail = user?.email || "";
 // 3. Fallback strictly to GitHub profile URL (always available since auth is via GitHub).
 let devWebsite = developer?.website?.trim() || "";
 
-if (!devWebsite || devWebsite === devGithubProfileUrl || devWebsite === "https://extlabs.io") {
+if (!devWebsite || devWebsite === devGithubProfileUrl || devWebsite === "https://extlabs.store" || devWebsite === "https://extlabs.io") {
   if (devHandleRaw && devHandleRaw !== "developer") {
     try {
       const ghRes = await fetch(`https://api.github.com/users/${devHandleRaw}`, {
@@ -78,7 +78,7 @@ if (!devWebsite || devWebsite === devGithubProfileUrl || devWebsite === "https:/
   }
 }
 
-if (!devWebsite || devWebsite === "https://extlabs.io") {
+if (!devWebsite || devWebsite === "https://extlabs.store" || devWebsite === "https://extlabs.io") {
   devWebsite = devGithubProfileUrl;
 }
 
@@ -141,9 +141,9 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                     savedProfile = JSON.parse(localStorage.getItem('extlabs_dev_profile') || '{}');
                   } catch (e) {}
 
-                  if (savedProfile && savedProfile.website && savedProfile.website !== 'https://extlabs.io') {
+                  if (savedProfile && savedProfile.website && savedProfile.website !== 'https://extlabs.store' && savedProfile.website !== 'https://extlabs.io') {
                     webEl.value = savedProfile.website;
-                  } else if (u.website && u.website !== ('https://github.com/' + u.username) && u.website !== 'https://extlabs.io') {
+                  } else if (u.website && u.website !== ('https://github.com/' + u.username) && u.website !== 'https://extlabs.store' && u.website !== 'https://extlabs.io') {
                     webEl.value = u.website;
                   } else {
                     fetch('https://api.github.com/users/' + u.username)
@@ -153,12 +153,12 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                           var blog = ghData.blog.trim();
                           var formatted = (blog.startsWith('http://') || blog.startsWith('https://')) ? blog : 'https://' + blog;
                           webEl.value = formatted;
-                        } else if (!webEl.value || webEl.value === 'https://extlabs.io') {
+                        } else if (!webEl.value || webEl.value === 'https://extlabs.store' || webEl.value === 'https://extlabs.io') {
                           webEl.value = 'https://github.com/' + u.username;
                         }
                       })
                       .catch(function() {
-                        if (!webEl.value || webEl.value === 'https://extlabs.io') {
+                        if (!webEl.value || webEl.value === 'https://extlabs.store' || webEl.value === 'https://extlabs.io') {
                           webEl.value = 'https://github.com/' + u.username;
                         }
                       });
@@ -547,13 +547,13 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
                 <input
                   type="text"
                   readonly
-                  value="https://extlabs.io/api/v1/webhooks/github-release"
+                  value="https://extlabs.store/api/v1/webhooks/github-release"
                   class="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg font-mono text-slate-700 cursor-text"
                 />
                 <button
                   type="button"
                   class="copy-token-btn px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1.5 shrink-0"
-                  data-copy="https://extlabs.io/api/v1/webhooks/github-release"
+                  data-copy="https://extlabs.store/api/v1/webhooks/github-release"
                 >
                   <Copy class="w-3.5 h-3.5 text-slate-500" />
                   <span>Copy</span>
@@ -695,7 +695,7 @@ const devAvatar = developer?.avatar_url || user?.avatar_url || "/icons/github-pr
             </div>
             <button
               type="button"
-              onclick="alert('To unlink your GitHub account, please contact support@extlabs.io')"
+              onclick="alert('To unlink your GitHub account, please contact support@extlabs.store')"
               class="px-3.5 py-1.5 bg-white hover:bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs font-medium transition-colors cursor-pointer shrink-0"
             >
               Unlink account

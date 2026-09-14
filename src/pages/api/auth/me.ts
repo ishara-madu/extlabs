@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ request }) => {
     .first<{ website?: string | null; default_monetag_url?: string | null; default_frequency?: string | null }>();
 
   let devWebsite = developer?.website?.trim() || '';
-  if (!devWebsite || devWebsite === 'https://extlabs.io') {
+  if (!devWebsite || devWebsite === 'https://extlabs.store' || devWebsite === 'https://extlabs.io') {
     devWebsite = `https://github.com/${user.username}`;
   }
 

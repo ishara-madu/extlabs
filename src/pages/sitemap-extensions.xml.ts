@@ -22,7 +22,7 @@ export const GET: APIRoute = async () => {
         : (ext.created_at ? new Date(ext.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
 
       return `  <url>
-    <loc>https://extlabs.io/extension/${slug}</loc>
+    <loc>https://extlabs.store/extension/${slug}</loc>
     <lastmod>${lastMod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

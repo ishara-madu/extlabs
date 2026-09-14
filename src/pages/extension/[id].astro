@@ -151,7 +151,7 @@ const safeMarkdownDescription = downgradeMarkdownHeadings(ext.description || '')
 const renderedOverviewHtml = safeMarkdownDescription ? await marked.parse(safeMarkdownDescription, { breaks: true, gfm: true }) : '';
 
 const canonicalSlug = ext.slug || ext.id;
-const canonicalUrl = `https://extlabs.io/extension/${canonicalSlug}`;
+const canonicalUrl = `https://extlabs.store/extension/${canonicalSlug}`;
 
 // Smart title: stays under 60-65 chars for Google SERP display limits
 const pageTitle = ext.name.length > 42
@@ -174,7 +174,7 @@ const metaDescription = (() => {
   return `Download ${ext.name} browser extension for Chrome, Edge, and Brave. Free direct package download verified safe on ExtLabs.`;
 })();
 
-const ogImageUrl = ext.headerImageUrl || screenshotsList[0] || ext.iconUrl || 'https://extlabs.io/favicon.svg';
+const ogImageUrl = ext.headerImageUrl || screenshotsList[0] || ext.iconUrl || 'https://extlabs.store/favicon.svg';
 
 // JSON-LD Schema.org Structured Data for SEO
 const jsonLdGraph: any[] = [
@@ -220,13 +220,13 @@ const jsonLdGraph: any[] = [
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://extlabs.io"
+        "item": "https://extlabs.store"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": ext.categoryLabel || "Extensions",
-        "item": `https://extlabs.io/category/${ext.category || 'tools'}`
+        "item": `https://extlabs.store/category/${ext.category || 'tools'}`
       },
       {
         "@type": "ListItem",

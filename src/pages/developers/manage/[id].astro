@@ -135,7 +135,7 @@ if (isRejected) {
 
 // 2. Normalize Slug, Package ID, Dates, and Categories
 const slug = dbExtension.slug || id;
-const packageId = `io.extlabs.${slug.replace(/[-_]/g, '')}`;
+const packageId = `store.extlabs.${slug.replace(/[-_]/g, '')}`;
 
 let lastUpdated = 'Recently';
 if (dbExtension.updated_at) {

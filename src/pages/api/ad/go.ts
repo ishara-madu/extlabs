@@ -14,7 +14,7 @@ export const GET: APIRoute = async ({ request, url }) => {
   const isPlatform = url.searchParams.get('p') === '1';
 
   if (!extId || !isValidExtensionId(extId)) {
-    return Response.redirect('https://extlabs.io/', 302);
+    return Response.redirect('https://extlabs.store/', 302);
   }
 
   const db = getDb();
