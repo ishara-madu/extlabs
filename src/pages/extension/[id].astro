@@ -2039,7 +2039,7 @@ const jsonLdSchema = {
         }
 
         // Non-blocking telemetry dispatcher (accumulates in 5-minute server memory buffer)
-        function sendTelemetry(extId, type) {
+        function sendTelemetry(extId: string, type: string) {
           if (!extId || !type) return;
 
           const payload = JSON.stringify({ extensionId: extId, type: type });
