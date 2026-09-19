@@ -38,11 +38,11 @@ INSERT OR IGNORE INTO notifications (
 ) VALUES (
   'notif_omniai_review_notice',
   'dev_extlabs',
-  'ext_mtr74tz6_omniai_page_',
+  NULL,
   'Extension Review Notice: Manifest V3 Permissions Verified',
   'Your extension passed our automated sandbox security checks. Reviewers verified active tab permissions and confirmed zero tracking telemetry.',
   'info',
-  '/developers/manage/omniai-page-summarizer/edit',
+  '/developers',
   'Review Manifest Specs',
   0,
   'ExtLabs Security Team',

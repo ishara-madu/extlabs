@@ -11,7 +11,7 @@ CREATE INDEX IF NOT EXISTS idx_extensions_category_active ON extensions(category
 CREATE INDEX IF NOT EXISTS idx_extensions_store_rank ON extensions(is_active, is_suspended, is_featured, weekly_active_users, rating);
 
 -- 4. Fast extension reviews sorting by creation date
-CREATE INDEX IF NOT EXISTS idx_reviews_ext_created ON extension_reviews(extension_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_reviews_ext_created ON reviews(extension_id, created_at);
 
 -- 5. Fast telemetry analytics range queries
-CREATE INDEX IF NOT EXISTS idx_telemetry_ext_date ON extension_telemetry(extension_id, date);
+CREATE INDEX IF NOT EXISTS idx_telemetry_ext_date ON telemetry_daily(extension_id, date);
