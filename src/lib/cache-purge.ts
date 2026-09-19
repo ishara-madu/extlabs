@@ -44,6 +44,11 @@ export async function purgeExtensionStoreCache(
     // 3. Home page (to reflect updated featured/recent shelves)
     urlsToPurge.add(`${origin}/`);
 
+    // 4. Sitemaps (to reflect newly added or updated extensions immediately)
+    urlsToPurge.add(`${origin}/sitemap-extensions.xml`);
+    urlsToPurge.add(`${origin}/sitemap-index.xml`);
+    urlsToPurge.add(`${origin}/sitemap.xml`);
+
     const fileList = Array.from(urlsToPurge);
 
     // 4. Try local Cloudflare Worker cache purge (caches.default.delete)

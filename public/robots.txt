@@ -3,7 +3,11 @@ Allow: /
 Disallow: /admin/
 Disallow: /developers/dashboard
 Disallow: /developers/manage/
+Disallow: /developers/new
+Disallow: /developers/settings
+Disallow: /developers/login
 Disallow: /api/
 
 Sitemap: https://extlabs.store/sitemap-index.xml
+Sitemap: https://extlabs.store/sitemap.xml
 Sitemap: https://extlabs.store/sitemap-extensions.xml

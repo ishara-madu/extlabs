@@ -14,11 +14,18 @@ export default defineConfig({
   }),
   integrations: [
     sitemap({
+      customSitemaps: ['https://extlabs.store/sitemap-extensions.xml'],
       filter: (page) =>
         !page.includes('/admin') &&
         !page.includes('/developers/dashboard') &&
         !page.includes('/developers/manage') &&
-        !page.includes('/api'),
+        !page.includes('/developers/new') &&
+        !page.includes('/developers/settings') &&
+        !page.includes('/developers/login') &&
+        !page.includes('/api') &&
+        !page.endsWith('/privacy/') &&
+        !page.endsWith('/terms/') &&
+        !page.endsWith('/security-verification/'),
     }),
   ],
   devToolbar: {
