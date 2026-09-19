@@ -15,3 +15,11 @@ CLOUDINARY_API_SECRET=your_api_secret_here
 CLOUDINARY_UPLOAD_FOLDER=your_custom_folder_name
 # Alternatively, you can use the full URL:
 # CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+
+# Google OAuth Configuration (Google Cloud Console)
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+
+# Optional: Cloudflare Global Edge Cache Purge (Automated instant edge invalidation)
+# CLOUDFLARE_ZONE_ID=your_cloudflare_zone_id_here
+# CLOUDFLARE_API_TOKEN=your_cloudflare_api_token_here
