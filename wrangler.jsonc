@@ -6,6 +6,7 @@
   "cache": {
     "enabled": true
   },
+  "workers_dev": true,
   "routes": [
     {
       "pattern": "extlabs.store",

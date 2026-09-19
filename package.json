@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "deploy": "CLOUDFLARE_API_TOKEN=\"\" wrangler deploy",
     "astro": "astro"
   },
   "dependencies": {
