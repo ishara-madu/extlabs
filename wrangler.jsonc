@@ -6,6 +6,18 @@
   "cache": {
     "enabled": true
   },
+  "routes": [
+    {
+      "pattern": "extlabs.store",
+      "custom_domain": true
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "fdef5b631e3a49e68b5fb9183414415d"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
