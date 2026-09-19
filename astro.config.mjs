@@ -32,8 +32,8 @@ export default defineConfig({
     enabled: false,
   },
   prefetch: {
-    prefetchAll: true,
-    defaultStrategy: 'hover',
+    prefetchAll: false,
+    defaultStrategy: 'tap',
   },
   image: {
     domains: [
