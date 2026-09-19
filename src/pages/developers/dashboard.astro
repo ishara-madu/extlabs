@@ -34,6 +34,12 @@ if (!user) {
   return Astro.redirect('/developers/login?auth_required=true&redirect=/developers/dashboard', 302);
 }
 
+// Strictly prevent edge or browser caching of developer dashboard
+Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+Astro.response.headers.set('Pragma', 'no-cache');
+Astro.response.headers.set('Expires', '0');
+Astro.response.headers.set('Vary', 'Cookie');
+
 export interface DashboardExtension {
   id: string;
   name: string;

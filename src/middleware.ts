@@ -59,5 +59,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     (context.locals as any).user = user;
   }
 
-  return next();
+  const response = await next();
+
+  // Strictly prevent any caching for authenticated or dynamic developer, admin, and API pages
+  if (
+    pathname.startsWith('/developers') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api')
+  ) {
+    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Vary', 'Cookie');
+  }
+
+  return response;
 });
