@@ -10,7 +10,6 @@ import VerifiedBadge from "../../components/VerifiedBadge.astro";
 import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension, getDeveloperByUserIdOrSlug } from "../../lib/db";
 import { getReviewerUser, getSessionUser } from "../../lib/auth";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2, Terminal, Copy, Maximize2 } from '@lucide/astro';
-import { Image } from 'astro:assets';
 import { marked } from 'marked';
 
 const requestedId = Astro.params.id || '';
@@ -286,8 +285,6 @@ const jsonLdSchema = {
     <meta name="generator" content={Astro.generator} />
     
     <!-- Resource Hints for Third-Party CDNs -->
-    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
-    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
 
     <!-- Robots Meta Tag -->
@@ -509,12 +506,13 @@ const jsonLdSchema = {
           
           <!-- Left Info Block with Icon -->
           <div class="flex items-start gap-4 sm:gap-5 max-w-3xl">
-            <Image
+            <img
               src={ext.iconUrl || "/icons/extension-placeholder.avif"}
               alt={ext.name}
-              width={80}
-              height={80}
+              width="80"
+              height="80"
               loading="eager"
+              decoding="async"
               class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-white border border-slate-200/90 shadow-2xs p-1.5 shrink-0"
             />
             <div class="space-y-3">
@@ -697,12 +695,12 @@ const jsonLdSchema = {
                   fetchpriority="high"
                   class="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 select-none pointer-events-none transition-all duration-300"
                 />
-                <Image
+                <img
                   id="main-screenshot-img"
                   src={screenshotsList[0]}
                   alt={`${ext.name} Store Screenshot 1`}
-                  width={1280}
-                  height={720}
+                  width="1280"
+                  height="720"
                   class="relative z-10 w-full h-full object-contain select-none transition-transform duration-200"
                   loading="eager"
                   decoding="async"
@@ -757,11 +755,11 @@ const jsonLdSchema = {
                       data-src={shot}
                       aria-label={`View screenshot ${idx + 1}`}
                     >
-                      <Image
+                      <img
                         src={shot}
                         alt={`Thumbnail ${idx + 1}`}
-                        width={96}
-                        height={54}
+                        width="96"
+                        height="54"
                         loading="lazy"
                         decoding="async"
                         class="w-full h-full object-contain"

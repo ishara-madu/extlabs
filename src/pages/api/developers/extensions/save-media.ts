@@ -2,18 +2,22 @@
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug, saveExtensionMedia, getExtensionBySlug, getExtensionById } from '../../../../lib/db';
-import { 
-  uploadToCloudinary, 
-  isCloudinaryConfigured, 
-  getCloudinaryFolder, 
-  CLOUDINARY_IMAGE_PRESETS,
-  deleteFromCloudinary,
-  extractCloudinaryPublicId
-} from '../../../../lib/cloudinary';
+import { getR2Bucket, uploadToR2, deleteFromR2 } from '../../../../lib/r2';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+function base64ToUint8Array(base64Str: string): Uint8Array {
+  const base64Data = base64Str.includes(',') ? base64Str.split(',')[1] : base64Str;
+  const binaryString = atob(base64Data);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+export const POST: APIRoute = async ({ request, locals }) => {
   const db = getDb();
   if (!db) {
     return new Response(JSON.stringify({ success: false, error: 'Database unavailable' }), {
@@ -36,6 +40,20 @@ export const POST: APIRoute = async ({ request }) => {
       status: 403,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  const bucket = getR2Bucket();
+  if (!bucket) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'R2 storage bucket is not configured. Please ensure R2 binding is set up in wrangler.jsonc.',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   try {
@@ -112,12 +130,12 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Strict payload size guards: Max 1MB for icon, max 2MB for banner & screenshots
+    // Strict payload size guards: Max 1.5MB for icon, max 2.5MB for banner & screenshots
     if (finalIcon.startsWith('data:image/')) {
       const rawData = finalIcon.split(',')[1] || '';
       const estimatedBytes = Math.round(rawData.length * 0.75);
-      if (estimatedBytes > 1.2 * 1024 * 1024) {
-        return new Response(JSON.stringify({ success: false, error: 'Icon file size exceeds the strict 1 MB limit.' }), {
+      if (estimatedBytes > 1.5 * 1024 * 1024) {
+        return new Response(JSON.stringify({ success: false, error: 'Icon file size exceeds the 1.5 MB limit.' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
@@ -127,8 +145,8 @@ export const POST: APIRoute = async ({ request }) => {
     if (finalPromo.startsWith('data:image/')) {
       const rawData = finalPromo.split(',')[1] || '';
       const estimatedBytes = Math.round(rawData.length * 0.75);
-      if (estimatedBytes > 2.2 * 1024 * 1024) {
-        return new Response(JSON.stringify({ success: false, error: 'Promotional banner file size exceeds the strict 2 MB limit.' }), {
+      if (estimatedBytes > 2.5 * 1024 * 1024) {
+        return new Response(JSON.stringify({ success: false, error: 'Promotional banner file size exceeds the 2.5 MB limit.' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
@@ -139,8 +157,8 @@ export const POST: APIRoute = async ({ request }) => {
       if (shot.startsWith('data:image/')) {
         const rawData = shot.split(',')[1] || '';
         const estimatedBytes = Math.round(rawData.length * 0.75);
-        if (estimatedBytes > 2.2 * 1024 * 1024) {
-          return new Response(JSON.stringify({ success: false, error: 'Screenshot file size exceeds the strict 2 MB limit.' }), {
+        if (estimatedBytes > 2.5 * 1024 * 1024) {
+          return new Response(JSON.stringify({ success: false, error: 'Screenshot file size exceeds the 2.5 MB limit.' }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' },
           });
@@ -148,176 +166,87 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
-    // If Cloudinary is configured, upload any Base64 images to Cloudinary CDN
-    if (isCloudinaryConfigured()) {
-      const extTag = slug || id || 'unknown';
+    const extTag = (slug || id || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_');
 
-      // Query existing extension to safely clean up replaced images from Cloudinary storage
-      let existingExt: any = null;
+    // Query existing extension to safely clean up replaced images from R2 storage
+    let existingExt: any = null;
+    try {
+      existingExt = (await getExtensionBySlug(db, slug || id || '', { allowDraft: true })) ||
+                    (await getExtensionById(db, id || slug || '', { allowDraft: true }));
+    } catch (qErr) {
+      console.warn('Failed to query existing extension for R2 cleanup:', qErr);
+    }
+
+    const timestamp = Date.now();
+
+    // 1. Upload Icon if Base64
+    let targetIcon = finalIcon;
+    if (finalIcon.startsWith('data:image/')) {
+      const bytes = base64ToUint8Array(finalIcon);
+      const isSvg = finalIcon.startsWith('data:image/svg+xml');
+      const ext = isSvg ? 'svg' : 'webp';
+      const mime = isSvg ? 'image/svg+xml' : 'image/webp';
+      const key = `extlabs/${extTag}/icon_${timestamp}.${ext}`;
+      const upload = await uploadToR2(bucket, key, bytes, mime);
+      targetIcon = upload.publicUrl;
+
+      // Clean up old R2 icon if replaced
+      if (existingExt?.icon_url && existingExt.icon_url !== targetIcon && existingExt.icon_url.includes('/cdn/')) {
+        deleteFromR2(bucket, existingExt.icon_url).catch((delErr) => {
+          console.warn('Failed to delete old icon from R2:', delErr);
+        });
+      }
+    }
+
+    // 2. Upload Promo Banner if Base64
+    let targetPromo = finalPromo;
+    if (finalPromo.startsWith('data:image/')) {
+      const bytes = base64ToUint8Array(finalPromo);
+      const key = `extlabs/${extTag}/banner_${timestamp}.webp`;
+      const upload = await uploadToR2(bucket, key, bytes, 'image/webp');
+      targetPromo = upload.publicUrl;
+
+      // Clean up old R2 banner if replaced
+      if (existingExt?.header_image_url && existingExt.header_image_url !== targetPromo && existingExt.header_image_url.includes('/cdn/')) {
+        deleteFromR2(bucket, existingExt.header_image_url).catch((delErr) => {
+          console.warn('Failed to delete old banner from R2:', delErr);
+        });
+      }
+    }
+
+    // 3. Upload Screenshots if Base64
+    const targetScreenshots: string[] = [];
+    for (let idx = 0; idx < cleanedScreenshots.length; idx++) {
+      const shot = cleanedScreenshots[idx];
+      if (shot.startsWith('data:image/')) {
+        const bytes = base64ToUint8Array(shot);
+        const key = `extlabs/${extTag}/screenshot_${idx + 1}_${timestamp}.webp`;
+        const upload = await uploadToR2(bucket, key, bytes, 'image/webp');
+        targetScreenshots.push(upload.publicUrl);
+      } else {
+        targetScreenshots.push(shot);
+      }
+    }
+
+    // Check if any old screenshots were dropped / replaced, and purge them from R2
+    if (existingExt?.screenshots) {
       try {
-        existingExt = (await getExtensionBySlug(db, slug || id || '', { allowDraft: true })) ||
-                      (await getExtensionById(db, id || slug || '', { allowDraft: true }));
-      } catch (qErr) {
-        console.warn('Failed to query existing extension for Cloudinary cleanup:', qErr);
-      }
+        const oldScreenshotsList = Array.isArray(existingExt.screenshots)
+          ? existingExt.screenshots
+          : JSON.parse(existingExt.screenshots);
 
-      // 1. Upload Icon if Base64 (Strict 1:1, Min 128x128, Max 1024x1024)
-      const iconPromise = (async () => {
-        if (finalIcon.startsWith('data:image/')) {
-          const res = await uploadToCloudinary({
-            file: finalIcon,
-            folder: getCloudinaryFolder('icons'),
-            tags: ['extlabs', 'icon', extTag],
-            transformation: CLOUDINARY_IMAGE_PRESETS.icon,
-          });
-
-          // Server-side strict aspect ratio (1:1) and dimension validation
-          const ratio = res.width / res.height;
-          if (Math.abs(ratio - 1.0) > 0.03) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Extension icon must strictly have a 1:1 square aspect ratio (${res.width}×${res.height} px uploaded). Other aspect ratios are not permitted.`);
-          }
-          if (res.width < 128 || res.height < 128) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Extension icon resolution is too low (${res.width}×${res.height} px). Minimum required size is 128×128 px to ensure crisp rendering.`);
-          }
-          if (res.width > 1024 || res.height > 1024) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Extension icon resolution (${res.width}×${res.height} px) exceeds maximum allowed size of 1024×1024 px.`);
-          }
-
-          // Delete old icon from Cloudinary if replaced
-          if (existingExt?.icon_url && existingExt.icon_url !== res.secure_url) {
-            const oldPublicId = extractCloudinaryPublicId(existingExt.icon_url);
-            if (oldPublicId) {
-              deleteFromCloudinary(oldPublicId).catch((delErr) => {
-                console.warn('Failed to delete old icon from Cloudinary:', delErr);
-              });
-            }
-          }
-
-          return res.secure_url;
-        }
-        return finalIcon;
-      })();
-
-      // 2. Upload Promo Banner if Base64 (Strict 16:9, Min 640x360, Max 1920x1080)
-      const promoPromise = (async () => {
-        if (finalPromo.startsWith('data:image/')) {
-          const res = await uploadToCloudinary({
-            file: finalPromo,
-            folder: getCloudinaryFolder('banners'),
-            tags: ['extlabs', 'banner', extTag],
-            transformation: CLOUDINARY_IMAGE_PRESETS.banner,
-          });
-
-          // Server-side strict aspect ratio (16:9) and dimension validation
-          const ratio = res.width / res.height;
-          if (Math.abs(ratio - (16 / 9)) > 0.04) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Promotional shelf banner must strictly have a 16:9 aspect ratio (${res.width}×${res.height} px uploaded). Other aspect ratios are not permitted.`);
-          }
-          if (res.width < 640 || res.height < 360) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Promotional banner resolution is too low (${res.width}×${res.height} px). Minimum required size is 640×360 px.`);
-          }
-          if (res.width > 1920 || res.height > 1080) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Promotional banner resolution (${res.width}×${res.height} px) exceeds maximum allowed size of 1920×1080 px.`);
-          }
-
-          // Delete old promo banner from Cloudinary if replaced
-          if (existingExt?.header_image_url && existingExt.header_image_url !== res.secure_url) {
-            const oldPublicId = extractCloudinaryPublicId(existingExt.header_image_url);
-            if (oldPublicId) {
-              deleteFromCloudinary(oldPublicId).catch((delErr) => {
-                console.warn('Failed to delete old promo banner from Cloudinary:', delErr);
-              });
-            }
-          }
-
-          return res.secure_url;
-        }
-        return finalPromo;
-      })();
-
-      // 3. Upload Screenshots if Base64 (Strict 16:9, Min 1280x720, Max 1920x1080)
-      const screenshotsPromises = cleanedScreenshots.map(async (screenshotUrl, idx) => {
-        if (screenshotUrl.startsWith('data:image/')) {
-          const res = await uploadToCloudinary({
-            file: screenshotUrl,
-            folder: getCloudinaryFolder('screenshots'),
-            tags: ['extlabs', 'screenshot', extTag, `index-${idx}`],
-            transformation: CLOUDINARY_IMAGE_PRESETS.screenshot,
-          });
-
-          // Server-side strict aspect ratio (16:9) and dimension validation
-          const ratio = res.width / res.height;
-          if (Math.abs(ratio - (16 / 9)) > 0.04) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Screenshot #${idx + 1} must strictly have a 16:9 aspect ratio (${res.width}×${res.height} px uploaded). Other aspect ratios are not permitted.`);
-          }
-          if (res.width < 1280 || res.height < 720) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Screenshot #${idx + 1} resolution is too low (${res.width}×${res.height} px). Minimum required size is 1280×720 px (720p HD).`);
-          }
-          if (res.width > 1920 || res.height > 1080) {
-            await deleteFromCloudinary(res.public_id).catch(() => {});
-            throw new Error(`Screenshot #${idx + 1} resolution (${res.width}×${res.height} px) exceeds maximum allowed size of 1920×1080 px.`);
-          }
-
-          return res.secure_url;
-        }
-        return screenshotUrl;
-      });
-
-      // Execute all media uploads concurrently
-      const [uploadedIcon, uploadedPromo, uploadedScreenshots] = await Promise.all([
-        iconPromise,
-        promoPromise,
-        Promise.all(screenshotsPromises),
-      ]);
-
-      // Check if any old screenshots were dropped / replaced, and purge them from Cloudinary storage
-      if (existingExt?.screenshots && Array.isArray(existingExt.screenshots)) {
-        for (const oldScr of existingExt.screenshots) {
-          if (typeof oldScr === 'string' && !uploadedScreenshots.includes(oldScr)) {
-            const oldPublicId = extractCloudinaryPublicId(oldScr);
-            if (oldPublicId) {
-              deleteFromCloudinary(oldPublicId).catch((delErr) => {
-                console.warn('Failed to delete replaced screenshot from Cloudinary:', delErr);
+        if (Array.isArray(oldScreenshotsList)) {
+          for (const oldScr of oldScreenshotsList) {
+            if (typeof oldScr === 'string' && !targetScreenshots.includes(oldScr) && oldScr.includes('/cdn/')) {
+              deleteFromR2(bucket, oldScr).catch((delErr) => {
+                console.warn('Failed to delete replaced screenshot from R2:', delErr);
               });
             }
           }
         }
+      } catch (parseErr) {
+        console.warn('Failed to parse old screenshots for R2 cleanup:', parseErr);
       }
-
-      var targetIcon = uploadedIcon;
-      var targetPromo = uploadedPromo;
-      var targetScreenshots = uploadedScreenshots;
-    } else {
-      // If Cloudinary is not configured, reject Base64 images to prevent database bloat
-      if (
-        finalIcon.startsWith('data:image/') ||
-        finalPromo.startsWith('data:image/') ||
-        cleanedScreenshots.some((s) => s.startsWith('data:image/'))
-      ) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error:
-              'Cloudinary configuration required. Direct Base64 database storage has been deprecated. Please configure Cloudinary in .dev.vars.',
-          }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      var targetIcon = finalIcon;
-      var targetPromo = finalPromo;
-      var targetScreenshots = cleanedScreenshots;
     }
 
     // Strict validation: Ensure NO Base64 strings ever enter the database columns
@@ -349,26 +278,23 @@ export const POST: APIRoute = async ({ request }) => {
       youtubeVideoUrl: finalYoutube || null,
     });
 
-    // Note: CDN cache purge is deferred until final publication to protect live store visitors
-
-    const isCloudinaryActive = isCloudinaryConfigured();
-
-    return new Response(JSON.stringify({
-      success: true,
-      id: result.id,
-      cloudinary: isCloudinaryActive,
-      iconUrl: targetIcon,
-      headerImageUrl: targetPromo,
-      screenshots: targetScreenshots,
-      message: isCloudinaryActive
-        ? 'Extension visual media uploaded to Cloudinary and saved successfully.'
-        : 'Extension visual media saved to database (Cloudinary not configured).',
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        id: result.id,
+        storage: 'r2',
+        iconUrl: targetIcon,
+        headerImageUrl: targetPromo,
+        screenshots: targetScreenshots,
+        message: 'Extension visual media uploaded to R2 Storage CDN and saved successfully.',
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (err: any) {
-    console.error('Error saving extension visual media:', err);
+    console.error('Error saving extension visual media to R2:', err);
     return new Response(JSON.stringify({ success: false, error: err.message || 'Failed to save visual media.' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },

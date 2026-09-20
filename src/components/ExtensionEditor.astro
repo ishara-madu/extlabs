@@ -2472,10 +2472,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               resolve(raw);
               return;
             }
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, width, height);
-            const format = file.type === 'image/png' ? 'image/png' : 'image/webp';
             try {
-              const dataUrl = canvas.toDataURL(format, quality);
+              // Always convert to high-performance WebP
+              const dataUrl = canvas.toDataURL('image/webp', quality);
               resolve(dataUrl);
             } catch {
               resolve(raw);
@@ -3503,7 +3505,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           return false;
         }
 
-        // Update with permanent Cloudinary CDN URLs if returned
+        // Update with permanent CDN URLs if returned
         if (data.iconUrl && iconUrlVal) iconUrlVal.value = data.iconUrl;
         if (data.headerImageUrl && promoUrlVal) promoUrlVal.value = data.headerImageUrl;
         if (Array.isArray(data.screenshots) && screenshotsContainer) {
@@ -3516,14 +3518,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         }
 
         if (tab2Status) {
-          tab2Status.textContent = data.cloudinary
-            ? '✓ Uploaded to Cloudinary & Saved'
-            : '✓ Saved to ExtLabs database';
+          tab2Status.textContent = '✓ Uploaded to ExtLabs CDN & Saved';
           tab2Status.className = 'text-xs text-emerald-600 font-mono';
         }
 
         if (!silent) {
-          const successMsg = data.cloudinary ? '✓ Uploaded to Cloudinary!' : '✓ Saved to Database!';
+          const successMsg = '✓ Uploaded to CDN!';
           if (topSaveBtn) {
             topSaveBtn.innerHTML = `<span>${successMsg}</span>`;
             setTimeout(() => {

@@ -4,11 +4,11 @@ import { getSessionUser } from '../../../../lib/auth';
 import { getDb, createNotification, getExtensionById } from '../../../../lib/db';
 import { approveLifecycleRequest, rejectLifecycleRequest } from '../../../../lib/queries/lifecycle';
 import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
-import { deleteFromCloudinary, extractCloudinaryPublicId } from '../../../../lib/cloudinary';
+import { deleteFromR2, getR2Bucket } from '../../../../lib/r2';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   const db = getDb();
   if (!db) {
     return new Response(JSON.stringify({ success: false, error: 'Database unavailable' }), {
@@ -108,29 +108,29 @@ export const POST: APIRoute = async ({ request }) => {
           }
         );
       } else {
-        // Deletion approved: Purge extension assets from Cloudinary
+        // Deletion approved: Purge extension assets from R2 Storage
         try {
-          const extToPurge = await getExtensionById(db, result.extensionId, { allowDraft: true });
-          if (extToPurge) {
-            if (extToPurge.icon_url) {
-              const pid = extractCloudinaryPublicId(extToPurge.icon_url);
-              if (pid) deleteFromCloudinary(pid).catch(() => {});
-            }
-            if (extToPurge.header_image_url) {
-              const pid = extractCloudinaryPublicId(extToPurge.header_image_url);
-              if (pid) deleteFromCloudinary(pid).catch(() => {});
-            }
-            if (extToPurge.screenshots && Array.isArray(extToPurge.screenshots)) {
-              for (const s of extToPurge.screenshots) {
-                if (typeof s === 'string') {
-                  const pid = extractCloudinaryPublicId(s);
-                  if (pid) deleteFromCloudinary(pid).catch(() => {});
+          const bucket = getR2Bucket();
+          if (bucket) {
+            const extToPurge = await getExtensionById(db, result.extensionId, { allowDraft: true });
+            if (extToPurge) {
+              if (extToPurge.icon_url && extToPurge.icon_url.includes('/cdn/')) {
+                deleteFromR2(bucket, extToPurge.icon_url).catch(() => {});
+              }
+              if (extToPurge.header_image_url && extToPurge.header_image_url.includes('/cdn/')) {
+                deleteFromR2(bucket, extToPurge.header_image_url).catch(() => {});
+              }
+              if (extToPurge.screenshots && Array.isArray(extToPurge.screenshots)) {
+                for (const s of extToPurge.screenshots) {
+                  if (typeof s === 'string' && s.includes('/cdn/')) {
+                    deleteFromR2(bucket, s).catch(() => {});
+                  }
                 }
               }
             }
           }
-        } catch (cloudErr) {
-          console.warn('Failed to clean up Cloudinary assets upon extension deletion:', cloudErr);
+        } catch (r2Err) {
+          console.warn('Failed to clean up R2 assets upon extension deletion:', r2Err);
         }
 
         // Notify developer

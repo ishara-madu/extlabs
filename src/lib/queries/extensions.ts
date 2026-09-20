@@ -1074,7 +1074,7 @@ export async function saveExtensionMedia(
 
   // Defensive assertion: ensure database columns only store clean URLs, never Base64
   if (data.iconUrl.startsWith('data:image/') || (data.headerImageUrl && data.headerImageUrl.startsWith('data:image/'))) {
-    throw new Error('Direct Base64 images are deprecated. Images must be uploaded to Cloudinary CDN.');
+    throw new Error('Direct Base64 images are deprecated. Images must be uploaded to R2 Storage CDN.');
   }
 
   const screenshotsJson = JSON.stringify(data.screenshots || []);

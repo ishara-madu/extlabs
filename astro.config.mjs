@@ -38,7 +38,6 @@ export default defineConfig({
   image: {
     domains: [
       'avatars.githubusercontent.com',
-      'res.cloudinary.com',
       'images.unsplash.com',
       'lh3.googleusercontent.com',
       'googleusercontent.com',
