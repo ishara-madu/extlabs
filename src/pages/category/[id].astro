@@ -257,12 +257,7 @@ Astro.response.headers.set('Vary', 'Cookie');
               <div class="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden bg-slate-950 border border-slate-100 shadow-2xs relative flex items-center justify-center">
                 {topFeatured.headerImageUrl ? (
                   <>
-                    <img
-                      src={topFeatured.headerImageUrl}
-                      alt=""
-                      aria-hidden="true"
-                      class="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 select-none pointer-events-none"
-                    />
+                    <div class="absolute inset-0 bg-radial from-slate-900/50 via-slate-950/80 to-slate-950 pointer-events-none select-none"></div>
                     <Image
                       src={topFeatured.headerImageUrl}
                       alt={topFeatured.name}

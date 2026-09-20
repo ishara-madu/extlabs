@@ -684,17 +684,8 @@ const jsonLdSchema = {
                 class="w-full aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-200 relative group flex items-center justify-center cursor-pointer"
                 title="Click to view full resolution"
               >
-                <!-- Ambient Backdrop to eliminate harsh empty borders -->
-                <img
-                  id="screenshot-ambient-bg"
-                  src={screenshotsList[0]}
-                  alt=""
-                  aria-hidden="true"
-                  loading="eager"
-                  decoding="async"
-                  fetchpriority="high"
-                  class="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 select-none pointer-events-none transition-all duration-300"
-                />
+                <!-- Ambient Backdrop using pure CSS (Zero GPU blur overhead, no duplicate image decode) -->
+                <div class="absolute inset-0 bg-radial from-slate-900/50 via-slate-950/80 to-slate-950 pointer-events-none select-none"></div>
                 <img
                   id="main-screenshot-img"
                   src={screenshotsList[0]}
@@ -1921,7 +1912,6 @@ const jsonLdSchema = {
 
         // Store Showcase Screenshots Gallery Switcher & Lightbox
         const mainImg = document.getElementById('main-screenshot-img') as HTMLImageElement | null;
-        const ambientBg = document.getElementById('screenshot-ambient-bg') as HTMLImageElement | null;
         const prevBtn = document.getElementById('prev-screenshot-btn');
         const nextBtn = document.getElementById('next-screenshot-btn');
         const thumbBtns = document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb-btn');
@@ -1977,7 +1967,6 @@ const jsonLdSchema = {
             const newSrc = targetBtn.getAttribute('data-src');
             if (newSrc && mainImg) {
               mainImg.src = newSrc;
-              if (ambientBg) ambientBg.src = newSrc;
               if (lightboxImg) lightboxImg.src = newSrc;
             }
 
