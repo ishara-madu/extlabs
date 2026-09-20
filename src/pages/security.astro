@@ -200,6 +200,10 @@ const jsonLdSchema = {
     <meta name="twitter:description" content={pageDescription} />
     <meta name="twitter:image" content="https://extlabs.store/og-image.jpeg" />
 
+    <!-- High-Priority Font Preload for Zero FOIT / FOUT -->
+    <link rel="preload" href="/fonts/inter/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter/inter-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+
     <!-- Google Structured Data (JSON-LD) -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />
   </head>

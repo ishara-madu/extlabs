@@ -7,6 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://extlabs.store',
+  trailingSlash: 'never',
   adapter: cloudflare({
     platformProxy: {
       enabled: true,
@@ -23,8 +24,12 @@ export default defineConfig({
         !page.includes('/developers/settings') &&
         !page.includes('/developers/login') &&
         !page.includes('/api') &&
+        !page.includes('/search') &&
+        !page.endsWith('/privacy') &&
         !page.endsWith('/privacy/') &&
+        !page.endsWith('/terms') &&
         !page.endsWith('/terms/') &&
+        !page.endsWith('/security-verification') &&
         !page.endsWith('/security-verification/'),
     }),
   ],

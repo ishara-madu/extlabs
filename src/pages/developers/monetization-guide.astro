@@ -244,6 +244,58 @@ const payoutMethods = [
     <meta name="twitter:title" content="Monetag Direct Link Monetization Guide — ExtLabs Developer Portal" />
     <meta name="twitter:description" content="Comprehensive step-by-step guide for browser extension developers on generating, configuring, and earning 100% direct payouts with Monetag Direct Links on ExtLabs." />
     <meta name="twitter:image" content="https://extlabs.store/images/monetization-guide/step-1-create-monetag-account.avif" />
+
+    <!-- High-Priority Font Preload for Zero FOIT / FOUT -->
+    <link rel="preload" href="/fonts/inter/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter/inter-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- LCP Visual Image Preload -->
+    <link rel="preload" as="image" href="/images/monetization-guide/step-1-create-monetag-account.avif" fetchpriority="high" />
+
+    <!-- Resource Hints / Preconnects for CDN & LCP -->
+    <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://extlabs.store"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Developers",
+              "item": "https://extlabs.store/developers"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Monetization Guide",
+              "item": "https://extlabs.store/developers/monetization-guide"
+            }
+          ]
+        },
+        {
+          "@type": "Article",
+          "headline": "Monetag Direct Link Monetization Guide",
+          "description": "Comprehensive step-by-step guide for browser extension developers on generating, configuring, and earning 100% direct payouts with Monetag Direct Links on ExtLabs.",
+          "image": "https://extlabs.store/images/monetization-guide/step-1-create-monetag-account.avif",
+          "url": "https://extlabs.store/developers/monetization-guide",
+          "publisher": {
+            "@type": "Organization",
+            "name": "ExtLabs",
+            "url": "https://extlabs.store"
+          }
+        }
+      ]
+    })} />
   </head>
 
   <body class="bg-[#fbfbfc] text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">

@@ -9,5 +9,3 @@ Disallow: /developers/login
 Disallow: /api/
 
 Sitemap: https://extlabs.store/sitemap-index.xml
-Sitemap: https://extlabs.store/sitemap.xml
-Sitemap: https://extlabs.store/sitemap-extensions.xml

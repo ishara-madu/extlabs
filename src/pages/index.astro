@@ -43,6 +43,8 @@ const getCardLoadingProps = () => {
     fetchpriority: 'auto' as const,
   };
 };
+
+const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensions[0]?.headerImageUrl || allStoreExtensions[0]?.headerImageUrl;
 ---
 
 <html lang="en" data-theme="light">
@@ -78,6 +80,15 @@ const getCardLoadingProps = () => {
     <meta name="twitter:description" content="Discover verified browser extensions, AI utilities, and developer tools built on open web standards." />
     <meta name="twitter:image" content="https://extlabs.store/og-image.jpeg" />
 
+    <!-- High-Priority Font Preload for Zero FOIT / FOUT -->
+    <link rel="preload" href="/fonts/inter/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter/inter-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- LCP Hero Image Preload -->
+    {lcpCandidateImageUrl && (
+      <link rel="preload" as="image" href={lcpCandidateImageUrl} fetchpriority="high" />
+    )}
+
     <!-- Resource Hints / Preconnects for CDN and LCP optimization -->
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
 
@@ -95,7 +106,7 @@ const getCardLoadingProps = () => {
             "@type": "SearchAction",
             "target": {
               "@type": "EntryPoint",
-              "urlTemplate": "https://extlabs.store/?q={search_term_string}"
+              "urlTemplate": "https://extlabs.store/search?q={search_term_string}"
             },
             "query-input": "required name=search_term_string"
           }

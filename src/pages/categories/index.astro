@@ -49,6 +49,10 @@ Astro.response.headers.set('Vary', 'Cookie');
     <meta name="twitter:description" content="Browse verified browser extensions by category on ExtLabs." />
     <meta name="twitter:image" content="https://extlabs.store/og-image.jpeg" />
 
+    <!-- High-Priority Font Preload for Zero FOIT / FOUT -->
+    <link rel="preload" href="/fonts/inter/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter/inter-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+
     <!-- Resource Hints / Preconnects for CDN & LCP -->
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
 
@@ -63,7 +67,7 @@ Astro.response.headers.set('Vary', 'Cookie');
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://extlabs.store/"
+              "item": "https://extlabs.store"
             },
             {
               "@type": "ListItem",
