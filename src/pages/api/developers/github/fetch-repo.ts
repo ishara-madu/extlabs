@@ -144,6 +144,80 @@ async function fetchFileContent(
   return null;
 }
 
+/**
+ * Fetch an image file from GitHub repository and return it as a Base64 data URL
+ */
+async function fetchImageAsDataUrl(
+  owner: string,
+  repo: string,
+  filePath: string,
+  branch: string,
+  headers: Record<string, string>
+): Promise<{ dataUrl: string; rawUrl: string; fileName: string } | null> {
+  const cleanPath = filePath.replace(/^\.?\/+/, '');
+  const ext = cleanPath.split('.').pop()?.toLowerCase() || 'png';
+  let mime = 'image/png';
+  if (ext === 'svg') mime = 'image/svg+xml';
+  else if (ext === 'webp') mime = 'image/webp';
+  else if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
+  else if (ext === 'gif') mime = 'image/gif';
+
+  const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(branch)}/${cleanPath}`;
+
+  // 1. Fast unmetered public CDN fetch
+  try {
+    const rawRes = await fetch(rawUrl, {
+      headers: { 'User-Agent': 'ExtLabs-Directory' },
+    });
+    if (rawRes.ok) {
+      const arrayBuffer = await rawRes.arrayBuffer();
+      if (arrayBuffer && arrayBuffer.byteLength > 0) {
+        let base64 = '';
+        if (typeof Buffer !== 'undefined') {
+          base64 = Buffer.from(arrayBuffer).toString('base64');
+        } else {
+          const bytes = new Uint8Array(arrayBuffer);
+          let binary = '';
+          const len = bytes.byteLength;
+          const chunkSize = 8192;
+          for (let i = 0; i < len; i += chunkSize) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, len)) as any);
+          }
+          base64 = btoa(binary);
+        }
+        return {
+          dataUrl: `data:${mime};base64,${base64}`,
+          rawUrl,
+          fileName: cleanPath.split('/').pop() || 'icon.png',
+        };
+      }
+    }
+  } catch {}
+
+  // 2. Fallback to authenticated GitHub REST API if private or raw CDN missed
+  if (headers['Authorization']) {
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${cleanPath}?ref=${encodeURIComponent(branch)}`,
+        { headers }
+      );
+      if (res.ok) {
+        const json = (await res.json()) as { content?: string; encoding?: string; download_url?: string };
+        if (json.content && json.encoding === 'base64') {
+          const cleanB64 = json.content.replace(/\s/g, '');
+          return {
+            dataUrl: `data:${mime};base64,${cleanB64}`,
+            rawUrl: json.download_url || rawUrl,
+            fileName: cleanPath.split('/').pop() || 'icon.png',
+          };
+        }
+      }
+    } catch {}
+  }
+
+  return null;
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const db = getDb();
   if (!db) {
@@ -491,14 +565,78 @@ export const POST: APIRoute = async ({ request }) => {
     // Derive Manifest Version
     const mv = manifestData?.manifest_version === 3 ? 'v3' : manifestData?.manifest_version === 2 ? 'v2' : 'v3';
 
-    // Derive Icon URL if manifest contains icon
+    // Derive Icon: inspect manifest.icons, action.default_icon, browser_action.default_icon, or fallback paths
     let iconUrl = '';
-    if (manifestData?.icons) {
-      const bestIcon = manifestData.icons['128'] || manifestData.icons['64'] || manifestData.icons['48'] || manifestData.icons['16'];
-      if (bestIcon && typeof bestIcon === 'string') {
-        const cleanIconPath = bestIcon.replace(/^\.?\/+/, '');
-        iconUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${defaultBranch}/${cleanIconPath}`;
+    let iconRawDataUrl = '';
+    let iconFileName = '';
+
+    const candidatePaths: string[] = [];
+
+    // 1. Manifest icons object
+    const manifestIcons = manifestData?.icons || manifestData?.action?.default_icon || manifestData?.browser_action?.default_icon || manifestData?.page_action?.default_icon;
+    if (manifestIcons) {
+      if (typeof manifestIcons === 'string') {
+        candidatePaths.push(manifestIcons);
+      } else if (typeof manifestIcons === 'object') {
+        const sizeOrder = ['512', '256', '192', '128', '96', '64', '48', '32', '16'];
+        for (const size of sizeOrder) {
+          if (manifestIcons[size] && typeof manifestIcons[size] === 'string') {
+            candidatePaths.push(manifestIcons[size]);
+          }
+        }
+        for (const key of Object.keys(manifestIcons)) {
+          if (!sizeOrder.includes(key) && typeof manifestIcons[key] === 'string') {
+            candidatePaths.push(manifestIcons[key]);
+          }
+        }
       }
+    }
+
+    // 2. Standard fallback icon locations common across Chromium extensions
+    const fallbackPaths = [
+      'icons/icon128.png',
+      'icons/icon-128.png',
+      'icons/icon.png',
+      'icon128.png',
+      'icon.png',
+      'images/icon128.png',
+      'images/icon.png',
+      'assets/icon128.png',
+      'assets/icon.png',
+      'assets/logo.png',
+      'public/icons/icon128.png',
+      'public/icon.png',
+      'src/icons/icon128.png',
+      'src/icon.png',
+      'icons/icon.svg',
+      'icon.svg'
+    ];
+    for (const fb of fallbackPaths) {
+      if (!candidatePaths.includes(fb)) {
+        candidatePaths.push(fb);
+      }
+    }
+
+    // 3. Resolve paths relative to manifestBaseDir if applicable, and attempt to fetch
+    for (const rawPath of candidatePaths) {
+      const cleanPath = rawPath.replace(/^\.?\/+/, '');
+      const pathsToTry = [cleanPath];
+      if (manifestBaseDir && !cleanPath.startsWith(manifestBaseDir)) {
+        pathsToTry.unshift(`${manifestBaseDir}/${cleanPath}`);
+      }
+
+      for (const p of pathsToTry) {
+        try {
+          const fetched = await fetchImageAsDataUrl(owner, repo, p, defaultBranch, headers);
+          if (fetched) {
+            iconUrl = fetched.rawUrl;
+            iconRawDataUrl = fetched.dataUrl;
+            iconFileName = fetched.fileName;
+            break;
+          }
+        } catch {}
+      }
+      if (iconRawDataUrl) break;
     }
 
     // Derive Overview Description
@@ -732,6 +870,8 @@ export const POST: APIRoute = async ({ request }) => {
           license: cleanLicense,
           manifestVersion: mv,
           iconUrl,
+          iconRawDataUrl,
+          iconFileName,
           description,
           features,
           workflow,

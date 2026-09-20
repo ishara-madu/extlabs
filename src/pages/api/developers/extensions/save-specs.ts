@@ -141,6 +141,34 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    // Strict Server-Side Validation: Logo is mandatory before publishing
+    if (publish) {
+      const currentExt = await db
+        .prepare('SELECT icon_url, draft_data FROM extensions WHERE (id = ? OR slug = ?) AND developer_id = ? LIMIT 1')
+        .bind(id || slug, slug || id, developer.id)
+        .first<{ icon_url: string | null; draft_data: string | null }>();
+
+      let activeIcon = currentExt?.icon_url;
+      if (currentExt?.draft_data) {
+        try {
+          const parsedDraft = JSON.parse(currentExt.draft_data);
+          if (parsedDraft.icon_url !== undefined) {
+            activeIcon = parsedDraft.icon_url;
+          }
+        } catch {}
+      }
+
+      if (!activeIcon || activeIcon.trim().length === 0 || activeIcon.includes('placeholder')) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Extension logo / icon is strictly required before publishing.',
+        }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     // Save to Cloudflare D1
     const result = await saveExtensionSpecs(db, {
       id,

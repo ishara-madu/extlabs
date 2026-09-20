@@ -926,6 +926,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               </div>
             </div>
 
+            <div id="icon-loading-state" class="hidden flex flex-col items-center gap-2 py-3">
+              <div class="w-8 h-8 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></div>
+              <div class="space-y-0.5 text-center">
+                <span id="icon-loading-title" class="text-xs font-semibold text-slate-800 block">Optimizing repository logo to WebP...</span>
+                <span id="icon-loading-desc" class="text-[10px] text-slate-400 block">Converting client-side & uploading to ExtLabs CDN</span>
+              </div>
+            </div>
+
             <div id="icon-preview-state" class={`flex items-center gap-3.5 w-full ${!data.iconUrl ? 'hidden' : ''}`}>
               <img
                 id="icon-preview-img"
@@ -2223,6 +2231,9 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
     const iconFileInput = document.getElementById('ext-icon-file-input') as HTMLInputElement | null;
     const iconDropzone = document.getElementById('icon-upload-dropzone');
     const iconEmptyState = document.getElementById('icon-empty-state');
+    const iconLoadingState = document.getElementById('icon-loading-state');
+    const iconLoadingTitle = document.getElementById('icon-loading-title');
+    const iconLoadingDesc = document.getElementById('icon-loading-desc');
     const iconPreviewState = document.getElementById('icon-preview-state');
     const iconPreviewImg = document.getElementById('icon-preview-img') as HTMLImageElement | null;
     const iconFileName = document.getElementById('icon-file-name');
@@ -2491,9 +2502,107 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       });
     }
 
+    async function convertAndUploadRepoIcon(
+      sourceDataUrlOrUrl: string,
+      sourceFileName = 'icon.png',
+      extensionSlug = ''
+    ): Promise<boolean> {
+      if (!sourceDataUrlOrUrl) return false;
+
+      // Show loading UI on icon dropzone
+      if (iconEmptyState) iconEmptyState.classList.add('hidden');
+      if (iconPreviewState) iconPreviewState.classList.add('hidden');
+      if (iconLoadingState) iconLoadingState.classList.remove('hidden');
+      if (iconLoadingTitle) iconLoadingTitle.textContent = 'Optimizing repository logo to WebP...';
+      if (iconLoadingDesc) iconLoadingDesc.textContent = 'Converting client-side & uploading to ExtLabs CDN';
+
+      try {
+        // 1. Load image into HTML Image object
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Failed to load repository icon image.'));
+          img.src = sourceDataUrlOrUrl;
+        });
+
+        // 2. Render to HTML5 Canvas as 1:1 square (up to 512x512)
+        const canvas = document.createElement('canvas');
+        const minSide = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+        let targetSize = Math.min(Math.max(minSide, 128), 512);
+
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Canvas 2D context unavailable');
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // Crop centered square if not strictly 1:1
+        const srcW = img.naturalWidth || img.width;
+        const srcH = img.naturalHeight || img.height;
+        const cropSize = Math.min(srcW, srcH);
+        const cropX = Math.round((srcW - cropSize) / 2);
+        const cropY = Math.round((srcH - cropSize) / 2);
+
+        ctx.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, targetSize, targetSize);
+
+        // 3. Compress to WebP format (0.90 quality)
+        const webpDataUrl = canvas.toDataURL('image/webp', 0.9);
+
+        // 4. Upload directly to ExtLabs R2 Storage CDN
+        const currentSlug = (extensionSlug || slugInput?.value || 'extension').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const uploadRes = await fetch('/api/developers/extensions/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: webpDataUrl,
+            type: 'icon',
+            extensionSlug: currentSlug,
+          }),
+        });
+
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok || !uploadData.success || !uploadData.url) {
+          throw new Error(uploadData.error || 'Failed to upload WebP icon to storage');
+        }
+
+        // 5. Populate icon value with R2 CDN URL
+        if (iconUrlVal) iconUrlVal.value = uploadData.url;
+        if (iconPreviewImg) iconPreviewImg.src = uploadData.url;
+        if (iconFileName) iconFileName.textContent = sourceFileName ? `${sourceFileName} (WebP)` : 'Auto-imported from GitHub (WebP)';
+        if (iconFileSize) {
+          const kb = (uploadData.bytes / 1024).toFixed(1);
+          iconFileSize.textContent = `${kb} KB • WebP (${targetSize}×${targetSize} px • 1:1)`;
+        }
+
+        if (iconLoadingState) iconLoadingState.classList.add('hidden');
+        if (iconPreviewState) iconPreviewState.classList.remove('hidden');
+        clearZoneError(iconDropzone, errIcon);
+        validateTab2(false);
+        return true;
+      } catch (err: any) {
+        console.warn('Auto-import icon processing failed:', err);
+        if (iconLoadingState) iconLoadingState.classList.add('hidden');
+        if (iconPreviewState) iconPreviewState.classList.add('hidden');
+        if (iconEmptyState) iconEmptyState.classList.remove('hidden');
+        if (iconUrlVal) iconUrlVal.value = '';
+        setZoneError(iconDropzone, errIcon, 'Could not convert repository logo to WebP. Please upload manually.');
+        validateTab2(false);
+        return false;
+      }
+    }
+
     function validateTab2(focusFirst = true): boolean {
-      const hasIcon = Boolean(iconUrlVal?.value && iconUrlVal.value.trim().length > 0);
-      const vIcon = validateVisualZone(iconDropzone, errIcon, hasIcon, 'Extension logo / icon is required (Strict 1:1 aspect ratio, Min 128×128 px).');
+      const iconVal = (iconUrlVal?.value || '').trim();
+      const hasIcon = Boolean(iconVal.length > 0 && !iconVal.includes('placeholder'));
+      const vIcon = validateVisualZone(
+        iconDropzone,
+        errIcon,
+        hasIcon,
+        'Extension logo / icon is strictly required (Strict 1:1 aspect ratio, Min 128×128 px).'
+      );
 
       const hasPromo = Boolean(promoUrlVal?.value && promoUrlVal.value.trim().length > 0);
       const vPromo = validateVisualZone(promoDropzone, errPromo, hasPromo, 'Promotional shelf banner is required (Strict 16:9 aspect ratio, Min 640×360 px).');
@@ -3892,9 +4001,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       }
     }
 
-    // Top Save Button triggers save for active tab
+    // Top Save Button triggers save for active tab or full publish validation
     topSaveBtn?.addEventListener('click', async () => {
       const activeTab = getCurrentActiveTab();
+      if (!isEditMode) {
+        // In new extension creation mode, the button is "Publish Extension" - enforce all tabs
+        await saveSpecsToDb(false, true);
+        return;
+      }
       if (activeTab === 4) {
         await saveSpecsToDb(false, false);
       } else if (activeTab === 3) {
@@ -4517,18 +4631,19 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           });
         }
 
-        // 3. Media & Icon (Tab 3)
-        if (d.iconUrl) {
-          const iconVal = document.getElementById('ext-icon-url-val') as HTMLInputElement | null;
-          const iconPreviewImg = document.getElementById('ext-icon-preview-img') as HTMLImageElement | null;
-          const iconPreviewPlaceholder = document.getElementById('ext-icon-placeholder');
-          if (iconVal) iconVal.value = d.iconUrl;
-          if (iconPreviewImg) {
-            iconPreviewImg.src = d.iconUrl;
-            iconPreviewImg.classList.remove('hidden');
-          }
-          if (iconPreviewPlaceholder) {
-            iconPreviewPlaceholder.classList.add('hidden');
+        // 3. Media & Icon (Tab 2) - Auto-convert to WebP & Upload directly to ExtLabs R2 Storage CDN
+        const repoIconSource = d.iconRawDataUrl || d.iconUrl;
+        if (repoIconSource) {
+          const targetSlug = slugInput?.value.trim() || d.slug || 'extension';
+          await convertAndUploadRepoIcon(repoIconSource, d.iconFileName || 'icon.png', targetSlug);
+        } else {
+          // If no icon found in repo, clear and strictly enforce that the developer must upload one
+          if (iconUrlVal && (!iconUrlVal.value || iconUrlVal.value.includes('placeholder'))) {
+            iconUrlVal.value = '';
+            if (iconPreviewState) iconPreviewState.classList.add('hidden');
+            if (iconEmptyState) iconEmptyState.classList.remove('hidden');
+            setZoneError(iconDropzone, errIcon, 'No logo found in repository. Extension logo / icon is strictly required.');
+            validateTab2(false);
           }
         }
 

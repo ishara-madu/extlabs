@@ -1345,6 +1345,9 @@ export async function saveExtensionSpecs(
   const finalDocs = draft.docs_url !== undefined ? draft.docs_url : existing.docs_url;
 
   const finalIcon = draft.icon_url ?? existing.icon_url;
+  if (data.publish && (!finalIcon || finalIcon.trim().length === 0 || finalIcon.includes('placeholder'))) {
+    throw new Error('Extension logo / icon is strictly required before publishing.');
+  }
   const finalHeader = draft.header_image_url !== undefined ? draft.header_image_url : existing.header_image_url;
   const finalScreenshots = draft.screenshots ?? existing.screenshots;
   const finalYoutube = draft.youtube_video_url !== undefined ? draft.youtube_video_url : existing.youtube_video_url;
