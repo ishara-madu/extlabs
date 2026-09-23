@@ -64,10 +64,25 @@ const hasUnpublishedDraft = Boolean(stagedDraft && dbExtension.status === 'publi
 // Normalize extension detail
 const rawScreenshots = stagedDraft?.screenshots !== undefined ? stagedDraft.screenshots : dbExtension.screenshots;
 let parsedScreenshots: string[] = [];
+let parsedScreenshotThumbnails: string[] = [];
 if (rawScreenshots) {
   try {
     const s = typeof rawScreenshots === 'string' ? JSON.parse(rawScreenshots) : rawScreenshots;
-    if (Array.isArray(s)) parsedScreenshots = s;
+    if (Array.isArray(s)) {
+      for (const item of s) {
+        if (typeof item === 'string' && item.trim().length > 0) {
+          parsedScreenshots.push(item.trim());
+          parsedScreenshotThumbnails.push(item.trim());
+        } else if (item && typeof item === 'object') {
+          const u = typeof item.url === 'string' ? item.url : (typeof item.full === 'string' ? item.full : '');
+          const t = typeof item.thumb === 'string' ? item.thumb : u;
+          if (u) {
+            parsedScreenshots.push(u);
+            parsedScreenshotThumbnails.push(t);
+          }
+        }
+      }
+    }
   } catch {}
 }
 
@@ -144,6 +159,7 @@ const ext = {
   iconUrl: stagedDraft?.icon_url ?? dbExtension.icon_url ?? '',
   promoTileUrl: stagedDraft?.header_image_url ?? dbExtension.header_image_url ?? '',
   screenshots: parsedScreenshots.length > 0 ? parsedScreenshots : undefined,
+  screenshotThumbnails: parsedScreenshotThumbnails.length > 0 ? parsedScreenshotThumbnails : undefined,
   youtubeVideoUrl: stagedDraft?.youtube_video_url !== undefined ? stagedDraft.youtube_video_url : (dbExtension.youtube_video_url || ''),
   features: parsedFeatures,
   workflow: parsedWorkflow,
@@ -243,6 +259,7 @@ const ext = {
           iconUrl: ext.iconUrl,
           promoTileUrl: ext.promoTileUrl,
           screenshots: ext.screenshots,
+          screenshotThumbnails: ext.screenshotThumbnails,
           youtubeVideoUrl: ext.youtubeVideoUrl,
           features: ext.features,
           workflow: ext.workflow,

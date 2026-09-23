@@ -109,9 +109,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Clean Screenshots Array
-    const cleanedScreenshots = screenshots
-      .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
+    // Clean Screenshots Array (supports string URLs, full Base64, or { full, thumb } objects)
+    interface CleanedShot {
+      full: string;
+      thumb?: string;
+    }
+
+    const cleanedScreenshots: CleanedShot[] = (screenshots as any[])
+      .map((s) => {
+        if (typeof s === 'string' && s.trim().length > 0) {
+          return { full: s.trim() };
+        }
+        if (s && typeof s === 'object' && typeof s.full === 'string' && s.full.trim().length > 0) {
+          return {
+            full: s.full.trim(),
+            thumb: typeof s.thumb === 'string' && s.thumb.trim().length > 0 ? s.thumb.trim() : undefined,
+          };
+        }
+        return null;
+      })
+      .filter((s): s is CleanedShot => s !== null)
       .slice(0, 10);
 
     if (cleanedScreenshots.length < 2) {
@@ -153,9 +170,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    for (const shot of cleanedScreenshots) {
-      if (shot.startsWith('data:image/')) {
-        const rawData = shot.split(',')[1] || '';
+    for (const item of cleanedScreenshots) {
+      if (item.full.startsWith('data:image/')) {
+        const rawData = item.full.split(',')[1] || '';
         const estimatedBytes = Math.round(rawData.length * 0.75);
         if (estimatedBytes > 2.5 * 1024 * 1024) {
           return new Response(JSON.stringify({ success: false, error: 'Screenshot file size exceeds the 2.5 MB limit.' }), {
@@ -163,6 +180,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
             headers: { 'Content-Type': 'application/json' },
           });
         }
+      }
+      // Defensively ensure thumbnail is a micro WebP Base64 (max 5 KB)
+      if (item.thumb && item.thumb.length > 5000) {
+        item.thumb = undefined;
       }
     }
 
@@ -215,30 +236,39 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // 3. Upload Screenshots if Base64
-    const targetScreenshots: string[] = [];
+    const targetScreenshots: { url: string; thumb?: string }[] = [];
+    const targetUrlsForCleanup: string[] = [];
+
     for (let idx = 0; idx < cleanedScreenshots.length; idx++) {
       const shot = cleanedScreenshots[idx];
-      if (shot.startsWith('data:image/')) {
-        const bytes = base64ToUint8Array(shot);
+      let publicUrl = shot.full;
+
+      if (shot.full.startsWith('data:image/')) {
+        const bytes = base64ToUint8Array(shot.full);
         const key = `extlabs/${extTag}/screenshot_${idx + 1}_${timestamp}.webp`;
         const upload = await uploadToR2(bucket, key, bytes, 'image/webp');
-        targetScreenshots.push(upload.publicUrl);
-      } else {
-        targetScreenshots.push(shot);
+        publicUrl = upload.publicUrl;
       }
+
+      targetUrlsForCleanup.push(publicUrl);
+      targetScreenshots.push({
+        url: publicUrl,
+        thumb: shot.thumb || undefined,
+      });
     }
 
     // Check if any old screenshots were dropped / replaced, and purge them from R2
     if (existingExt?.screenshots) {
       try {
-        const oldScreenshotsList = Array.isArray(existingExt.screenshots)
+        const rawOld = Array.isArray(existingExt.screenshots)
           ? existingExt.screenshots
           : JSON.parse(existingExt.screenshots);
 
-        if (Array.isArray(oldScreenshotsList)) {
-          for (const oldScr of oldScreenshotsList) {
-            if (typeof oldScr === 'string' && !targetScreenshots.includes(oldScr) && oldScr.includes('/cdn/')) {
-              deleteFromR2(bucket, oldScr).catch((delErr) => {
+        if (Array.isArray(rawOld)) {
+          for (const oldItem of rawOld) {
+            const oldUrl = typeof oldItem === 'string' ? oldItem : (oldItem?.url || '');
+            if (oldUrl && !targetUrlsForCleanup.includes(oldUrl) && oldUrl.includes('/cdn/')) {
+              deleteFromR2(bucket, oldUrl).catch((delErr) => {
                 console.warn('Failed to delete replaced screenshot from R2:', delErr);
               });
             }
@@ -249,16 +279,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // Strict validation: Ensure NO Base64 strings ever enter the database columns
+    // Strict validation: Ensure NO raw full Base64 strings enter main URL database columns
     if (
       targetIcon.startsWith('data:image/') ||
       (targetPromo && targetPromo.startsWith('data:image/')) ||
-      targetScreenshots.some((s) => s.startsWith('data:image/'))
+      targetScreenshots.some((s) => s.url.startsWith('data:image/'))
     ) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Image upload failed. Base64 strings cannot be stored directly in the database.',
+          error: 'Image upload failed. Base64 strings cannot be stored as main URLs in the database.',
         }),
         {
           status: 400,

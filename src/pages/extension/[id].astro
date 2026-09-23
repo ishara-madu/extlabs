@@ -60,6 +60,7 @@ const categoryExtensions = await getStoreExtensionsByCategory(db, ext.category);
 const relatedExtensions = categoryExtensions.filter(e => e.id !== ext.id && e.id !== rawExtension.id).slice(0, 3);
 
 const screenshotsList: string[] = Array.isArray(ext.screenshots) && ext.screenshots.length > 0 ? ext.screenshots : [];
+const screenshotThumbnailsList: string[] = Array.isArray(ext.screenshotThumbnails) && ext.screenshotThumbnails.length > 0 ? ext.screenshotThumbnails : screenshotsList;
 const hasRating = (typeof ext.rating === 'number' && ext.rating > 0) || ext.reviewCount > 0;
 const isNew = (() => {
   const dateStr = ext.createdDate || ext.updatedDate;
@@ -772,7 +773,7 @@ const jsonLdSchema = {
                       aria-label={`View screenshot ${idx + 1}`}
                     >
                       <img
-                        src={shot}
+                        src={(screenshotThumbnailsList && screenshotThumbnailsList[idx]) ? screenshotThumbnailsList[idx] : shot}
                         alt={`Thumbnail ${idx + 1}`}
                         width="96"
                         height="54"

@@ -90,6 +90,7 @@ interface ExtensionData {
   iconUrl?: string;
   promoTileUrl?: string;
   screenshots?: string[];
+  screenshotThumbnails?: string[];
   youtubeVideoUrl?: string;
   screenshot1?: string;
   screenshot2?: string;
@@ -244,6 +245,7 @@ const data = {
   iconUrl: initialData.iconUrl || (isEdit ? "/icons/extension-placeholder.avif" : ""),
   promoTileUrl: initialData.promoTileUrl || "",
   screenshots: isEdit ? initialScreenshots : [],
+  screenshotThumbnails: isEdit ? (initialData.screenshotThumbnails || []) : [],
   youtubeVideoUrl: initialData.youtubeVideoUrl || "",
   features: normalizedFeatures,
   workflow: normalizedWorkflow,
@@ -1062,6 +1064,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
               <div class="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
                 <img
                   src={src}
+                  data-thumb={data.screenshotThumbnails[idx] || ''}
                   alt={`Screenshot #${idx + 1}`}
                   class="w-full h-full object-cover screenshot-preview-img"
                 />
@@ -3548,9 +3551,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       }
 
       const screenshotImgs = screenshotsContainer?.querySelectorAll('.screenshot-preview-img') || [];
-      const screenshotsList: string[] = Array.from(screenshotImgs)
-        .map(img => (img as HTMLImageElement).src)
-        .filter(src => src && src.length > 0);
+      const screenshotsList = Array.from(screenshotImgs)
+        .map(img => {
+          const imageEl = img as HTMLImageElement;
+          const full = imageEl.src;
+          const thumb = imageEl.getAttribute('data-thumb') || undefined;
+          return { full, thumb };
+        })
+        .filter(item => item.full && item.full.length > 0);
 
       const mediaPayload = {
         id: currentExtId,
@@ -3619,9 +3627,14 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         if (data.headerImageUrl && promoUrlVal) promoUrlVal.value = data.headerImageUrl;
         if (Array.isArray(data.screenshots) && screenshotsContainer) {
           const previewImgs = screenshotsContainer.querySelectorAll<HTMLImageElement>('.screenshot-preview-img');
-          data.screenshots.forEach((url: string, index: number) => {
+          data.screenshots.forEach((item: any, index: number) => {
+            const url = typeof item === 'string' ? item : item?.url;
+            const thumb = typeof item === 'object' ? item?.thumb : undefined;
             if (previewImgs[index] && url) {
               previewImgs[index].src = url;
+              if (thumb) {
+                previewImgs[index].setAttribute('data-thumb', thumb);
+              }
             }
           });
         }
@@ -5998,6 +6011,9 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         const result = await compressImageFile(file, 1920, 1080, 0.85);
         if (!result) continue;
 
+        // Generate micro-thumbnail WebP (160x90 @ 50% quality, ~800 Bytes) to store inline in D1
+        const thumbResult = await compressImageFile(file, 160, 90, 0.50);
+
         const nextIndex = screenshotsContainer.querySelectorAll('.screenshot-card').length + 1;
         const card = document.createElement('div');
         card.className = 'screenshot-card p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs relative group';
@@ -6005,6 +6021,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           <div class="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
             <img
               src="${result}"
+              data-thumb="${thumbResult || ''}"
               alt="Screenshot #${nextIndex}"
               class="w-full h-full object-cover screenshot-preview-img"
             />

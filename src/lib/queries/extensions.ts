@@ -517,10 +517,23 @@ export function mapDbExtensionToStoreItem(
     : (dbExt.weekly_active_users ? `${dbExt.weekly_active_users} users` : '');
 
   let screenshots: string[] = [];
+  let screenshotThumbnails: string[] = [];
   try {
     const rawScreenshots = typeof dbExt.screenshots === 'string' ? JSON.parse(dbExt.screenshots || '[]') : dbExt.screenshots;
     if (Array.isArray(rawScreenshots)) {
-      screenshots = rawScreenshots.filter((s: any) => typeof s === 'string' && s.trim().length > 0);
+      for (const item of rawScreenshots) {
+        if (typeof item === 'string' && item.trim().length > 0) {
+          screenshots.push(item);
+          screenshotThumbnails.push(item);
+        } else if (item && typeof item === 'object') {
+          const fullUrl = typeof item.url === 'string' ? item.url : (typeof item.full === 'string' ? item.full : '');
+          const thumb = typeof item.thumb === 'string' ? item.thumb : fullUrl;
+          if (fullUrl) {
+            screenshots.push(fullUrl);
+            screenshotThumbnails.push(thumb || fullUrl);
+          }
+        }
+      }
     }
   } catch {}
 
@@ -575,6 +588,7 @@ export function mapDbExtensionToStoreItem(
     bannerSvg,
     headerImageUrl: dbExt.header_image_url || undefined,
     screenshots: Array.isArray(screenshots) && screenshots.length > 0 ? screenshots : undefined,
+    screenshotThumbnails: Array.isArray(screenshotThumbnails) && screenshotThumbnails.length > 0 ? screenshotThumbnails : undefined,
     youtubeVideoId,
     tags,
     permissions: dbExt.permissions ? JSON.parse(dbExt.permissions || '[]') : [],
@@ -1044,7 +1058,7 @@ export interface SaveExtensionMediaInput {
   developerId: string;
   iconUrl: string;
   headerImageUrl?: string | null;
-  screenshots?: string[];
+  screenshots?: (string | { url: string; thumb?: string })[];
   youtubeVideoUrl?: string | null;
 }
 
@@ -1773,7 +1787,17 @@ export async function getPendingReviewExtensions(db: D1Database | null): Promise
       let parsedScreenshots: string[] = [];
       try {
         if (row.screenshots) {
-          parsedScreenshots = typeof row.screenshots === 'string' ? JSON.parse(row.screenshots) : row.screenshots;
+          const raw = typeof row.screenshots === 'string' ? JSON.parse(row.screenshots) : row.screenshots;
+          if (Array.isArray(raw)) {
+            for (const item of raw) {
+              if (typeof item === 'string' && item.trim().length > 0) {
+                parsedScreenshots.push(item.trim());
+              } else if (item && typeof item === 'object') {
+                const u = typeof item.url === 'string' ? item.url : (typeof item.full === 'string' ? item.full : '');
+                if (u) parsedScreenshots.push(u);
+              }
+            }
+          }
         }
       } catch {}
 
