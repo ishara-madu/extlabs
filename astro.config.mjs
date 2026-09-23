@@ -8,11 +8,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://extlabs.store',
   trailingSlash: 'never',
-  adapter: cloudflare({
-    platformProxy: {
-      enabled: true,
-    },
-  }),
+  adapter: cloudflare(),
   integrations: [
     sitemap({
       customSitemaps: ['https://extlabs.store/sitemap-extensions.xml'],
