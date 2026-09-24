@@ -34,7 +34,7 @@ const rawExtension = await getStoreExtensionByIdOrSlug(db, requestedId, {
 });
 
 if (!rawExtension) {
-  return Astro.redirect('/');
+  return Astro.rewrite('/404');
 }
 
 const ext = rawExtension;
@@ -153,6 +153,11 @@ const renderedOverviewHtml = safeMarkdownDescription ? await marked.parse(safeMa
 const canonicalSlug = ext.slug || ext.id;
 const canonicalUrl = `https://extlabs.store/extension/${canonicalSlug}`;
 
+// 301 Permanent Redirect: If requested via raw DB ID instead of SEO-friendly slug, redirect to canonical slug
+if (isPublishedLive && ext.slug && requestedId !== ext.slug) {
+  return Astro.redirect(`/extension/${ext.slug}`, 301);
+}
+
 // Smart title: stays under 60-65 chars for Google SERP display limits
 const pageTitle = ext.name.length > 42
   ? `${ext.name} | ExtLabs`
@@ -174,7 +179,14 @@ const metaDescription = (() => {
   return `Download ${ext.name} browser extension for Chrome, Edge, and Brave. Free direct package download verified safe on ExtLabs.`;
 })();
 
-const ogImageUrl = ext.headerImageUrl || screenshotsList[0] || ext.iconUrl || 'https://extlabs.store/favicon.svg';
+const isSocialCompatibleImage = (url?: string) => {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return !lower.endsWith('.svg') && !lower.endsWith('.avif');
+};
+
+const candidateOgImage = ext.headerImageUrl || screenshotsList[0] || ext.iconUrl;
+const ogImageUrl = isSocialCompatibleImage(candidateOgImage) ? candidateOgImage : 'https://extlabs.store/og-image.jpeg';
 const lcpHeroImageUrl = screenshotsList[0] || ext.headerImageUrl;
 
 // Map ExtLabs category to Google Schema.org standard SoftwareApplication category types
@@ -338,13 +350,13 @@ const jsonLdSchema = {
     <meta property="og:site_name" content="ExtLabs" />
 
     <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:site" content="@extlabs_io" />
-    <meta property="twitter:creator" content="@extlabs_io" />
-    <meta property="twitter:url" content={canonicalUrl} />
-    <meta property="twitter:title" content={pageTitle} />
-    <meta property="twitter:description" content={metaDescription} />
-    <meta property="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@extlabs_io" />
+    <meta name="twitter:creator" content="@extlabs_io" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
 
     <!-- JSON-LD Structured Data Schema -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLdSchema)} />

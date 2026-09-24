@@ -11,17 +11,12 @@ import { getDb, getStoreExtensions } from "../../lib/db";
 import { Image } from 'astro:assets';
 import { Home, Star, Search, ArrowRight, SlidersHorizontal, ChevronDown, Check } from '@lucide/astro';
 
-const categoryId = Astro.params.id || 'productivity';
-const category = CATEGORIES.find(c => c.id === categoryId) || {
-  id: categoryId,
-  label: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
-  count: 0,
-  description: 'Verified browser extensions in this category.',
-  subtitle: 'Discover high quality extensions.',
-  tags: [categoryId],
-  colorAccent: 'text-blue-600 bg-blue-50 border-blue-200',
-  heroIllustrationSvg: '',
-};
+const categoryId = Astro.params.id || '';
+const category = CATEGORIES.find(c => c.id === categoryId);
+
+if (!category) {
+  return Astro.rewrite('/404');
+}
 
 const db = getDb();
 const allStoreExtensions = await getStoreExtensions(db);
@@ -253,7 +248,7 @@ Astro.response.headers.set('Vary', 'Cookie');
           </div>
 
           <a
-            href={`/extension/${topFeatured.id}`}
+            href={`/extension/${topFeatured.slug || topFeatured.id}`}
             class="spotlight-item group block rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-xs p-6 cursor-pointer select-none transition-all text-inherit no-underline"
             data-id={topFeatured.id}
             data-category={topFeatured.category}

@@ -11,6 +11,18 @@ export default defineConfig({
   adapter: cloudflare(),
   integrations: [
     sitemap({
+      customPages: [
+        'https://extlabs.store/category/privacy',
+        'https://extlabs.store/category/media',
+        'https://extlabs.store/category/automation',
+        'https://extlabs.store/category/customization',
+        'https://extlabs.store/category/ai',
+        'https://extlabs.store/category/dev',
+        'https://extlabs.store/category/productivity',
+        'https://extlabs.store/category/networking',
+        'https://extlabs.store/category/social',
+        'https://extlabs.store/category/shopping',
+      ],
       customSitemaps: ['https://extlabs.store/sitemap-extensions.xml'],
       filter: (page) =>
         !page.includes('/admin') &&
