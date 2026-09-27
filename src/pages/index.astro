@@ -57,8 +57,10 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    <title>ExtLabs — Extensions Store</title>
-    <meta name="description" content="Discover verified browser extensions, AI utilities, and developer tools built on open web standards." />
+    <title>ExtLabs — Verified Browser Extensions Store for Chrome, Brave & Edge</title>
+    <meta name="title" content="ExtLabs — Verified Browser Extensions Store for Chrome, Brave & Edge" />
+    <meta name="description" content="Discover and download verified browser extensions, AI utilities, and developer tools for Chrome, Brave, and Edge. Free, fast, and verified safe on ExtLabs." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://extlabs.store/" />
@@ -66,8 +68,8 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
     <!-- Open Graph / Facebook -->
     <meta property="og:site_name" content="ExtLabs" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="ExtLabs — Extensions Store" />
-    <meta property="og:description" content="Discover verified browser extensions, AI utilities, and developer tools built on open web standards." />
+    <meta property="og:title" content="ExtLabs — Verified Browser Extensions Store for Chrome, Brave & Edge" />
+    <meta property="og:description" content="Discover and download verified browser extensions, AI utilities, and developer tools for Chrome, Brave, and Edge. Free, fast, and verified safe on ExtLabs." />
     <meta property="og:url" content="https://extlabs.store/" />
     <meta property="og:image" content="https://extlabs.store/og-image.jpeg" />
     <meta property="og:image:width" content="1376" />
@@ -76,8 +78,10 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ExtLabs — Extensions Store" />
-    <meta name="twitter:description" content="Discover verified browser extensions, AI utilities, and developer tools built on open web standards." />
+    <meta name="twitter:site" content="@extlabs_io" />
+    <meta name="twitter:creator" content="@extlabs_io" />
+    <meta name="twitter:title" content="ExtLabs — Verified Browser Extensions Store for Chrome, Brave & Edge" />
+    <meta name="twitter:description" content="Discover and download verified browser extensions, AI utilities, and developer tools for Chrome, Brave, and Edge. Free, fast, and verified safe on ExtLabs." />
     <meta name="twitter:image" content="https://extlabs.store/og-image.jpeg" />
 
     <!-- High-Priority Font Preload for Zero FOIT / FOUT -->
@@ -92,7 +96,7 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
     <!-- Resource Hints / Preconnects for CDN and LCP optimization -->
     <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
 
-    <!-- Schema.org JSON-LD Structured Data (WebSite + SearchAction + Organization) -->
+    <!-- Schema.org JSON-LD Structured Data (WebSite + SearchAction + Organization + ItemList) -->
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
       "@graph": [
@@ -117,6 +121,22 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
           "name": "ExtLabs",
           "url": "https://extlabs.store/",
           "logo": "https://extlabs.store/apple-touch-icon.png"
+        },
+        {
+          "@type": "CollectionPage",
+          "@id": "https://extlabs.store/#storefront",
+          "url": "https://extlabs.store/",
+          "name": "ExtLabs Extensions Storefront",
+          "description": "Featured and editor-verified browser extensions and developer utilities.",
+          "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": featuredExtensions.slice(0, 10).map((ext, idx) => ({
+              "@type": "ListItem",
+              "position": idx + 1,
+              "name": ext.name,
+              "url": `https://extlabs.store/extension/${ext.slug || ext.id}`
+            }))
+          }
         }
       ]
     })} />

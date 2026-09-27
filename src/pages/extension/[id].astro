@@ -186,7 +186,10 @@ const isSocialCompatibleImage = (url?: string) => {
 };
 
 const candidateOgImage = ext.headerImageUrl || screenshotsList[0] || ext.iconUrl;
-const ogImageUrl = isSocialCompatibleImage(candidateOgImage) ? candidateOgImage : 'https://extlabs.store/og-image.jpeg';
+const rawOgImageUrl = isSocialCompatibleImage(candidateOgImage) ? candidateOgImage : 'https://extlabs.store/og-image.jpeg';
+const ogImageUrl = rawOgImageUrl.startsWith('http') 
+  ? rawOgImageUrl 
+  : `https://extlabs.store${rawOgImageUrl.startsWith('/') ? '' : '/'}${rawOgImageUrl}`;
 const lcpHeroImageUrl = screenshotsList[0] || ext.headerImageUrl;
 
 // Map ExtLabs category to Google Schema.org standard SoftwareApplication category types
@@ -204,13 +207,25 @@ const schemaCategoryMap: Record<string, string> = {
 };
 const schemaAppCategory = schemaCategoryMap[ext.category] || 'BrowserApplication';
 
+// Consolidate real reviews for Google Schema.org Review Snippets compliance
+const allReviewsForSchema = [
+  ...(userReview ? [{
+    author: userReview.author,
+    date: userReview.date,
+    rating: userReview.rating,
+    comment: userReview.comment,
+    title: userReview.title
+  }] : []),
+  ...((ext.reviews || []).filter(r => !userReview || r.id !== userReview.id))
+];
+
 // JSON-LD Schema.org Structured Data for SEO
 const jsonLdGraph: any[] = [
   {
     "@type": "SoftwareApplication",
     "name": ext.name,
     "url": canonicalUrl,
-    "image": ext.iconUrl || ogImageUrl,
+    "image": ext.iconUrl ? (ext.iconUrl.startsWith('http') ? ext.iconUrl : `https://extlabs.store${ext.iconUrl.startsWith('/') ? '' : '/'}${ext.iconUrl}`) : ogImageUrl,
     ...(screenshotsList.length > 0 ? { "screenshot": screenshotsList } : {}),
     ...(ext.downloadUrl && ext.downloadUrl !== '#' ? { "downloadUrl": ext.downloadUrl } : {}),
     "operatingSystem": "Chromium Browsers (Google Chrome, Microsoft Edge, Brave, Opera, Vivaldi)",
@@ -230,6 +245,24 @@ const jsonLdGraph: any[] = [
         "bestRating": "5",
         "worstRating": "1"
       }
+    } : {}),
+    ...(allReviewsForSchema.length > 0 ? {
+      "review": allReviewsForSchema.slice(0, 5).map(r => ({
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": r.author || "User"
+        },
+        ...(r.date ? { "datePublished": r.date } : {}),
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": String(r.rating || 5),
+          "bestRating": "5",
+          "worstRating": "1"
+        },
+        "reviewBody": r.comment || "",
+        ...(r.title ? { "headline": r.title } : {})
+      }))
     } : {}),
     "author": {
       "@type": "Organization",
@@ -253,12 +286,18 @@ const jsonLdGraph: any[] = [
       {
         "@type": "ListItem",
         "position": 2,
+        "name": "Categories",
+        "item": "https://extlabs.store/categories"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
         "name": ext.categoryLabel || "Extensions",
         "item": `https://extlabs.store/category/${ext.category || 'tools'}`
       },
       {
         "@type": "ListItem",
-        "position": 3,
+        "position": 4,
         "name": ext.name,
         "item": canonicalUrl
       }
@@ -283,11 +322,12 @@ if (hasFaqs && ext.faqs) {
 if (Array.isArray(ext.howItWorks) && ext.howItWorks.length > 0) {
   jsonLdGraph.push({
     "@type": "HowTo",
-    "name": `How to install and use ${ext.name}`,
+    "name": `${ext.name} Execution Workflow`,
+    "description": `Internal execution workflow and architectural stages of ${ext.name}.`,
     "step": ext.howItWorks.map((w: any, idx: number) => ({
       "@type": "HowToStep",
       "position": idx + 1,
-      "name": w.title || `Step ${idx + 1}`,
+      "name": w.title || `Stage 0${idx + 1}`,
       "itemListElement": [{
         "@type": "HowToDirection",
         "text": w.description || ''

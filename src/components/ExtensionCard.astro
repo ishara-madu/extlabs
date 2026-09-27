@@ -28,7 +28,7 @@ const isNew = (() => {
 ---
 
 <a
-  href={`/extension/${extension.id}`}
+  href={`/extension/${extension.slug || extension.id}`}
   class="extension-item group flex flex-col justify-between bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 hover:shadow-xs cursor-pointer select-none overflow-hidden transition-all text-inherit no-underline"
   data-id={extension.id}
   data-category={extension.category}
@@ -41,7 +41,7 @@ const isNew = (() => {
     {extension.headerImageUrl ? (
       <img
         src={extension.headerImageUrl}
-        alt={extension.name}
+        alt={`${extension.name} preview artwork`}
         width="640"
         height="360"
         loading={loading}
@@ -60,7 +60,7 @@ const isNew = (() => {
       <div class="flex items-center gap-1.5 mb-1">
         <img
           src={extension.iconUrl || "/icons/extension-placeholder.avif"}
-          alt={extension.name}
+          alt={`${extension.name} icon`}
           width="16"
           height="16"
           loading={loading}

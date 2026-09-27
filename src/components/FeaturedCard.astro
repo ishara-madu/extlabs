@@ -29,7 +29,7 @@ const isNew = (() => {
 ---
 
 <a
-  href={`/extension/${extension.id}`}
+  href={`/extension/${extension.slug || extension.id}`}
   class="extension-item group flex flex-col justify-between bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 hover:shadow-xs cursor-pointer select-none overflow-hidden transition-all text-inherit no-underline"
   data-id={extension.id}
   data-category={extension.category}
@@ -44,7 +44,7 @@ const isNew = (() => {
         <div class="absolute inset-0 bg-radial from-slate-900/50 via-slate-950/80 to-slate-950 pointer-events-none select-none"></div>
         <Image
           src={extension.headerImageUrl}
-          alt={extension.name}
+          alt={`${extension.name} preview artwork`}
           width={640}
           height={360}
           loading={loading}
@@ -70,7 +70,7 @@ const isNew = (() => {
         <h3 class="text-sm font-bold text-slate-900 group-hover:text-black leading-snug flex items-center gap-2 truncate">
           <Image
             src={extension.iconUrl || "/icons/extension-placeholder.avif"}
-            alt={extension.name}
+            alt={`${extension.name} icon`}
             width={20}
             height={20}
             loading={loading}
