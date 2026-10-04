@@ -3405,6 +3405,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       let currentExtId = form?.getAttribute('data-extension-id') || '';
       const currentIsEdit = form?.getAttribute('data-is-edit') === 'true';
 
+      const currentIconVal = (iconUrlVal?.value || '').trim();
       const payload = {
         isEdit: currentIsEdit,
         id: currentExtId || undefined,
@@ -3419,6 +3420,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
         supportEmail: emailInput?.value.trim() || '',
         developerWebsite: websiteInput?.value.trim() || '',
         docsUrl: docsInput?.value.trim() || null,
+        iconUrl: (currentIconVal && !currentIconVal.startsWith('data:image/') && !currentIconVal.includes('placeholder')) ? currentIconVal : undefined,
       };
 
       if (tab1Status) {

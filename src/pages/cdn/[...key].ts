@@ -4,11 +4,30 @@ import { getR2Bucket } from '../../lib/r2';
 
 export const prerender = false;
 
+function getMimeType(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  const map: Record<string, string> = {
+    svg: 'image/svg+xml',
+    webp: 'image/webp',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    avif: 'image/avif',
+    gif: 'image/gif',
+    ico: 'image/x-icon',
+    zip: 'application/zip',
+    crx: 'application/x-chrome-extension',
+    json: 'application/json',
+  };
+  return (ext && map[ext]) || 'image/webp';
+}
+
 export const GET: APIRoute = async ({ params, request }) => {
-  const key = params.key;
-  if (!key) {
+  const rawKey = params.key;
+  if (!rawKey) {
     return new Response('Asset key required', { status: 400 });
   }
+  const key = rawKey.replace(/^\/+/, '');
 
   const bucket = getR2Bucket();
   if (!bucket) {
@@ -31,7 +50,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     headers.set('ETag', object.httpEtag);
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     if (!headers.has('Content-Type')) {
-      headers.set('Content-Type', 'image/webp');
+      headers.set('Content-Type', getMimeType(key));
     }
 
     // Check If-None-Match for 304 Not Modified
@@ -54,10 +73,11 @@ export const GET: APIRoute = async ({ params, request }) => {
 };
 
 export const HEAD: APIRoute = async ({ params, request }) => {
-  const key = params.key;
-  if (!key) {
+  const rawKey = params.key;
+  if (!rawKey) {
     return new Response(null, { status: 400 });
   }
+  const key = rawKey.replace(/^\/+/, '');
 
   const bucket = getR2Bucket();
   if (!bucket) {
@@ -74,6 +94,9 @@ export const HEAD: APIRoute = async ({ params, request }) => {
     object.writeHttpMetadata(headers);
     headers.set('ETag', object.httpEtag);
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', getMimeType(key));
+    }
 
     const ifNoneMatch = request.headers.get('if-none-match');
     if (ifNoneMatch && ifNoneMatch === object.httpEtag) {

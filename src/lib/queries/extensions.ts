@@ -836,6 +836,7 @@ export interface SaveExtensionBasicInput {
   manifestVersion?: string | null;
   developerId: string;
   isEdit: boolean;
+  iconUrl?: string | null;
 }
 
 function normalizeStoreCategory(cat: string): string {
@@ -947,6 +948,13 @@ export async function saveExtensionBasic(
         return { id: existing.id, slug: permanentSlug };
       }
 
+      const validInitialIcon = (
+        data.iconUrl &&
+        typeof data.iconUrl === 'string' &&
+        !data.iconUrl.startsWith('data:image/') &&
+        (data.iconUrl.includes('/cdn/') || data.iconUrl.startsWith('http') || data.iconUrl.startsWith('/icons/'))
+      ) ? data.iconUrl.trim() : null;
+
       // Extension is in draft status: update record directly
       await db
         .prepare(`
@@ -962,6 +970,7 @@ export async function saveExtensionBasic(
             zip_download_url = ?,
             support_email = ?,
             docs_url = ?,
+            icon_url = CASE WHEN (icon_url IS NULL OR icon_url = '/icons/extension-placeholder.avif') AND ? IS NOT NULL THEN ? ELSE icon_url END,
             updated_at = DATETIME('now')
           WHERE id = ? AND developer_id = ?
         `)
@@ -976,6 +985,8 @@ export async function saveExtensionBasic(
           data.downloadUrl?.trim() || null,
           data.supportEmail.trim(),
           data.docsUrl?.trim() || null,
+          validInitialIcon,
+          validInitialIcon,
           existing.id,
           data.developerId
         )
@@ -996,6 +1007,15 @@ export async function saveExtensionBasic(
   // If new extension or inserting an unseeded fallback extension
   const newId = data.id || `ext_${Date.now().toString(36)}_${cleanSlug.slice(0, 12).replace(/-/g, '_')}`;
 
+  const initialIcon = (
+    data.iconUrl &&
+    typeof data.iconUrl === 'string' &&
+    !data.iconUrl.startsWith('data:image/') &&
+    (data.iconUrl.includes('/cdn/') || data.iconUrl.startsWith('http') || data.iconUrl.startsWith('/icons/'))
+  )
+    ? data.iconUrl.trim()
+    : '/icons/extension-placeholder.avif';
+
   // Default new extensions to is_active = 0 and status = 'draft' so they never leak into the store
   await db
     .prepare(`
@@ -1004,7 +1024,7 @@ export async function saveExtensionBasic(
         source_repo_url, zip_download_url, support_email, docs_url,
         developer_id, icon_url, is_active, status, pricing_type, created_at, updated_at
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '/icons/extension-placeholder.avif', 0, 'draft', 'free', DATETIME('now'), DATETIME('now')
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'draft', 'free', DATETIME('now'), DATETIME('now')
       )
     `)
     .bind(
@@ -1019,7 +1039,8 @@ export async function saveExtensionBasic(
       data.downloadUrl?.trim() || null,
       data.supportEmail.trim(),
       data.docsUrl?.trim() || null,
-      data.developerId
+      data.developerId,
+      initialIcon
     )
     .run();
 

@@ -45,6 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
       developerWebsite?: string;
       docsUrl?: string;
       isEdit?: boolean;
+      iconUrl?: string;
     };
     const {
       id,
@@ -60,6 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
       developerWebsite,
       docsUrl,
       isEdit,
+      iconUrl,
     } = body;
 
     // Strict Server-Side Validation of Mandatory Fields
@@ -145,6 +147,7 @@ export const POST: APIRoute = async ({ request }) => {
       docsUrl: docsUrl?.trim() || null,
       developerId: developer.id,
       isEdit: Boolean(isEdit),
+      iconUrl: iconUrl?.trim() || null,
     });
 
     // Note: CDN cache purge is deferred until final publication to protect live store visitors

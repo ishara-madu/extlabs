@@ -108,24 +108,62 @@ export const POST: APIRoute = async ({ request, locals }) => {
           }
         );
       } else {
-        // Deletion approved: Purge extension assets from R2 Storage
+        // Deletion approved: Purge all extension assets from R2 Storage
         try {
           const bucket = getR2Bucket();
           if (bucket) {
             const extToPurge = await getExtensionById(db, result.extensionId, { allowDraft: true });
             if (extToPurge) {
+              const urlsToPurge: string[] = [];
+
               if (extToPurge.icon_url && extToPurge.icon_url.includes('/cdn/')) {
-                deleteFromR2(bucket, extToPurge.icon_url).catch(() => {});
+                urlsToPurge.push(extToPurge.icon_url);
               }
               if (extToPurge.header_image_url && extToPurge.header_image_url.includes('/cdn/')) {
-                deleteFromR2(bucket, extToPurge.header_image_url).catch(() => {});
+                urlsToPurge.push(extToPurge.header_image_url);
               }
-              if (extToPurge.screenshots && Array.isArray(extToPurge.screenshots)) {
-                for (const s of extToPurge.screenshots) {
-                  if (typeof s === 'string' && s.includes('/cdn/')) {
-                    deleteFromR2(bucket, s).catch(() => {});
+
+              const extractScreenshotUrls = (raw: any) => {
+                if (!raw) return;
+                try {
+                  const list = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                  if (Array.isArray(list)) {
+                    for (const item of list) {
+                      const url = typeof item === 'string' ? item : (item?.url || item?.full);
+                      if (typeof url === 'string' && url.includes('/cdn/')) {
+                        urlsToPurge.push(url);
+                      }
+                    }
                   }
+                } catch (parseErr) {
+                  console.warn('Failed to parse screenshots for R2 purge:', parseErr);
                 }
+              };
+
+              extractScreenshotUrls(extToPurge.screenshots);
+
+              // Also purge draft visual media if extension had pending draft updates
+              if (extToPurge.draft_data) {
+                try {
+                  const draft = JSON.parse(extToPurge.draft_data);
+                  if (draft.icon_url && typeof draft.icon_url === 'string' && draft.icon_url.includes('/cdn/')) {
+                    urlsToPurge.push(draft.icon_url);
+                  }
+                  if (draft.header_image_url && typeof draft.header_image_url === 'string' && draft.header_image_url.includes('/cdn/')) {
+                    urlsToPurge.push(draft.header_image_url);
+                  }
+                  extractScreenshotUrls(draft.screenshots);
+                } catch (draftParseErr) {
+                  console.warn('Failed to parse draft_data for R2 purge:', draftParseErr);
+                }
+              }
+
+              // Deduplicate and delete all assets from R2
+              const uniqueUrls = Array.from(new Set(urlsToPurge));
+              for (const url of uniqueUrls) {
+                deleteFromR2(bucket, url).catch((delErr) => {
+                  console.warn(`Failed to delete R2 asset [${url}]:`, delErr);
+                });
               }
             }
           }
