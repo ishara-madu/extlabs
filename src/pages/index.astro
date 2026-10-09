@@ -9,7 +9,7 @@ import ExtensionCard from "../components/ExtensionCard.astro";
 import Footer from "../components/Footer.astro";
 import { CATEGORIES } from "../data/extensions";
 import { getDb, getStoreExtensions } from "../lib/db";
-import { Search, ArrowRight, Check } from '@lucide/astro';
+import { ArrowRight, Check } from '@lucide/astro';
 
 const db = getDb();
 const allStoreExtensions = await getStoreExtensions(db);
@@ -155,40 +155,6 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
       
       <!-- Accessible H1 for SEO, Screen Readers & Document Heading Outline -->
       <h1 class="sr-only">ExtLabs — Verified Browser Extensions, AI Utilities & Developer Tools Store</h1>
-
-      <!-- Search & Filter Live Status Alert -->
-      <div id="search-status-bar" class="hidden p-3.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between text-xs shadow-2xs">
-        <div class="flex items-center gap-2 text-slate-700">
-          <span class="font-medium">Active filter:</span>
-          <span id="search-query-text" class="text-slate-500"></span>
-          <span id="results-counter" class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-mono"></span>
-        </div>
-        <button
-          type="button"
-          id="clear-filter-btn"
-          class="text-slate-600 hover:text-slate-900 font-medium underline cursor-pointer text-xs"
-        >
-          Reset
-        </button>
-      </div>
-
-      <!-- No Results State -->
-      <div id="no-results-state" class="hidden py-16 text-center border border-dashed border-slate-200 rounded-2xl p-8 bg-white">
-        <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 mx-auto flex items-center justify-center mb-3">
-          <Search class="w-5 h-5" />
-        </div>
-        <h3 class="text-sm font-semibold text-slate-800 mb-1">No extensions found</h3>
-        <p class="text-xs text-slate-500 max-w-xs mx-auto mb-4">
-          Try searching with another keyword or reset the category filter.
-        </p>
-        <button
-          type="button"
-          id="no-results-reset-btn"
-          class="px-4 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 cursor-pointer transition-colors shadow-2xs"
-        >
-          Back to Discover
-        </button>
-      </div>
 
       <!-- Section 1: Featured Spotlight -->
       {featuredExtensions.length > 0 && (
@@ -339,152 +305,5 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
 
     <!-- Footer -->
     <Footer />
-
-    <!-- Client-side Logic (Vanilla JS) -->
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const desktopSearch = document.getElementById('global-search-input') as HTMLInputElement | null;
-        const mobileSearch = document.getElementById('mobile-search-input') as HTMLInputElement | null;
-        const categoryButtons = document.querySelectorAll('.category-filter-btn');
-        const extensionCards = document.querySelectorAll('.extension-item');
-        const shelfSections = document.querySelectorAll('.shelf-section');
-        const searchStatusBar = document.getElementById('search-status-bar');
-        const searchQueryText = document.getElementById('search-query-text');
-        const resultsCounter = document.getElementById('results-counter');
-        const clearFilterBtn = document.getElementById('clear-filter-btn');
-        const noResultsState = document.getElementById('no-results-state');
-        const noResultsResetBtn = document.getElementById('no-results-reset-btn');
-
-        // Active State variables (null = default home page view with all shelves)
-        let activeCategory: string | null = null;
-        let searchQuery = '';
-
-        function filterExtensions() {
-          const query = searchQuery.trim().toLowerCase();
-          let visibleCount = 0;
-
-          extensionCards.forEach(card => {
-            const cardCategory = card.getAttribute('data-category') || '';
-            const cardName = card.getAttribute('data-name') || '';
-            const cardDesc = card.getAttribute('data-description') || '';
-            const cardTags = card.getAttribute('data-tags') || '';
-
-            const matchesCategory = !activeCategory || (cardCategory === activeCategory);
-            const matchesQuery = !query || 
-              cardName.includes(query) || 
-              cardDesc.includes(query) || 
-              cardTags.includes(query) ||
-              cardCategory.includes(query);
-
-            if (matchesCategory && matchesQuery) {
-              card.classList.remove('hidden');
-              visibleCount++;
-            } else {
-              card.classList.add('hidden');
-            }
-          });
-
-          // Check visibility of shelf sections
-          shelfSections.forEach(section => {
-            const sectionCards = section.querySelectorAll('.extension-item:not(.hidden)');
-            if (sectionCards.length === 0) {
-              section.classList.add('hidden');
-            } else {
-              section.classList.remove('hidden');
-            }
-          });
-
-          // Update Search Status Bar
-          if (searchStatusBar && searchQueryText && resultsCounter) {
-            if (query || activeCategory) {
-              searchStatusBar.classList.remove('hidden');
-              let label = [];
-              if (activeCategory) label.push(`Category: "${activeCategory.toUpperCase()}"`);
-              if (query) label.push(`Keyword: "${query}"`);
-              searchQueryText.textContent = label.join(' + ');
-              resultsCounter.textContent = `${visibleCount} item${visibleCount === 1 ? '' : 's'}`;
-            } else {
-              searchStatusBar.classList.add('hidden');
-            }
-          }
-
-          // No results check
-          if (noResultsState) {
-            if (visibleCount === 0) {
-              noResultsState.classList.remove('hidden');
-            } else {
-              noResultsState.classList.add('hidden');
-            }
-          }
-        }
-
-        // Category filter buttons click handler (toggles category filter)
-        function setCategory(catId: string) {
-          if (activeCategory === catId) {
-            activeCategory = null; // toggle off to return to full home view
-          } else {
-            activeCategory = catId;
-          }
-
-          categoryButtons.forEach(btn => {
-            const btnCat = btn.getAttribute('data-category-filter');
-            if (activeCategory && btnCat === activeCategory) {
-              btn.className = 'category-filter-btn inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-blue-600 text-white border-blue-600 active-category';
-            } else {
-              btn.className = 'category-filter-btn inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600';
-            }
-          });
-          filterExtensions();
-        }
-
-        categoryButtons.forEach(btn => {
-          btn.addEventListener('click', () => {
-            const cat = btn.getAttribute('data-category-filter');
-            if (cat) setCategory(cat);
-          });
-        });
-
-        // Search inputs sync & filter
-        function handleSearch(val: string) {
-          searchQuery = val;
-          if (desktopSearch && desktopSearch.value !== val) desktopSearch.value = val;
-          if (mobileSearch && mobileSearch.value !== val) mobileSearch.value = val;
-          filterExtensions();
-        }
-
-        if (desktopSearch) {
-          desktopSearch.addEventListener('input', (e) => handleSearch((e.target as HTMLInputElement).value));
-        }
-        if (mobileSearch) {
-          mobileSearch.addEventListener('input', (e) => handleSearch((e.target as HTMLInputElement).value));
-        }
-
-        // Clear filters back to normal home screen
-        function resetAllFilters() {
-          searchQuery = '';
-          activeCategory = null;
-          if (desktopSearch) desktopSearch.value = '';
-          if (mobileSearch) mobileSearch.value = '';
-          categoryButtons.forEach(btn => {
-            btn.className = 'category-filter-btn inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap cursor-pointer select-none border transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900';
-          });
-          filterExtensions();
-        }
-
-        if (clearFilterBtn) clearFilterBtn.addEventListener('click', resetAllFilters);
-        if (noResultsResetBtn) noResultsResetBtn.addEventListener('click', resetAllFilters);
-
-        // Keyboard Shortcut: Cmd+K / Ctrl+K
-        window.addEventListener('keydown', (e) => {
-          if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-            e.preventDefault();
-            if (desktopSearch) {
-              desktopSearch.focus();
-              desktopSearch.select();
-            }
-          }
-        });
-      });
-    </script>
   </body>
 </html>

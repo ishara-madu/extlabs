@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug, saveExtensionMedia, getExtensionBySlug, getExtensionById } from '../../../../lib/db';
+import { clearMemoryCache } from '../../../../lib/queries/extensions';
 import { getR2Bucket, uploadToR2, deleteFromR2 } from '../../../../lib/r2';
 
 export const prerender = false;
@@ -307,6 +308,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       screenshots: targetScreenshots,
       youtubeVideoUrl: finalYoutube || null,
     });
+
+    // Instantly invalidate Worker L1 In-Memory Cache
+    clearMemoryCache();
 
     return new Response(
       JSON.stringify({
