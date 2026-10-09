@@ -85,8 +85,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Validate Extension Logo / Icon
     const finalIcon = (iconUrl || '').trim();
-    if (!finalIcon) {
-      return new Response(JSON.stringify({ success: false, error: 'Extension logo / icon image is required.' }), {
+    if (!finalIcon || finalIcon.includes('placeholder')) {
+      return new Response(JSON.stringify({ success: false, error: 'Extension logo / icon image is strictly required.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -94,8 +94,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Validate Promotional Shelf Banner (header_image_url)
     const finalPromo = (headerImageUrl || promoTileUrl || '').trim();
-    if (!finalPromo) {
-      return new Response(JSON.stringify({ success: false, error: 'Promotional shelf banner is required.' }), {
+    if (!finalPromo || finalPromo.includes('placeholder')) {
+      return new Response(JSON.stringify({ success: false, error: 'Featured Image (Promotional shelf banner) is strictly required.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });

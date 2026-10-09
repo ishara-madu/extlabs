@@ -1107,6 +1107,14 @@ export async function saveExtensionMedia(
     throw new Error('Extension not found or permission denied.');
   }
 
+  if (!data.iconUrl || data.iconUrl.trim().length === 0 || data.iconUrl.includes('placeholder')) {
+    throw new Error('Extension logo / icon is strictly required.');
+  }
+
+  if (!data.headerImageUrl || data.headerImageUrl.trim().length === 0 || data.headerImageUrl.includes('placeholder')) {
+    throw new Error('Featured Image (Promotional shelf banner) is strictly required.');
+  }
+
   // Defensive assertion: ensure database columns only store clean URLs, never Base64
   if (data.iconUrl.startsWith('data:image/') || (data.headerImageUrl && data.headerImageUrl.startsWith('data:image/'))) {
     throw new Error('Direct Base64 images are deprecated. Images must be uploaded to R2 Storage CDN.');
@@ -1384,7 +1392,20 @@ export async function saveExtensionSpecs(
     throw new Error('Extension logo / icon is strictly required before publishing.');
   }
   const finalHeader = draft.header_image_url !== undefined ? draft.header_image_url : existing.header_image_url;
+  if (data.publish && (!finalHeader || finalHeader.trim().length === 0 || finalHeader.includes('placeholder'))) {
+    throw new Error('Featured Image (Promotional Shelf Banner) is strictly required before publishing.');
+  }
   const finalScreenshots = draft.screenshots ?? existing.screenshots;
+  if (data.publish) {
+    let parsedCount = 0;
+    try {
+      const parsed = typeof finalScreenshots === 'string' ? JSON.parse(finalScreenshots) : finalScreenshots;
+      if (Array.isArray(parsed)) parsedCount = parsed.length;
+    } catch {}
+    if (parsedCount < 2) {
+      throw new Error('At least 2 showcase screenshots are strictly required before publishing.');
+    }
+  }
   const finalYoutube = draft.youtube_video_url !== undefined ? draft.youtube_video_url : existing.youtube_video_url;
 
   const finalDesc = draft.full_description ?? existing.full_description;

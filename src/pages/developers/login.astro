@@ -27,6 +27,8 @@ const safeRedirect = (redirectParam.startsWith('/') && !redirectParam.startsWith
 if (user) {
   return Astro.redirect(safeRedirect, 302);
 }
+
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 ---
 
 <html lang="en" data-theme="light">
@@ -36,6 +38,7 @@ if (user) {
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Developer Sign In — ExtLabs Developer Console</title>
     <meta name="description" content="Sign in with GitHub to access the ExtLabs Developer Console, manage extensions, and update Monetag Direct Links." />
   </head>

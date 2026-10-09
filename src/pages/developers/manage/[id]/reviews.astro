@@ -48,6 +48,13 @@ if (!user) {
   return Astro.redirect(`/developers/login?auth_required=true&redirect=${encodeURIComponent(`/developers/manage/${id}/reviews`)}`, 302);
 }
 
+// Strictly prevent edge or browser caching of extension reviews console
+Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+Astro.response.headers.set('Pragma', 'no-cache');
+Astro.response.headers.set('Expires', '0');
+Astro.response.headers.set('Vary', 'Cookie');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
 let developer = null;
 let dbExtension: ManageExtensionDetail | null = null;
 let dbReviews: any[] = [];
@@ -129,6 +136,7 @@ const reviewsList = dbReviews.map((r) => ({
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Ratings & User Reviews — {ext.name} — ExtLabs</title>
     <meta name="description" content={`Manage user feedback, view rating analytics, and publish official developer responses for ${ext.name}.`} />
   </head>

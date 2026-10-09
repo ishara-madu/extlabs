@@ -33,6 +33,13 @@ if (!user) {
   return Astro.redirect(`/developers/login?auth_required=true&redirect=${encodeURIComponent(`/developers/manage/${id}/edit`)}`, 302);
 }
 
+// Strictly prevent edge or browser caching of extension editing console
+Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+Astro.response.headers.set('Pragma', 'no-cache');
+Astro.response.headers.set('Expires', '0');
+Astro.response.headers.set('Vary', 'Cookie');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
 let developer = null;
 let dbExtension: ManageExtensionDetail | null = null;
 
@@ -175,6 +182,7 @@ const ext = {
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Edit {ext.name} — ExtLabs Developer Console</title>
     <meta name="description" content={`Edit configuration and metadata for ${ext.name}.`} />
   </head>

@@ -7,5 +7,6 @@ Disallow: /developers/new
 Disallow: /developers/settings
 Disallow: /developers/login
 Disallow: /api/
+Disallow: /search
 
 Sitemap: https://extlabs.store/sitemap-index.xml

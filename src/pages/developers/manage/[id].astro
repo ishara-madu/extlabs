@@ -67,6 +67,7 @@ Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-r
 Astro.response.headers.set('Pragma', 'no-cache');
 Astro.response.headers.set('Expires', '0');
 Astro.response.headers.set('Vary', 'Cookie');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
 let developer = null;
 let dbExtension: ManageExtensionDetail | null = null;
@@ -330,6 +331,7 @@ try {
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Manage {ext.name} — ExtLabs Developer Console</title>
     <meta name="description" content="Manage extension configuration, update Monetag Direct Links, and monitor 30-day install analytics." />
   </head>

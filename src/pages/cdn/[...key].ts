@@ -53,6 +53,12 @@ export const GET: APIRoute = async ({ params, request }) => {
       headers.set('Content-Type', getMimeType(key));
     }
 
+    // Binary packages (zip, crx, json) should never be indexed as web documents in search engines
+    const isBinaryDownload = key.endsWith('.zip') || key.endsWith('.crx') || key.endsWith('.json');
+    if (isBinaryDownload) {
+      headers.set('X-Robots-Tag', 'noindex, nofollow');
+    }
+
     // Check If-None-Match for 304 Not Modified
     const ifNoneMatch = request.headers.get('if-none-match');
     if (ifNoneMatch && ifNoneMatch === object.httpEtag) {
@@ -96,6 +102,11 @@ export const HEAD: APIRoute = async ({ params, request }) => {
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     if (!headers.has('Content-Type')) {
       headers.set('Content-Type', getMimeType(key));
+    }
+
+    const isBinaryDownload = key.endsWith('.zip') || key.endsWith('.crx') || key.endsWith('.json');
+    if (isBinaryDownload) {
+      headers.set('X-Robots-Tag', 'noindex, nofollow');
     }
 
     const ifNoneMatch = request.headers.get('if-none-match');

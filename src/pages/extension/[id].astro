@@ -185,12 +185,12 @@ const isSocialCompatibleImage = (url?: string) => {
   return !lower.endsWith('.svg') && !lower.endsWith('.avif');
 };
 
-const candidateOgImage = ext.headerImageUrl || screenshotsList[0] || ext.iconUrl;
+const candidateOgImage = ext.headerImageUrl || ext.iconUrl;
 const rawOgImageUrl = isSocialCompatibleImage(candidateOgImage) ? candidateOgImage : 'https://extlabs.store/og-image.jpeg';
 const ogImageUrl = rawOgImageUrl.startsWith('http') 
   ? rawOgImageUrl 
   : `https://extlabs.store${rawOgImageUrl.startsWith('/') ? '' : '/'}${rawOgImageUrl}`;
-const lcpHeroImageUrl = screenshotsList[0] || ext.headerImageUrl;
+const lcpHeroImageUrl = screenshotsList[0];
 
 // Map ExtLabs category to Google Schema.org standard SoftwareApplication category types
 const schemaCategoryMap: Record<string, string> = {
@@ -770,16 +770,27 @@ const jsonLdSchema = {
               >
                 <!-- Ambient Backdrop using pure CSS (Zero GPU blur overhead, no duplicate image decode) -->
                 <div class="absolute inset-0 bg-radial from-slate-900/50 via-slate-950/80 to-slate-950 pointer-events-none select-none"></div>
+
+                <!-- Instant Thumbnail Low-Quality Placeholder (LQIP / Instant Preview) -->
+                <img
+                  id="main-screenshot-thumb"
+                  src={(screenshotThumbnailsList && screenshotThumbnailsList[0]) ? screenshotThumbnailsList[0] : screenshotsList[0]}
+                  alt=""
+                  aria-hidden="true"
+                  class="absolute inset-0 z-10 w-full h-full object-contain select-none filter blur-sm scale-102 transition-opacity duration-300 pointer-events-none"
+                />
+
                 <img
                   id="main-screenshot-img"
                   src={screenshotsList[0]}
                   alt={`${ext.name} Store Screenshot 1`}
                   width="1280"
                   height="720"
-                  class="relative z-10 w-full h-full object-contain select-none transition-transform duration-200"
+                  class="relative z-20 w-full h-full object-contain select-none opacity-0 transition-opacity duration-300"
                   loading="eager"
                   decoding="async"
                   fetchpriority="high"
+                  onload="this.classList.remove('opacity-0'); const t=document.getElementById('main-screenshot-thumb'); if(t) t.classList.add('opacity-0');"
                 />
 
                 <!-- Fullscreen Expand Button -->
@@ -1996,9 +2007,23 @@ const jsonLdSchema = {
 
         // Store Showcase Screenshots Gallery Switcher & Lightbox
         const mainImg = document.getElementById('main-screenshot-img') as HTMLImageElement | null;
+        const mainThumb = document.getElementById('main-screenshot-thumb') as HTMLImageElement | null;
         const prevBtn = document.getElementById('prev-screenshot-btn');
         const nextBtn = document.getElementById('next-screenshot-btn');
         const thumbBtns = document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb-btn');
+
+        // Check if main HD screenshot is already cached and loaded
+        if (mainImg) {
+          if (mainImg.complete && mainImg.naturalWidth > 0) {
+            mainImg.classList.remove('opacity-0');
+            if (mainThumb) mainThumb.classList.add('opacity-0');
+          } else {
+            mainImg.addEventListener('load', () => {
+              mainImg.classList.remove('opacity-0');
+              if (mainThumb) mainThumb.classList.add('opacity-0');
+            });
+          }
+        }
 
         // Lightbox elements
         const lightbox = document.getElementById('screenshot-lightbox-modal') as HTMLDialogElement | null;
@@ -2046,11 +2071,38 @@ const jsonLdSchema = {
         if (mainImg && thumbBtns.length > 1) {
           function setScreenshot(index: number) {
             currentIndex = (index + total) % total;
-            const targetBtn = thumbBtns[currentIndex];
+            const activeIndex = currentIndex;
+            const targetBtn = thumbBtns[activeIndex];
             if (!targetBtn) return;
             const newSrc = targetBtn.getAttribute('data-src');
+            const targetThumbImg = targetBtn.querySelector('img');
+            const newThumbSrc = targetThumbImg ? targetThumbImg.getAttribute('src') : null;
+
             if (newSrc && mainImg) {
-              mainImg.src = newSrc;
+              // 1. Immediately show the thumbnail placeholder in the screenshot box before the HD image arrives
+              if (mainThumb && newThumbSrc) {
+                mainThumb.src = newThumbSrc;
+                mainThumb.classList.remove('opacity-0');
+              }
+              mainImg.classList.add('opacity-0');
+
+              // 2. Preload full-resolution screenshot and smoothly reveal once loaded
+              const imgLoader = new Image();
+              imgLoader.onload = () => {
+                if (mainImg && currentIndex === activeIndex) {
+                  mainImg.src = newSrc;
+                  mainImg.classList.remove('opacity-0');
+                  if (mainThumb) mainThumb.classList.add('opacity-0');
+                }
+              };
+              imgLoader.onerror = () => {
+                if (mainImg && currentIndex === activeIndex) {
+                  mainImg.src = newSrc;
+                  mainImg.classList.remove('opacity-0');
+                }
+              };
+              imgLoader.src = newSrc;
+
               if (lightboxImg) lightboxImg.src = newSrc;
             }
 

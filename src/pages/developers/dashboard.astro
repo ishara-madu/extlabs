@@ -39,6 +39,7 @@ Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-r
 Astro.response.headers.set('Pragma', 'no-cache');
 Astro.response.headers.set('Expires', '0');
 Astro.response.headers.set('Vary', 'Cookie');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
 export interface DashboardExtension {
   id: string;
@@ -146,6 +147,7 @@ if (db && user) {
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="noindex, nofollow" />
     <title>Developer Console — ExtLabs</title>
     <meta name="description" content="ExtLabs Developer Console. Manage your browser extensions, monitor downloads, and update releases." />
   </head>
