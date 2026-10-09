@@ -163,6 +163,7 @@ export async function approveLifecycleRequest(
   extensionId: string;
   extensionSlug: string;
   extensionName: string;
+  extensionCategory?: string;
   developerId: string;
   requestType: 'unpublish' | 'delete';
 }> {
@@ -235,6 +236,7 @@ export async function approveLifecycleRequest(
     extensionId: reqRow.extension_id,
     extensionSlug: reqRow.extension_slug,
     extensionName: reqRow.extension_name,
+    extensionCategory: reqRow.extension_category,
     developerId: reqRow.developer_id,
     requestType: reqRow.request_type,
   };

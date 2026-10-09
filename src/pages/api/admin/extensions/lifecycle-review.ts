@@ -68,17 +68,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
         adminNotes: adminReason?.trim(),
       });
 
-      // Purge Edge CDN cache if unpublishing
-      if (result.requestType === 'unpublish') {
-        try {
-          await purgeExtensionStoreCache(request, {
-            extensionId: result.extensionId,
-            extensionSlug: result.extensionSlug,
-          });
-        } catch (purgeErr) {
-          console.warn('Cache purge after unpublish failed non-critically:', purgeErr);
-        }
+      // Invalidate Edge CDN cache and Worker memory cache for both unpublish and delete
+      try {
+        await purgeExtensionStoreCache(request, {
+          extensionId: result.extensionId,
+          extensionSlug: result.extensionSlug,
+          category: result.extensionCategory,
+        });
+      } catch (purgeErr) {
+        console.warn(`Cache purge after ${result.requestType} failed non-critically:`, purgeErr);
+      }
 
+      if (result.requestType === 'unpublish') {
         // Notify developer
         try {
           await createNotification(db, {
