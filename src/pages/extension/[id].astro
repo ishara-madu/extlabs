@@ -219,6 +219,12 @@ const allReviewsForSchema = [
   ...((ext.reviews || []).filter(r => !userReview || r.id !== userReview.id))
 ];
 
+// Google Schema.org Review Snippets compliance: Only mark up AggregateRating if verified reviews exist on the page
+const hasVerifiedReviewsForSchema = allReviewsForSchema.length > 0;
+const schemaReviewRating = hasVerifiedReviewsForSchema
+  ? (allReviewsForSchema.reduce((sum, r) => sum + (Number(r.rating) || 5), 0) / allReviewsForSchema.length).toFixed(1)
+  : null;
+
 // JSON-LD Schema.org Structured Data for SEO
 const jsonLdGraph: any[] = [
   {
@@ -237,11 +243,11 @@ const jsonLdGraph: any[] = [
       "price": "0",
       "priceCurrency": "USD"
     },
-    ...(ext.reviewCount > 0 ? {
+    ...(hasVerifiedReviewsForSchema ? {
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": ext.rating.toFixed(1),
-        "reviewCount": ext.reviewCount,
+        "ratingValue": schemaReviewRating,
+        "reviewCount": allReviewsForSchema.length,
         "bestRating": "5",
         "worstRating": "1"
       }
@@ -2138,7 +2144,7 @@ const jsonLdSchema = {
             const adFrequency = downloadBtn.getAttribute('data-ad-frequency') || '24h';
             const realDownloadUrl = downloadBtn.getAttribute('data-download-url');
 
-            // 1. Check Ad Trigger Frequency & Cooldown Rules
+            // 1. Dual-Action Monetization: Open ad in a new tab
             let canTriggerAd = true;
             const now = Date.now();
             const lastTriggerKey = `extlabs_ad_last_${extId}`;
@@ -2162,25 +2168,21 @@ const jsonLdSchema = {
             // 'download' frequency triggers on every package download event
 
             if (canTriggerAd) {
-              // 2. Dual-Action Monetization: 5:1 pacing split
               let adClickCount = Number(localStorage.getItem('extlabs_ad_split_count') || 0) + 1;
               localStorage.setItem('extlabs_ad_split_count', String(adClickCount));
 
               const isPlatformAd = (adClickCount % 6 === 0);
 
-              // Only trigger if it's the platform ad OR developer has configured Monetag
               if (isPlatformAd || hasMonetag) {
-                // Record timestamp to enforce frequency cooldown
                 localStorage.setItem(lastTriggerKey, String(now));
                 sessionStorage.setItem(sessionTriggerKey, 'true');
 
-                // Open first-party cloaked redirector (prevents client ad blockers from matching ad domains)
                 const adRedirectUrl = `/api/ad/go?extId=${encodeURIComponent(extId)}&p=${isPlatformAd ? '1' : '0'}`;
                 window.open(adRedirectUrl, '_blank', 'noopener,noreferrer');
               }
             }
 
-            // 3. Trigger real extension package download on the same page (no second tab)
+            // 2. Main Tab: Trigger real extension package download
             if (realDownloadUrl && realDownloadUrl !== '#' && realDownloadUrl.startsWith('http')) {
               const a = document.createElement('a');
               a.href = realDownloadUrl;

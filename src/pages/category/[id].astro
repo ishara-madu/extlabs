@@ -37,8 +37,11 @@ for (const ext of allStoreExtensions) {
   categoryCounts[ext.category] = (categoryCounts[ext.category] || 0) + 1;
 }
 
-// Only show categories that have live extensions
-const visibleCategories = CATEGORIES.filter(cat => (categoryCounts[cat.id] ?? 0) > 0);
+// Prevent Soft 404 & thin content indexing: Only index category pages that contain active extensions
+const hasExtensions = categoryExtensions.length > 0;
+const robotsDirective = hasExtensions
+  ? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+  : "noindex, follow";
 
 // 7-day Edge CDN Caching: Serves category showcase in 5ms with 0 D1 reads
 Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=604800, stale-while-revalidate=86400');
@@ -54,7 +57,7 @@ Astro.response.headers.set('Vary', 'Cookie');
     <meta name="generator" content={Astro.generator} />
     <title>{category.label} Extensions — ExtLabs Store</title>
     <meta name="description" content={category.description} />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="robots" content={robotsDirective} />
 
     <!-- Canonical URL -->
     <link rel="canonical" href={`https://extlabs.store/category/${category.id}`} />
