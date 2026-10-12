@@ -64,14 +64,21 @@ export const GET: APIRoute = async () => {
         try {
           const screenshotsArr = typeof ext.screenshots === 'string' ? JSON.parse(ext.screenshots) : ext.screenshots;
           if (Array.isArray(screenshotsArr)) {
-            screenshotsArr.forEach((sUrl: string, idx: number) => {
-              if (sUrl && typeof sUrl === 'string') {
+            screenshotsArr.forEach((item: any, idx: number) => {
+              let sUrl = '';
+              if (typeof item === 'string' && item.trim().length > 0) {
+                sUrl = item.trim();
+              } else if (item && typeof item === 'object') {
+                sUrl = (typeof item.url === 'string' && item.url) ? item.url : ((typeof item.full === 'string' && item.full) ? item.full : '');
+              }
+
+              if (sUrl && !sUrl.startsWith('data:')) {
                 const fullUrl = sUrl.startsWith('http')
                   ? sUrl
                   : `https://extlabs.store${sUrl.startsWith('/') ? '' : '/'}${sUrl}`;
                 imageTags.push(`    <image:image>
       <image:loc>${escapeXml(fullUrl)}</image:loc>
-      <image:title>${escapeXml(`${ext.name} Screenshot ${idx + 1}`)}</image:title>
+      <image:title>${escapeXml(`${extName} Screenshot ${idx + 1}`)}</image:title>
     </image:image>`);
               }
             });
