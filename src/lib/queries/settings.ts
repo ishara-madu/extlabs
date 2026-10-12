@@ -32,3 +32,27 @@ export async function getPlatformSetting(
 
   return row ? row.value : defaultValue;
 }
+
+/**
+ * Bulk upsert platform settings key-value pairs
+ */
+export async function updatePlatformSettings(
+  db: D1Database,
+  settings: Record<string, string>
+): Promise<boolean> {
+  const entries = Object.entries(settings);
+  if (entries.length === 0) return true;
+
+  const statements = entries.map(([key, value]) =>
+    db
+      .prepare(`
+        INSERT INTO platform_settings (key, value, updated_at)
+        VALUES (?, ?, DATETIME('now'))
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+      `)
+      .bind(key, String(value ?? ''))
+  );
+
+  await db.batch(statements);
+  return true;
+}

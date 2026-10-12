@@ -1,6 +1,6 @@
 // src/pages/api/ad/go.ts
 import type { APIRoute } from 'astro';
-import { getDb } from '../../../lib/db';
+import { getDb, getPlatformSetting } from '../../../lib/db';
 import { recordTelemetryEvent, isValidExtensionId } from '../../../lib/telemetry-buffer';
 
 export const prerender = false;
@@ -32,6 +32,16 @@ export const GET: APIRoute = async ({ request, url }) => {
         realExtId = ext.id;
         if (!isPlatform && ext.monetag_direct_link && ext.monetag_direct_link.startsWith('http')) {
           targetUrl = ext.monetag_direct_link;
+        }
+      }
+
+      // If it's a platform impression (or developer has no ad configured), route to the configured platform Monetag link
+      if (isPlatform || targetUrl === 'https://monetag.com') {
+        const platformLink =
+          (await getPlatformSetting(db, 'monetag_direct_link')) ||
+          (await getPlatformSetting(db, 'monetag_zone_id'));
+        if (platformLink && platformLink.startsWith('http')) {
+          targetUrl = platformLink;
         }
       }
     } catch {}

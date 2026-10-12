@@ -1,7 +1,7 @@
 // src/pages/api/developers/extensions/save-basic.ts
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
-import { getDb, getDeveloperByUserIdOrSlug, saveExtensionBasic } from '../../../../lib/db';
+import { getDb, getDeveloperByUserIdOrSlug, saveExtensionBasic, getPlatformSetting } from '../../../../lib/db';
 import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
 
 export const prerender = false;
@@ -64,6 +64,28 @@ export const POST: APIRoute = async ({ request }) => {
       isEdit,
       iconUrl,
     } = body;
+
+    // Check platform submissions availability
+    if (!isEdit) {
+      const submissionsOpen = await getPlatformSetting(db, 'submissions_open');
+      if (submissionsOpen === 'false') {
+        return new Response(JSON.stringify({ success: false, error: 'Extension submissions are currently paused by platform administrators.' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Check platform manifest policy
+    if (manifestVersion === '2') {
+      const manifestPolicy = await getPlatformSetting(db, 'manifest_policy');
+      if (manifestPolicy === 'mv3_strict' || !manifestPolicy) {
+        return new Response(JSON.stringify({ success: false, error: 'Manifest V2 packages are rejected by platform policy. Please submit Manifest V3.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     // Strict Server-Side Validation of Mandatory Fields
     if (!name || typeof name !== 'string' || name.trim().length < 3) {

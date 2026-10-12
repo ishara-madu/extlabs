@@ -6,8 +6,9 @@ import DeveloperNavbar from "../../components/DeveloperNavbar.astro";
 import Footer from "../../components/Footer.astro";
 import ExtensionEditor from "../../components/ExtensionEditor.astro";
 import { ArrowLeft } from '@lucide/astro';
-import { getDb, getDeveloperByUserIdOrSlug } from "../../lib/db";
+import { getDb, getDeveloperByUserIdOrSlug, getPlatformSetting } from "../../lib/db";
 import { getSessionUser } from "../../lib/auth";
+import { AlertCircle } from '@lucide/astro';
 
 // Server-side Authentication & Developer Profile
 const db = getDb();
@@ -30,10 +31,16 @@ Astro.response.headers.set('Vary', 'Cookie');
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
 let developer = null;
-if (db && user) {
+let submissionsOpen = true;
+if (db) {
   try {
-    developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
+    submissionsOpen = (await getPlatformSetting(db, 'submissions_open')) !== 'false';
   } catch {}
+  if (user) {
+    try {
+      developer = await getDeveloperByUserIdOrSlug(db, user.id, user.username);
+    } catch {}
+  }
 }
 
 const defaultDevWebsite = developer?.website || '';
@@ -91,6 +98,18 @@ const defaultFrequency = developer?.default_frequency || "24h";
           <span>Back to Console Dashboard</span>
         </a>
       </div>
+
+      { !submissionsOpen && (
+        <div class="p-4 bg-amber-50/50 border border-amber-200/80 rounded-xl text-amber-900 text-xs flex items-start gap-3">
+          <AlertCircle class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div class="space-y-1">
+            <span class="font-semibold block">Submissions Temporarily Paused</span>
+            <p class="text-amber-700 leading-relaxed">
+              Platform administrators have temporarily closed new package submissions for scheduled maintenance or queue processing. You can draft extensions, but submitting will be enabled once the review queue opens.
+            </p>
+          </div>
+        </div>
+      )}
 
       <!-- Unified Editor Component (Pre-filled with authenticated developer support defaults & Monetag settings) -->
       <ExtensionEditor 

@@ -4,7 +4,7 @@ export const prerender = false;
 import "../../../styles/global.css";
 import AdminNavbar from "../../../components/AdminNavbar.astro";
 import Footer from "../../../components/Footer.astro";
-import { getDb, getLiveExtensionsCount } from "../../../lib/db";
+import { getDb, getLiveExtensionsCount, getPlatformSettings } from "../../../lib/db";
 import { DEVELOPERS_DATA } from "../../../data/developers";
 import { OPEN_REPORTS_COUNT } from "../../../data/reports";
 import { 
@@ -31,6 +31,7 @@ import {
 
 const db = getDb();
 const liveExtensionsCount = await getLiveExtensionsCount(db);
+const platformSettings = db ? await getPlatformSettings(db) : {};
 ---
 
 <html lang="en" data-theme="light">
@@ -191,7 +192,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
               <input
                 type="text"
                 id="store-name"
-                value="ExtLabs Extension Store"
+                value={platformSettings.store_name || "ExtLabs Extension Store"}
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
               />
               <span class="text-[11px] text-slate-400 block">
@@ -207,7 +208,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
               <input
                 type="email"
                 id="support-email"
-                value="support@extlabs.store"
+                value={platformSettings.support_email || "support@extlabs.store"}
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
               />
               <span class="text-[11px] text-slate-400 block">
@@ -223,7 +224,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
               <input
                 type="number"
                 id="max-upload-size"
-                value="25"
+                value={platformSettings.max_upload_size_mb || "25"}
                 min="5"
                 max="100"
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
@@ -242,9 +243,9 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 id="manifest-enforce"
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
               >
-                <option value="mv3_strict" selected>Manifest V3 Only (Strictly Enforced)</option>
-                <option value="mv3_with_exemptions">Manifest V3 (Allow Enterprise Exemptions)</option>
-                <option value="all">Legacy MV2 & MV3</option>
+                <option value="mv3_strict" selected={platformSettings.manifest_policy === 'mv3_strict' || !platformSettings.manifest_policy}>Manifest V3 Only (Strictly Enforced)</option>
+                <option value="mv3_with_exemptions" selected={platformSettings.manifest_policy === 'mv3_with_exemptions'}>Manifest V3 (Allow Enterprise Exemptions)</option>
+                <option value="all" selected={platformSettings.manifest_policy === 'all'}>Legacy MV2 & MV3</option>
               </select>
               <span class="text-[11px] text-slate-400 block">
                 Automated rejection for submissions containing deprecated Manifest V2 patterns.
@@ -261,7 +262,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 <span class="text-[11px] text-slate-500">Permit registered developers to upload new packages to the pending queue.</span>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggle-submissions" class="sr-only peer" checked />
+                <input type="checkbox" id="toggle-submissions" class="sr-only peer" checked={platformSettings.submissions_open !== 'false'} />
                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
               </label>
             </div>
@@ -273,7 +274,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 <span class="text-[11px] text-slate-500">Render a maintenance notice on public routes while keeping admin workstation active.</span>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggle-maintenance" class="sr-only peer" />
+                <input type="checkbox" id="toggle-maintenance" class="sr-only peer" checked={platformSettings.maintenance_mode === 'true'} />
                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
               </label>
             </div>
@@ -288,7 +289,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
               <span>5:1 Monetization & Monetag Architecture</span>
             </h2>
             <p class="text-xs text-slate-500">
-              Configure the revenue allocation ratio and ExtLabs platform ad tags that cycle every 5 developer ad clicks.
+              Configure the revenue allocation ratio and ExtLabs platform ad direct links that cycle every 5 developer ad clicks.
             </p>
           </div>
 
@@ -302,29 +303,30 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 id="ad-ratio"
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
               >
-                <option value="5_to_1" selected>5 Developer Clicks : 1 ExtLabs Click (Standard)</option>
-                <option value="4_to_1">4 Developer Clicks : 1 ExtLabs Click (Accelerated)</option>
-                <option value="6_to_1">6 Developer Clicks : 1 ExtLabs Click (Generous)</option>
-                <option value="direct_only">100% Developer Direct (No Platform Split)</option>
+                <option value="5_to_1" selected={platformSettings.ad_pacing_ratio === '5_to_1' || !platformSettings.ad_pacing_ratio}>5 Developer Clicks : 1 ExtLabs Click (Standard)</option>
+                <option value="4_to_1" selected={platformSettings.ad_pacing_ratio === '4_to_1'}>4 Developer Clicks : 1 ExtLabs Click (Accelerated)</option>
+                <option value="6_to_1" selected={platformSettings.ad_pacing_ratio === '6_to_1'}>6 Developer Clicks : 1 ExtLabs Click (Generous)</option>
+                <option value="direct_only" selected={platformSettings.ad_pacing_ratio === 'direct_only'}>100% Developer Direct (No Platform Split)</option>
               </select>
               <span class="text-[11px] text-slate-400 block">
-                Guarantees developers receive 83.3% of all network ad traffic.
+                Guarantees developers receive up to 83.3% of all network ad traffic.
               </span>
             </div>
 
-            <!-- ExtLabs Platform Monetag Zone ID -->
+            <!-- ExtLabs Platform Monetag Direct Link URL -->
             <div class="space-y-1.5">
-              <label for="monetag-zone" class="block text-xs font-semibold text-slate-700">
-                ExtLabs Platform Monetag Zone ID
+              <label for="monetag-direct-link" class="block text-xs font-semibold text-slate-700">
+                ExtLabs Platform Monetag Direct Link URL
               </label>
               <input
-                type="text"
-                id="monetag-zone"
-                value="extlabs_infra_zone_882941"
+                type="url"
+                id="monetag-direct-link"
+                placeholder="https://..."
+                value={platformSettings.monetag_direct_link || (platformSettings.monetag_zone_id && platformSettings.monetag_zone_id.startsWith('http') ? platformSettings.monetag_zone_id : '') || ''}
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
               />
               <span class="text-[11px] text-slate-400 block">
-                Zone ID triggered on the 6th impression for server maintenance.
+                Enter your Monetag Direct Link URL (e.g. https://...). Triggered on the platform split impression for server maintenance.
               </span>
             </div>
 
@@ -337,9 +339,9 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 id="freq-cap"
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
               >
-                <option value="1_per_session" selected>1 Ad Interstitial per User Session</option>
-                <option value="2_per_session">2 Ad Interstitials per User Session</option>
-                <option value="1_per_day">1 Ad per 24 Hours</option>
+                <option value="1_per_session" selected={platformSettings.session_freq_cap === '1_per_session' || !platformSettings.session_freq_cap}>1 Ad Interstitial per User Session</option>
+                <option value="2_per_session" selected={platformSettings.session_freq_cap === '2_per_session'}>2 Ad Interstitials per User Session</option>
+                <option value="1_per_day" selected={platformSettings.session_freq_cap === '1_per_day'}>1 Ad per 24 Hours</option>
               </select>
               <span class="text-[11px] text-slate-400 block">
                 Prevents advertising fatigue by limiting popunder and interstitial frequency.
@@ -355,9 +357,9 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 id="adblock-action"
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
               >
-                <option value="silent_pass" selected>Silent Pass (Direct Package Delivery)</option>
-                <option value="polite_notice">Show Polite Support Notice</option>
-                <option value="strict_block">Block Download (Require Whitelist)</option>
+                <option value="silent_pass" selected={platformSettings.adblock_policy === 'silent_pass' || !platformSettings.adblock_policy}>Silent Pass (Direct Package Delivery)</option>
+                <option value="polite_notice" selected={platformSettings.adblock_policy === 'polite_notice'}>Show Polite Support Notice</option>
+                <option value="strict_block" selected={platformSettings.adblock_policy === 'strict_block'}>Block Download (Require Whitelist)</option>
               </select>
               <span class="text-[11px] text-slate-400 block">
                 Action taken when client ad-blocker disables the Monetag interstitial script.
@@ -386,7 +388,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 <span class="text-[11px] text-slate-500">Parse JavaScript files for `eval()`, obfuscated strings, and unvetted dynamic script execution.</span>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggle-ast-scanner" class="sr-only peer" checked />
+                <input type="checkbox" id="toggle-ast-scanner" class="sr-only peer" checked={platformSettings.ast_scanner_enabled !== 'false'} />
                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
               </label>
             </div>
@@ -398,7 +400,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 <span class="text-[11px] text-slate-500">Automatically flag packages requesting &lt;all_urls&gt; or *://*/* into manual moderator review.</span>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggle-permission-guard" class="sr-only peer" checked />
+                <input type="checkbox" id="toggle-permission-guard" class="sr-only peer" checked={platformSettings.broad_permissions_guard !== 'false'} />
                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
               </label>
             </div>
@@ -410,7 +412,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 <span class="text-[11px] text-slate-500">Reject packages that attempt to load external JS/CSS dependencies at runtime.</span>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggle-zero-remote" class="sr-only peer" checked />
+                <input type="checkbox" id="toggle-zero-remote" class="sr-only peer" checked={platformSettings.zero_remote_scripts !== 'false'} />
                 <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
               </label>
             </div>
@@ -438,7 +440,7 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
               <input
                 type="text"
                 id="github-org"
-                value="extlabs-team"
+                value={platformSettings.authorized_github_org || "extlabs-team"}
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-mono font-medium"
               />
               <span class="text-[11px] text-slate-400 block">
@@ -455,10 +457,10 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
                 id="session-timeout"
                 class="w-full px-3 py-2 text-xs bg-slate-50/50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 font-medium"
               >
-                <option value="8h" selected>8 Hours (Workday Session)</option>
-                <option value="24h">24 Hours</option>
-                <option value="7d">7 Days (Remember Me)</option>
-                <option value="1h">1 Hour (High Security)</option>
+                <option value="8h" selected={platformSettings.session_timeout === '8h' || !platformSettings.session_timeout}>8 Hours (Workday Session)</option>
+                <option value="24h" selected={platformSettings.session_timeout === '24h'}>24 Hours</option>
+                <option value="7d" selected={platformSettings.session_timeout === '7d'}>7 Days (Remember Me)</option>
+                <option value="1h" selected={platformSettings.session_timeout === '1h'}>1 Hour (High Security)</option>
               </select>
               <span class="text-[11px] text-slate-400 block">
                 Automatically invalidates `extlabs_admin_session` upon expiry.
@@ -495,9 +497,9 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
     <div class="fixed bottom-6 right-6 z-50">
       <div
         id="settings-toast"
-        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl"
+        class="hidden bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl border border-slate-800 flex items-center gap-2 shadow-xl transition-all"
       >
-        <Check class="w-4 h-4 text-emerald-400 shrink-0" />
+        <span id="toast-indicator" class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
         <span id="settings-toast-text">Configuration saved successfully.</span>
       </div>
     </div>
@@ -518,26 +520,96 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
         // 2. Toast Setup
         const toast = document.getElementById('settings-toast');
         const toastText = document.getElementById('settings-toast-text');
+        const toastIndicator = document.getElementById('toast-indicator');
         let toastTimer = null;
 
-        function showToast(msg) {
+        function showToast(msg, isError = false) {
           if (toastTimer) clearTimeout(toastTimer);
           if (toast && toastText) {
             toastText.textContent = msg;
+            if (toastIndicator) {
+              toastIndicator.className = isError
+                ? 'w-2 h-2 rounded-full bg-rose-500 shrink-0'
+                : 'w-2 h-2 rounded-full bg-emerald-400 shrink-0';
+            }
             toast.classList.remove('hidden');
             toastTimer = setTimeout(() => {
               toast.classList.add('hidden');
-            }, 3000);
+            }, 3500);
           }
         }
 
-        // 3. Save Handlers
+        // 3. Elements
         const topSaveBtn = document.getElementById('save-settings-btn');
         const bottomSaveBtn = document.getElementById('bottom-save-btn');
         const resetBtn = document.getElementById('reset-defaults-btn');
 
-        function handleSave() {
-          showToast('Configuration changes saved to production edge nodes.');
+        async function handleSave() {
+          const payload = {
+            // Section 1: Storefront & General
+            store_name: document.getElementById('store-name')?.value.trim() || '',
+            support_email: document.getElementById('support-email')?.value.trim() || '',
+            max_upload_size_mb: document.getElementById('max-upload-size')?.value.trim() || '25',
+            manifest_policy: document.getElementById('manifest-enforce')?.value || 'mv3_strict',
+            submissions_open: document.getElementById('toggle-submissions')?.checked ? 'true' : 'false',
+            maintenance_mode: document.getElementById('toggle-maintenance')?.checked ? 'true' : 'false',
+
+            // Section 2: 5:1 Monetization & Monetag
+            ad_pacing_ratio: document.getElementById('ad-ratio')?.value || '5_to_1',
+            monetag_direct_link: document.getElementById('monetag-direct-link')?.value.trim() || '',
+            session_freq_cap: document.getElementById('freq-cap')?.value || '1_per_session',
+            adblock_policy: document.getElementById('adblock-action')?.value || 'silent_pass',
+
+            // Section 3: Automated Static Analysis
+            ast_scanner_enabled: document.getElementById('toggle-ast-scanner')?.checked ? 'true' : 'false',
+            broad_permissions_guard: document.getElementById('toggle-permission-guard')?.checked ? 'true' : 'false',
+            zero_remote_scripts: document.getElementById('toggle-zero-remote')?.checked ? 'true' : 'false',
+
+            // Section 4: Staff Authentication & Access
+            authorized_github_org: document.getElementById('github-org')?.value.trim() || 'extlabs-team',
+            session_timeout: document.getElementById('session-timeout')?.value || '8h',
+          };
+
+          // Set Loading State
+          const originalTopText = topSaveBtn?.innerHTML;
+          const originalBottomText = bottomSaveBtn?.innerHTML;
+          if (topSaveBtn) {
+            topSaveBtn.disabled = true;
+            topSaveBtn.innerHTML = `<span>Saving...</span>`;
+          }
+          if (bottomSaveBtn) {
+            bottomSaveBtn.disabled = true;
+            bottomSaveBtn.innerHTML = `<span>Saving...</span>`;
+          }
+
+          try {
+            const res = await fetch('/api/admin/settings', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-admin-session': localStorage.getItem('extlabs_admin_session') || '',
+              },
+              body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+              showToast('Configuration changes saved to production edge nodes.', false);
+            } else {
+              showToast(data.error || 'Failed to save configuration.', true);
+            }
+          } catch (err) {
+            showToast('Network error while saving settings.', true);
+          } finally {
+            if (topSaveBtn && originalTopText) {
+              topSaveBtn.disabled = false;
+              topSaveBtn.innerHTML = originalTopText;
+            }
+            if (bottomSaveBtn && originalBottomText) {
+              bottomSaveBtn.disabled = false;
+              bottomSaveBtn.innerHTML = originalBottomText;
+            }
+          }
         }
 
         if (topSaveBtn) topSaveBtn.addEventListener('click', handleSave);
@@ -545,9 +617,35 @@ const liveExtensionsCount = await getLiveExtensionsCount(db);
 
         if (resetBtn) {
           resetBtn.addEventListener('click', () => {
-            const form = document.getElementById('admin-settings-form');
-            if (form) form.reset();
-            showToast('Platform settings reset to default values.');
+            const setValue = (id, val) => {
+              const el = document.getElementById(id);
+              if (el) el.value = val;
+            };
+            const setChecked = (id, checked) => {
+              const el = document.getElementById(id);
+              if (el) el.checked = checked;
+            };
+
+            setValue('store-name', 'ExtLabs Extension Store');
+            setValue('support-email', 'support@extlabs.store');
+            setValue('max-upload-size', '25');
+            setValue('manifest-enforce', 'mv3_strict');
+            setChecked('toggle-submissions', true);
+            setChecked('toggle-maintenance', false);
+
+            setValue('ad-ratio', '5_to_1');
+            setValue('monetag-direct-link', '');
+            setValue('freq-cap', '1_per_session');
+            setValue('adblock-action', 'silent_pass');
+
+            setChecked('toggle-ast-scanner', true);
+            setChecked('toggle-permission-guard', true);
+            setChecked('toggle-zero-remote', true);
+
+            setValue('github-org', 'extlabs-team');
+            setValue('session-timeout', '8h');
+
+            showToast('Form reset to platform defaults. Click Save to apply.', false);
           });
         }
       });
