@@ -1,6 +1,17 @@
 ---
 // Footer.astro
 import Logo from './Logo.astro';
+import { getDb, getPlatformSetting } from '../lib/db';
+
+const db = getDb();
+let storeName = "ExtLabs";
+let supportEmail = "support@extlabs.store";
+if (db) {
+  try {
+    storeName = (await getPlatformSetting(db, 'store_name')) || "ExtLabs";
+    supportEmail = (await getPlatformSetting(db, 'support_email')) || "support@extlabs.store";
+  } catch {}
+}
 ---
 
 <footer class="bg-slate-50 border-t border-slate-200 mt-20">
@@ -11,7 +22,7 @@ import Logo from './Logo.astro';
       <div class="space-y-3 md:col-span-1">
         <div class="flex items-center gap-2">
           <Logo class="w-6 h-6 shrink-0" />
-          <span class="text-sm font-bold text-slate-900 tracking-tight">ExtLabs</span>
+          <span class="text-sm font-bold text-slate-900 tracking-tight">{storeName}</span>
         </div>
 
         <p class="text-xs text-slate-500 leading-relaxed">
@@ -48,6 +59,7 @@ import Logo from './Logo.astro';
           <li><a href="/security" class="hover:text-slate-900 transition-colors">Security Verification</a></li>
           <li><a href="/privacy-policy" class="hover:text-slate-900 transition-colors">Privacy Policy</a></li>
           <li><a href="/terms-of-service" class="hover:text-slate-900 transition-colors">Terms of Service</a></li>
+          <li><a href={`mailto:${supportEmail}`} class="hover:text-slate-900 transition-colors">Support Contact</a></li>
         </ul>
       </div>
 
@@ -56,13 +68,13 @@ import Logo from './Logo.astro';
     <!-- Legal & Trademark Disclaimer -->
     <div class="mt-10 pt-6 border-t border-slate-200/60 text-[11px] text-slate-400 leading-relaxed">
       <p>
-        Disclaimer: Google Chrome is a trademark of Google LLC. Microsoft Edge is a trademark of Microsoft Corporation. Brave is a trademark of Brave Software, Inc. ExtLabs is an independent extension catalog and security audit directory, and is not affiliated with, endorsed by, or sponsored by Google LLC, Microsoft Corporation, Brave Software, Inc., or their affiliates. All registered trademarks belong to their respective copyright holders.
+        Disclaimer: Google Chrome is a trademark of Google LLC. Microsoft Edge is a trademark of Microsoft Corporation. Brave is a trademark of Brave Software, Inc. {storeName} is an independent extension catalog and security audit directory, and is not affiliated with, endorsed by, or sponsored by Google LLC, Microsoft Corporation, Brave Software, Inc., or their affiliates. All registered trademarks belong to their respective copyright holders.
       </p>
     </div>
 
     <!-- Bottom Bar -->
     <div class="mt-6 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-      <p>© 2026 ExtLabs. All rights reserved.</p>
+      <p>© 2026 {storeName}. All rights reserved.</p>
       <div class="flex items-center gap-5">
         <span class="inline-flex items-center gap-1.5 text-slate-600 font-mono text-[11px]">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
