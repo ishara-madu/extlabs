@@ -7,13 +7,17 @@ import Footer from "../../components/Footer.astro";
 import ExtensionCard from "../../components/ExtensionCard.astro";
 import BrowserIcon from "../../components/BrowserIcon.astro";
 import VerifiedBadge from "../../components/VerifiedBadge.astro";
-import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension, getDeveloperByUserIdOrSlug } from "../../lib/db";
+import { getDb, getStoreExtensionByIdOrSlug, getStoreExtensionsByCategory, getUserReviewForExtension, getDeveloperByUserIdOrSlug, getPlatformSettings } from "../../lib/db";
 import { getReviewerUser, getSessionUser } from "../../lib/auth";
 import { Star, BadgeCheck, ShieldCheck, Download, ExternalLink, AlertTriangle, Check, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, HelpCircle, CheckCircle2, Mail, Image as ImageIcon, PenLine, Trash2, Terminal, Copy, Maximize2 } from '@lucide/astro';
 import { marked } from 'marked';
 
 const requestedId = Astro.params.id || '';
 const db = getDb();
+const platformSettings = db ? await getPlatformSettings(db) : {};
+const platformAdRatio = platformSettings.ad_pacing_ratio || '5_to_1';
+const platformFreqCap = platformSettings.session_freq_cap || '24h';
+const platformAdblockPolicy = platformSettings.adblock_policy || 'silent_pass';
 
 // Check if visiting user is the developer author or an authorized admin
 let currentDeveloper = null;
@@ -692,7 +696,9 @@ const jsonLdSchema = {
               data-ext-version={ext.version}
               data-ext-developer={ext.developer}
               data-has-monetag={ext.monetagUrl ? 'true' : 'false'}
-              data-ad-frequency={ext.adFrequency || '24h'}
+              data-ad-frequency={ext.adFrequency || platformFreqCap}
+              data-ad-ratio={platformAdRatio}
+              data-adblock-policy={platformAdblockPolicy}
               data-download-url={ext.downloadUrl}
               data-manifest-version={ext.manifestVersion || 'v3'}
               class="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-black text-white text-xs sm:text-sm font-medium rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors"
@@ -2170,6 +2176,8 @@ const jsonLdSchema = {
             const extVersion = downloadBtn.getAttribute('data-ext-version') || '1.0.0';
             const hasMonetag = downloadBtn.getAttribute('data-has-monetag') === 'true';
             const adFrequency = downloadBtn.getAttribute('data-ad-frequency') || '24h';
+            const adRatio = downloadBtn.getAttribute('data-ad-ratio') || '5_to_1';
+            const adblockPolicy = downloadBtn.getAttribute('data-adblock-policy') || 'silent_pass';
             const realDownloadUrl = downloadBtn.getAttribute('data-download-url');
 
             // 1. Dual-Action Monetization: Open ad in a new tab
@@ -2178,7 +2186,7 @@ const jsonLdSchema = {
             const lastTriggerKey = `extlabs_ad_last_${extId}`;
             const sessionTriggerKey = `extlabs_ad_session_${extId}`;
 
-            if (adFrequency === '24h') {
+            if (adFrequency === '24h' || adFrequency === '1_per_day') {
               const lastTime = Number(localStorage.getItem(lastTriggerKey) || 0);
               if (lastTime && (now - lastTime) < 24 * 60 * 60 * 1000) {
                 canTriggerAd = false;
@@ -2188,25 +2196,52 @@ const jsonLdSchema = {
               if (lastTime && (now - lastTime) < 12 * 60 * 60 * 1000) {
                 canTriggerAd = false;
               }
-            } else if (adFrequency === 'session') {
+            } else if (adFrequency === 'session' || adFrequency === '1_per_session') {
               if (sessionStorage.getItem(sessionTriggerKey) === 'true') {
                 canTriggerAd = false;
               }
             }
-            // 'download' frequency triggers on every package download event
+            // 'download': triggers on every package download event (canTriggerAd remains true)
+
+            let adBlocked = false;
 
             if (canTriggerAd) {
               let adClickCount = Number(localStorage.getItem('extlabs_ad_split_count') || 0) + 1;
               localStorage.setItem('extlabs_ad_split_count', String(adClickCount));
 
-              const isPlatformAd = (adClickCount % 6 === 0);
+              let isPlatformAd = false;
+              if (adRatio === '5_to_1') {
+                isPlatformAd = (adClickCount % 6 === 0);
+              } else if (adRatio === '4_to_1') {
+                isPlatformAd = (adClickCount % 5 === 0);
+              } else if (adRatio === '6_to_1') {
+                isPlatformAd = (adClickCount % 7 === 0);
+              } else if (adRatio === 'direct_only') {
+                isPlatformAd = false;
+              } else {
+                isPlatformAd = (adClickCount % 6 === 0);
+              }
 
               if (isPlatformAd || hasMonetag) {
-                localStorage.setItem(lastTriggerKey, String(now));
-                sessionStorage.setItem(sessionTriggerKey, 'true');
-
                 const adRedirectUrl = `/api/ad/go?extId=${encodeURIComponent(extId)}&p=${isPlatformAd ? '1' : '0'}`;
-                window.open(adRedirectUrl, '_blank', 'noopener,noreferrer');
+                const adWindow = window.open(adRedirectUrl, '_blank', 'noopener,noreferrer');
+
+                if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
+                  adBlocked = true;
+                } else {
+                  localStorage.setItem(lastTriggerKey, String(now));
+                  sessionStorage.setItem(sessionTriggerKey, 'true');
+                }
+              }
+            }
+
+            // Ad Blocker Policy Enforcement
+            if (adBlocked) {
+              if (adblockPolicy === 'strict_block') {
+                showToast('Please pause your ad blocker to support extension creators and proceed with download.', true);
+                return;
+              } else if (adblockPolicy === 'polite_notice') {
+                showToast('Notice: Whitelisting ExtLabs helps keep community extensions free.');
               }
             }
 
