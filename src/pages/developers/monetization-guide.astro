@@ -452,7 +452,7 @@ const payoutMethods = [
 
               <!-- Dedicated Screenshot / Visual Guide Image Frame -->
               <figure class="space-y-2 pt-2">
-                <div class="w-full aspect-[16/9] max-w-3xl bg-slate-950 rounded-xl border border-slate-200/90 overflow-hidden shadow-xs flex items-center justify-center">
+                <div class="w-full aspect-[16/9] max-w-3xl bg-slate-100 rounded-xl border border-slate-200/90 overflow-hidden shadow-xs flex items-center justify-center">
                   <Image 
                     src={st.image} 
                     alt={st.imageCaption}
@@ -461,7 +461,7 @@ const payoutMethods = [
                     loading={idx === 0 ? "eager" : "lazy"}
                     fetchpriority={idx === 0 ? "high" : "auto"}
                     decoding="async"
-                    class="w-full h-full object-contain"
+                    class="w-full h-full object-cover"
                   />
                 </div>
                 <figcaption class="text-[11px] text-slate-500 block pl-1">

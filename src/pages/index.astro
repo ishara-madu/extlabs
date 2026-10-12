@@ -19,6 +19,12 @@ const devExtensions = allStoreExtensions.filter(ext => ext.category === 'dev');
 const aiAndProdExtensions = allStoreExtensions.filter(ext => ext.category === 'ai' || ext.category === 'productivity');
 const privacyAndUtilExtensions = allStoreExtensions.filter(ext => ext.category === 'privacy' || ext.category === 'utilities');
 
+const recentExtensions = [...allStoreExtensions].sort((a, b) => {
+  const dateA = new Date(a.updatedDate || a.createdDate || 0).getTime();
+  const dateB = new Date(b.updatedDate || b.createdDate || 0).getTime();
+  return dateB - dateA;
+}).slice(0, 8);
+
 const categoryCounts: Record<string, number> = {};
 for (const ext of allStoreExtensions) {
   categoryCounts[ext.category] = (categoryCounts[ext.category] || 0) + 1;
@@ -252,6 +258,33 @@ const lcpCandidateImageUrl = featuredExtensions[0]?.headerImageUrl || devExtensi
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {privacyAndUtilExtensions.map((ext) => (
+              <ExtensionCard extension={ext} {...getCardLoadingProps()} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Section: Recently Added & Updated -->
+      {recentExtensions.length > 0 && (
+        <section id="recent-releases" class="shelf-section space-y-6 pt-6 border-t border-slate-200/60 first-of-type:border-t-0 first-of-type:pt-0">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-semibold text-slate-800 tracking-tight">
+                Recently Added & Updated
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Explore the newest verified extensions added to ExtLabs.</p>
+            </div>
+            <a
+              href="/categories"
+              class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <span>Browse all</span>
+              <ArrowRight class="w-3.5 h-3.5 text-blue-600" />
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {recentExtensions.map((ext) => (
               <ExtensionCard extension={ext} {...getCardLoadingProps()} />
             ))}
           </div>

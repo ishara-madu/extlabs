@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug, saveExtensionBasic } from '../../../../lib/db';
+import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
 
 export const prerender = false;
 
@@ -150,7 +151,24 @@ export const POST: APIRoute = async ({ request }) => {
       iconUrl: iconUrl?.trim() || null,
     });
 
-    // Note: CDN cache purge is deferred until final publication to protect live store visitors
+    // Purge CDN edge cache if extension is already published live
+    if (isEdit) {
+      try {
+        const ext = await db
+          .prepare('SELECT id, slug, category, status FROM extensions WHERE id = ? OR slug = ? LIMIT 1')
+          .bind(result.id, result.slug)
+          .first<{ id: string; slug: string; category: string; status: string }>();
+        if (ext && ext.status === 'published') {
+          await purgeExtensionStoreCache(request, {
+            extensionId: ext.id,
+            extensionSlug: ext.slug,
+            category: ext.category,
+          });
+        }
+      } catch (purgeErr) {
+        console.warn('Cache purge after basic details update failed non-critically:', purgeErr);
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,

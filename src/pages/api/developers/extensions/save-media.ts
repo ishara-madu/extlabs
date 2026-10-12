@@ -4,6 +4,7 @@ import { getSessionUser } from '../../../../lib/auth';
 import { getDb, getDeveloperByUserIdOrSlug, saveExtensionMedia, getExtensionBySlug, getExtensionById } from '../../../../lib/db';
 import { clearMemoryCache } from '../../../../lib/queries/extensions';
 import { getR2Bucket, uploadToR2, deleteFromR2 } from '../../../../lib/r2';
+import { purgeExtensionStoreCache } from '../../../../lib/cache-purge';
 
 export const prerender = false;
 
@@ -311,6 +312,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Instantly invalidate Worker L1 In-Memory Cache
     clearMemoryCache();
+
+    // Purge CDN edge cache if extension is already published live
+    if (existingExt && existingExt.status === 'published') {
+      try {
+        await purgeExtensionStoreCache(request, {
+          extensionId: existingExt.id,
+          extensionSlug: existingExt.slug,
+          category: existingExt.category,
+        });
+      } catch (purgeErr) {
+        console.warn('Cache purge after media update failed non-critically:', purgeErr);
+      }
+    }
 
     return new Response(
       JSON.stringify({

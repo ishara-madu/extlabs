@@ -2460,7 +2460,12 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
       return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    function compressImageFile(file: File, maxWidth: number, maxHeight: number, quality = 0.85): Promise<string> {
+    function cropAndCompressImage(
+      file: File,
+      targetWidth: number,
+      targetHeight: number,
+      quality = 0.80
+    ): Promise<string> {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -2471,26 +2476,46 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           }
           const img = new Image();
           img.onload = () => {
-            let width = img.width;
-            let height = img.height;
-            if (width > maxWidth || height > maxHeight) {
-              const ratio = Math.min(maxWidth / width, maxHeight / height);
-              width = Math.round(width * ratio);
-              height = Math.round(height * ratio);
+            const srcW = img.naturalWidth || img.width;
+            const srcH = img.naturalHeight || img.height;
+
+            // Calculate 16:9 center crop box
+            const targetAspect = targetWidth / targetHeight;
+            const srcAspect = srcW / srcH;
+
+            let cropW = srcW;
+            let cropH = srcH;
+            let cropX = 0;
+            let cropY = 0;
+
+            if (srcAspect > targetAspect) {
+              // Wider than target ratio: crop sides evenly
+              cropW = Math.round(srcH * targetAspect);
+              cropX = Math.round((srcW - cropW) / 2);
+            } else {
+              // Taller than target ratio: crop top/bottom evenly
+              cropH = Math.round(srcW / targetAspect);
+              cropY = Math.round((srcH - cropH) / 2);
             }
+
+            // Downscale to target dimensions without upscaling if source crop is smaller
+            const outW = Math.min(targetWidth, cropW);
+            const outH = Math.round(outW / targetAspect);
+
             const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
+            canvas.width = outW;
+            canvas.height = outH;
             const ctx = canvas.getContext('2d');
             if (!ctx) {
               resolve(raw);
               return;
             }
+
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, width, height);
+            ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH);
+
             try {
-              // Always convert to high-performance WebP
               const dataUrl = canvas.toDataURL('image/webp', quality);
               resolve(dataUrl);
             } catch {
@@ -5831,18 +5856,6 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
       const dims = await inspectImageDimensions(file);
       if (dims) {
-        const targetRatio = 16 / 9;
-        const ratioDiff = Math.abs(dims.ratio - targetRatio);
-        if (ratioDiff > 0.02) {
-          setZoneError(
-            promoDropzone,
-            errPromo,
-            `Invalid aspect ratio (${dims.width}×${dims.height} px, ${(dims.width / dims.height).toFixed(2)}:1). Promotional shelf banner must strictly have a 16:9 aspect ratio. Other aspect ratios are not permitted.`
-          );
-          if (promoFileInput) promoFileInput.value = '';
-          return;
-        }
-
         if (dims.width < 640 || dims.height < 360) {
           setZoneError(
             promoDropzone,
@@ -5852,24 +5865,16 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
           if (promoFileInput) promoFileInput.value = '';
           return;
         }
-
-        if (dims.width > 1920 || dims.height > 1080) {
-          setZoneError(
-            promoDropzone,
-            errPromo,
-            `Banner resolution (${dims.width}×${dims.height} px) exceeds the maximum allowed limit of 1920×1080 px.`
-          );
-          if (promoFileInput) promoFileInput.value = '';
-          return;
-        }
       }
 
-      const result = await compressImageFile(file, 1280, 720, 0.85);
+      // Auto-crop centered 16:9 and downscale to smallest sharp display size (640×360 px WebP)
+      const result = await cropAndCompressImage(file, 640, 360, 0.82);
       if (!result) return;
 
       if (promoPreviewImg) promoPreviewImg.src = result;
       if (promoFileName) promoFileName.textContent = file.name;
-      if (promoFileSize) promoFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height} px • 16:9` : '16:9 Banner'})`;
+      const optimizedKb = Math.round((result.length * 0.75) / 1024);
+      if (promoFileSize) promoFileSize.textContent = `${optimizedKb} KB (640×360 px • 16:9 Optimized WebP)`;
       if (promoUrlVal) promoUrlVal.value = result;
 
       promoEmptyState?.classList.add('hidden');
@@ -5980,45 +5985,27 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
 
         const dims = await inspectImageDimensions(file);
         if (dims) {
-          const targetRatio = 16 / 9;
-          const ratioDiff = Math.abs(dims.ratio - targetRatio);
-          if (ratioDiff > 0.02) {
+          if (dims.width < 640 || dims.height < 360) {
             setZoneError(
               screenshotsDropzone,
               errScreenshots,
-              `Screenshot "${file.name}" has invalid aspect ratio (${dims.width}×${dims.height} px, ${(dims.width / dims.height).toFixed(2)}:1). Showcase screenshots must strictly have a 16:9 aspect ratio. Other aspect ratios are not permitted.`
-            );
-            continue;
-          }
-
-          if (dims.width < 1280 || dims.height < 720) {
-            setZoneError(
-              screenshotsDropzone,
-              errScreenshots,
-              `Screenshot "${file.name}" resolution is too low (${dims.width}×${dims.height} px). Minimum required size is 1280×720 px (720p HD) to prevent blurry store displays.`
-            );
-            continue;
-          }
-
-          if (dims.width > 1920 || dims.height > 1080) {
-            setZoneError(
-              screenshotsDropzone,
-              errScreenshots,
-              `Screenshot "${file.name}" resolution (${dims.width}×${dims.height} px) exceeds the maximum allowed limit of 1920×1080 px.`
+              `Screenshot "${file.name}" resolution is too low (${dims.width}×${dims.height} px). Minimum required size is 640×360 px to prevent blurry store displays.`
             );
             continue;
           }
         }
 
-        const result = await compressImageFile(file, 1920, 1080, 0.85);
+        // Auto center-crop to 16:9 and downscale to smallest sharp display size (1280×720 px WebP)
+        const result = await cropAndCompressImage(file, 1280, 720, 0.82);
         if (!result) continue;
 
         // Generate micro-thumbnail WebP (160x90 @ 50% quality, ~800 Bytes) to store inline in D1
-        const thumbResult = await compressImageFile(file, 160, 90, 0.50);
+        const thumbResult = await cropAndCompressImage(file, 160, 90, 0.50);
 
         const nextIndex = screenshotsContainer.querySelectorAll('.screenshot-card').length + 1;
         const card = document.createElement('div');
         card.className = 'screenshot-card p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs relative group';
+        const optimizedKb = Math.round((result.length * 0.75) / 1024);
         card.innerHTML = `
           <div class="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
             <img
@@ -6039,7 +6026,7 @@ const initialCategory = CATEGORIES.find(c => c.id === data.category) || CATEGORI
             <span class="font-bold text-slate-800 screenshot-number-label">
               Screenshot #${nextIndex}
             </span>
-            <span class="text-[10px] font-mono text-slate-400">${(file.size / 1024).toFixed(1)} KB (${dims ? `${dims.width}×${dims.height} px • 16:9` : '16:9'})</span>
+            <span class="text-[10px] font-mono text-slate-400">${optimizedKb} KB (1280×720 px • 16:9 WebP)</span>
           </div>
         `;
 
