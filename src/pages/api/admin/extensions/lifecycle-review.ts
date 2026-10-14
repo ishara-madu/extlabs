@@ -69,14 +69,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
 
       // Invalidate Edge CDN cache and Worker memory cache for both unpublish and delete
+      let purgeResult: { success: boolean; reason?: string } = { success: true };
       try {
-        await purgeExtensionStoreCache(request, {
+        purgeResult = await purgeExtensionStoreCache(request, {
           extensionId: result.extensionId,
           extensionSlug: result.extensionSlug,
           category: result.extensionCategory,
         });
-      } catch (purgeErr) {
-        console.warn(`Cache purge after ${result.requestType} failed non-critically:`, purgeErr);
+      } catch (purgeErr: any) {
+        purgeResult = { success: false, reason: purgeErr?.message || 'Purge failed' };
+        console.warn(`Cache purge after ${result.requestType} failed:`, purgeErr);
       }
 
       if (result.requestType === 'unpublish') {
@@ -102,6 +104,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             action: 'approve',
             requestType: 'unpublish',
             message: `"${result.extensionName}" has been successfully unpublished and set to draft.`,
+            purgeSuccess: purgeResult.success,
+            purgeError: purgeResult.success ? undefined : purgeResult.reason,
           }),
           {
             status: 200,
@@ -194,6 +198,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             action: 'approve',
             requestType: 'delete',
             message: `"${result.extensionName}" has been permanently deleted from ExtLabs.`,
+            purgeSuccess: purgeResult.success,
+            purgeError: purgeResult.success ? undefined : purgeResult.reason,
           }),
           {
             status: 200,

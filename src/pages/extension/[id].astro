@@ -2819,7 +2819,11 @@ const jsonLdSchema = {
                 });
                 const data = await res.json();
                 if (data.success) {
-                  alert(`✓ Extension "${extName}" approved and published to ExtLabs Directory!`);
+                  if (data.purgeError) {
+                    alert(`✓ Extension "${extName}" approved & published!\n\n⚠ Cloudflare CDN Edge Purge Warning:\n${data.purgeError}\n\nThe database has been updated live, but public edge caching may take time to refresh.`);
+                  } else {
+                    alert(`✓ Extension "${extName}" approved and published to ExtLabs Directory!\n\nCDN edge cache was purged successfully.`);
+                  }
                   window.location.reload();
                 } else {
                   alert(data.error || 'Failed to approve extension.');

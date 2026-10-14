@@ -42,14 +42,16 @@ export const POST: APIRoute = async ({ request }) => {
       const result = await approveExtensionReview(db, extensionId.trim());
 
       // Invalidate Edge CDN cache so the approved extension is instantly live
+      let purgeResult: { success: boolean; reason?: string } = { success: true };
       try {
-        await purgeExtensionStoreCache(request, {
+        purgeResult = await purgeExtensionStoreCache(request, {
           extensionId: extensionId.trim(),
           extensionSlug: result.slug,
           category: result.category,
         });
-      } catch (purgeErr) {
-        console.warn('Cache purge after approval failed non-critically:', purgeErr);
+      } catch (purgeErr: any) {
+        purgeResult = { success: false, reason: purgeErr?.message || 'Purge exception occurred' };
+        console.warn('Cache purge after approval failed:', purgeErr);
       }
 
       // Automatically create a success notification for the extension
@@ -71,7 +73,11 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({
         success: true,
         action: 'approve',
-        message: 'Extension approved and published to the live directory successfully.',
+        message: purgeResult.success
+          ? 'Extension approved and published to the live directory successfully.'
+          : `Extension approved, but CDN Edge Purge warning: ${purgeResult.reason}`,
+        purgeSuccess: purgeResult.success,
+        purgeError: purgeResult.success ? undefined : purgeResult.reason,
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },

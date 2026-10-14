@@ -1149,7 +1149,12 @@ function formatPackageSize(bytes?: number): string {
                   </span>
                 `;
               }
-              showToast(`Approved "${extName}". Extension is now live on ExtLabs!`);
+              if (data.purgeError) {
+                alert(`✓ Extension "${extName}" approved & published!\n\n⚠ Cloudflare CDN Edge Purge Warning:\n${data.purgeError}\n\nListing is live in the database, but edge CDN cache may take time to refresh.`);
+                showToast(`Approved "${extName}". (Purge warning: ${data.purgeError})`);
+              } else {
+                showToast(`Approved "${extName}". Extension is now live on ExtLabs!`);
+              }
             } else {
               if (actionsContainer) {
                 actionsContainer.innerHTML = `
